@@ -7,7 +7,7 @@
 #include <random>
 #include <tuple>
 #include <omp.h>
-#include "Vector.hpp"
+#include "Vector3.hpp"
 
 using namespace nagato;
 
@@ -17,14 +17,14 @@ namespace nagato
 	class Sphere;
 	class Hit;
 
-	std::tuple<Vector, Vector> tangentSpace(const Vector &n)
+	std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n)
 	{
 		const double s = std::copysign(1, n.z);
 		const double a = -1 / (s + n.z);
 		const double b = n.x * n.y * a;
 		return {
-				Vector(1 + s * n.x * n.x * a, s * b, -s * n.x),
-				Vector(b, s + n.y * n.y * a, -n.y)
+				Vector3(1 + s * n.x * n.x * a, s * b, -s * n.x),
+				Vector3(b, s + n.y * n.y * a, -n.y)
 		};
 	}
 
@@ -53,10 +53,10 @@ namespace nagato
 	class Ray
 	{
 	public:
-			Vector origin;
-			Vector direction;
+			Vector3 origin;
+			Vector3 direction;
 
-//			Ray(Vector o, Vector dir)
+//			Ray(Vector3 o, Vector3 dir)
 //					: origin(o), direction(dir)
 //			{}
 	};
@@ -67,11 +67,11 @@ namespace nagato
 	{
 	public:
 			double distance;
-			Vector point;
-			Vector normal;
+			Vector3 point;
+			Vector3 normal;
 			Object *sphere;
 
-			Hit(double d, Vector p, Vector n, Object *sphere)
+			Hit(double d, Vector3 p, Vector3 n, Object *sphere)
 					:
 					distance(d), point(p), normal(n), sphere(sphere)
 			{
@@ -89,13 +89,13 @@ namespace nagato
 	class Object
 	{
 	public:
-			Vector position;
+			Vector3 position;
 			SurfaceType type;
-			Vector color;
-			Vector emittance;
+			Vector3 color;
+			Vector3 emittance;
 			double ior = 1.5;
 
-			Object(Vector p, SurfaceType t, Vector color, Vector em = Vector())
+			Object(Vector3 p, SurfaceType t, Vector3 color, Vector3 em = Vector3())
 					: position(p), type(t), color(color), emittance(em)
 			{}
 
@@ -107,7 +107,7 @@ namespace nagato
 	public:
 			double radius;
 
-			Sphere(Vector p, double r, SurfaceType t, Vector color, Vector em = Vector())
+			Sphere(Vector3 p, double r, SurfaceType t, Vector3 color, Vector3 em = Vector3())
 					: Object(p, t, color, em), radius(r)
 			{}
 
@@ -116,7 +116,7 @@ namespace nagato
 					double tmin,
 					double tmax)
 			{
-				const Vector op = position - ray.origin;
+				const Vector3 op = position - ray.origin;
 				const double b = dot(op, ray.direction);
 				const double det = b * b - dot(op, op) + radius * radius;
 				if (det < 0) { return {}; }
@@ -132,14 +132,14 @@ namespace nagato
 	{
 	public:
 			double edge;
-			Vector normal;
-			Plane(Vector p, double e, Vector n, SurfaceType t, Vector color, Vector em = Vector())
+			Vector3 normal;
+			Plane(Vector3 p, double e, Vector3 n, SurfaceType t, Vector3 color, Vector3 em = Vector3())
 					: Object(p, t, color, em), edge(e), normal(n)
 			{}
 
 			std::optional<Hit> intersect(Ray &ray, double tmin, double tmax)
 			{
-				const Vector s = ray.origin - position;
+				const Vector3 s = ray.origin - position;
 				const auto sn = dot(s, normal);
 				const auto dn = dot(ray.direction, normal);
 
@@ -166,14 +166,14 @@ namespace nagato
 	{
 	public:
 			std::vector<Sphere> spheres{
-					Sphere{Vector(1e5 + 1, 40.8, 81.6), 1e5, SurfaceType::Diffuse, Vector(.75, .25, .25)},
-					Sphere{Vector(-1e5 + 99, 40.8, 81.6), 1e5, SurfaceType::Diffuse, Vector(.25, .25, .75)},
-					Sphere{Vector(50, 40.8, 1e5), 1e5, SurfaceType::Diffuse, Vector(.75)},
-					Sphere{Vector(50, 1e5, 81.6), 1e5, SurfaceType::Diffuse, Vector(.75)},
-					Sphere{Vector(50, -1e5 + 81.6, 81.6), 1e5, SurfaceType::Diffuse, Vector(.75)},
-					Sphere{Vector(27, 16.5, 47), 16.5, SurfaceType::Mirror, Vector(.999)},
-					Sphere{Vector(73, 16.5, 78), 16.5, SurfaceType::Fresnel, Vector(.999)},
-					Sphere{Vector(50, 681.6 - .27, 81.6), 600, SurfaceType::Diffuse, Vector(), Vector(12)},
+					Sphere{Vector3(1e5 + 1, 40.8, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75, .25, .25)},
+					Sphere{Vector3(-1e5 + 99, 40.8, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.25, .25, .75)},
+					Sphere{Vector3(50, 40.8, 1e5), 1e5, SurfaceType::Diffuse, Vector3(.75)},
+					Sphere{Vector3(50, 1e5, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
+					Sphere{Vector3(50, -1e5 + 81.6, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
+					Sphere{Vector3(27, 16.5, 47), 16.5, SurfaceType::Mirror, Vector3(.999)},
+					Sphere{Vector3(73, 16.5, 78), 16.5, SurfaceType::Fresnel, Vector3(.999)},
+					Sphere{Vector3(50, 681.6 - .27, 81.6), 600, SurfaceType::Diffuse, Vector3(), Vector3(12)},
 			};
 			std::optional<Hit> intersect(Ray &ray, double tmin, double tmax)
 			{
@@ -204,9 +204,9 @@ int main()
 	const int spp = 10;
 
 	// Camera parameters
-	const Vector eye(50, 52, 295.6);
-	const Vector center = eye + Vector(0, -0.042612, -1);
-	const Vector up(0, 1, 0);
+	const Vector3 eye(50, 52, 295.6);
+	const Vector3 center = eye + Vector3(0, -0.042612, -1);
+	const Vector3 up(0, 1, 0);
 	const double fov = 30 * M_PI / 180;
 	const double aspect = double(w) / h;
 
@@ -216,7 +216,7 @@ int main()
 	const auto vE = cross(wE, uE);
 
 	Scene scene;
-	std::vector<Vector> I(w * h);
+	std::vector<Vector3> I(w * h);
 	for (int j = 0; j < spp; j++) {
 		std::cout << "\rpash : " << j;
 		fflush(stdout);
@@ -232,12 +232,12 @@ int main()
 					const double tf = std::tan(fov * .5);
 					const double rpx = 2. * (x + rng.next()) / w - 1;
 					const double rpy = 2. * (y + rng.next()) / h - 1;
-					const Vector w = normalize(
-							Vector(aspect * tf * rpx, tf * rpy, -1));
+					const Vector3 w = normalize(
+							Vector3(aspect * tf * rpx, tf * rpy, -1));
 					return uE * w.x + vE * w.y + wE * w.z;
 			}();
 
-			Vector L(0), th(1);
+			Vector3 L(0), th(1);
 			for (int depth = 0; depth < 10; depth++) {
 				// Intersection
 				const auto h = scene.intersect(
@@ -261,7 +261,7 @@ int main()
 									const double t = 2 * M_PI * rng.next();
 									const double x = r * cos(t);
 									const double y = r * sin(t);
-									return Vector(x, y,
+									return Vector3(x, y,
 																std::sqrt(
 																		std::max(.0, 1 - x * x - y * y)));
 							}();
@@ -278,7 +278,7 @@ int main()
 							const auto n = into ? h->normal : -h->normal;
 							const auto ior = h->sphere->ior;
 							const auto eta = into ? 1 / ior : ior;
-							const auto wt = [&]() -> std::optional<Vector>
+							const auto wt = [&]() -> std::optional<Vector3>
 							{
 									const auto t = dot(wi, n);
 									const auto t2 = 1 - eta * eta * (1 - t * t);
