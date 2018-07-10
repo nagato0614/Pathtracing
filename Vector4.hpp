@@ -53,9 +53,20 @@ namespace nagato {
 			{
 				Vector4 v(0);
 
-				v.x = a.x * b.data[0][0] + a.y * b.data[0][1] + a.z * b.data[0][2];
-				v.y = a.x * b.data[1][0] + a.y * b.data[1][1] + a.z * b.data[1][2];
-				v.x = a.x * b.data[2][0] + a.y * b.data[2][1] + a.z * b.data[2][2];
+				v.x = a.x * b.data[0][0] + a.y * b.data[1][0] + a.z * b.data[2][0];
+				v.y = a.x * b.data[0][1] + a.y * b.data[1][1] + a.z * b.data[2][1];
+				v.z = a.x * b.data[0][2] + a.y * b.data[1][2] + a.z * b.data[2][2];
+
+				return v;
+			}
+
+			inline Vector4 operator*(Matrix4 a, Vector4 b)
+			{
+				Vector4 v(0);
+
+				v.x = a.data[0][0] * b.x + a.data[0][1] * b.y + a.data[0][1] * b.z;
+				v.y = a.data[1][0] * b.x + a.data[1][1] * b.y + a.data[1][1] * b.z;
+				v.z = a.data[2][0] * b.x + a.data[2][1] * b.y + a.data[2][1] * b.z;
 
 				return v;
 			}

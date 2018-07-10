@@ -13,7 +13,21 @@ namespace nagato
 			double data[4][4] = {0};
 
 			Matrix4()
-			{}
+			= default;
+
+			explicit Matrix4(double a)
+			{
+				for (auto &i : data)
+					for (double &j : i)
+						j = a;
+			}
+
+			explicit Matrix4(double a[4][4])
+			{
+				for (int i = 0 ;i < 4; i++)
+					for (int j= 0; j < 4; j++)
+						data[i][j] = a[i][j];
+			}
 
 			inline Matrix4 operator+(Matrix4 a, Matrix4 b)
 			{
@@ -48,6 +62,16 @@ namespace nagato
 						}
 					}
 				}
+				return m;
+			}
+
+			inline static Matrix4 identity()
+			{
+				Matrix4 m;
+
+				for (int i = 0; i < 4; i++)
+					m.data[i][i] = 0;
+
 				return m;
 			}
 	};
