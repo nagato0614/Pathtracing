@@ -5,6 +5,8 @@
 #ifndef PATHTRACING_VECTOR_HPP
 #define PATHTRACING_VECTOR_HPP
 
+#include "Vector4.hpp"
+
 namespace nagato {
 	class Vector3
 	{
@@ -58,6 +60,9 @@ namespace nagato {
 				return Vector3(-x, -y, -z);
 			}
 
+			inline Vector4 toVec4(double a = 1) {
+				return Vector4(x, y, z, a);
+			}
 	};
 
 	inline double dot(Vector3 a, Vector3 b)
@@ -68,8 +73,8 @@ namespace nagato {
 	inline Vector3 cross(Vector3 a, Vector3 b)
 	{
 		return Vector3(a.y * b.z - a.z * b.y,
-									a.z * b.x - a.x * b.z,
-									a.x * b.y - a.y * b.x);
+									 a.z * b.x - a.x * b.z,
+									 a.x * b.y - a.y * b.x);
 	}
 
 	inline Vector3 normalize(Vector3 v)
@@ -77,4 +82,5 @@ namespace nagato {
 		return v / sqrt(dot(v, v));
 	}
 }
+
 #endif //PATHTRACING_VECTOR_HPP
