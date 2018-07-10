@@ -13,8 +13,9 @@ using namespace nagato;
 
 namespace nagato
 {
-	class Object;
 	class Sphere;
+	class Object;
+	class Plane;
 	class Hit;
 
 	std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n)
@@ -61,8 +62,6 @@ namespace nagato
 //			{}
 	};
 
-
-
 	class Hit
 	{
 	public:
@@ -99,7 +98,7 @@ namespace nagato
 					: position(p), type(t), color(color), emittance(em)
 			{}
 
-//			virtual std::optional<Hit> intersect(Ray &ray, double tmin, double tmax);
+			virtual std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) {}
 	};
 
 	class Sphere: public Object
@@ -114,7 +113,7 @@ namespace nagato
 			std::optional<Hit> intersect(
 					Ray &ray,
 					double tmin,
-					double tmax)
+					double tmax) override
 			{
 				const Vector3 op = position - ray.origin;
 				const double b = dot(op, ray.direction);
@@ -137,23 +136,21 @@ namespace nagato
 					: Object(p, t, color, em), edge(e), normal(n)
 			{}
 
-			std::optional<Hit> intersect(Ray &ray, double tmin, double tmax)
+			std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) override
 			{
 				const Vector3 s = ray.origin - position;
 				const auto sn = dot(s, normal);
 				const auto dn = dot(ray.direction, normal);
 
 				if (dn == 0.0) {
-					return  {};
+					return {};
 				}
 
 				const auto t = -(sn / dn);
-				if (t > 0.0)
-				{
+				if (t > 0.0) {
 					return Hit{t, {}, {}, this};
 				}
-				else if (t == 0.0)
-				{
+				else if (t == 0.0) {
 					return {};
 				}
 				else if (t < 0.0) {
@@ -165,21 +162,25 @@ namespace nagato
 	class Scene
 	{
 	public:
-			std::vector<Sphere> spheres{
-					Sphere{Vector3(1e5 + 1, 40.8, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75, .25, .25)},
-					Sphere{Vector3(-1e5 + 99, 40.8, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.25, .25, .75)},
-					Sphere{Vector3(50, 40.8, 1e5), 1e5, SurfaceType::Diffuse, Vector3(.75)},
-					Sphere{Vector3(50, 1e5, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
-					Sphere{Vector3(50, -1e5 + 81.6, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
-					Sphere{Vector3(27, 16.5, 47), 16.5, SurfaceType::Mirror, Vector3(.999)},
-					Sphere{Vector3(73, 16.5, 78), 16.5, SurfaceType::Fresnel, Vector3(.999)},
-					Sphere{Vector3(50, 681.6 - .27, 81.6), 600, SurfaceType::Diffuse, Vector3(), Vector3(12)},
+			std::vector<Object *> spheres{
+					new Sphere{Vector3(1e5 + 1, 40.8, 81.6), 1e5, SurfaceType::Diffuse,
+										 Vector3(.75, .25, .25)},
+					new Sphere{Vector3(-1e5 + 99, 40.8, 81.6), 1e5, SurfaceType::Diffuse,
+										 Vector3(.25, .25, .75)},
+					new Sphere{Vector3(50, 40.8, 1e5), 1e5, SurfaceType::Diffuse, Vector3(.75)},
+					new Sphere{Vector3(50, 1e5, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
+					new Sphere{Vector3(50, -1e5 + 81.6, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
+					new Sphere{Vector3(27, 16.5, 47), 16.5, SurfaceType::Mirror, Vector3(.999)},
+					new Sphere{Vector3(73, 16.5, 78), 16.5, SurfaceType::Fresnel, Vector3(.999)},
+					new Sphere{Vector3(50, 681.6 - .27, 81.6), 600, SurfaceType::Diffuse, Vector3(),
+										 Vector3(12)},
 			};
+
 			std::optional<Hit> intersect(Ray &ray, double tmin, double tmax)
 			{
 				std::optional<Hit> minh;
 				for (auto &sphere : spheres) {
-					auto h = sphere.intersect(ray, tmin, tmax);
+					auto h = sphere->intersect(ray, tmin, tmax);
 					if (!h) { continue; }
 					minh = h;
 					tmax = minh->distance;
@@ -201,7 +202,7 @@ int main()
 	const int h = 320;
 
 	// Samples per pixel
-	const int spp = 10;
+	const int spp = 50;
 
 	// Camera parameters
 	const Vector3 eye(50, 52, 295.6);
@@ -262,8 +263,8 @@ int main()
 									const double x = r * cos(t);
 									const double y = r * sin(t);
 									return Vector3(x, y,
-																std::sqrt(
-																		std::max(.0, 1 - x * x - y * y)));
+																 std::sqrt(
+																		 std::max(.0, 1 - x * x - y * y)));
 							}();
 							// Convert to world coordinates
 							return u * d.x + v * d.y + n * d.z;
