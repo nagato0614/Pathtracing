@@ -6,6 +6,8 @@
 #define PATHTRACING_VECTOR4_HPP
 
 #include <cmath>
+#include "Matrix4.hpp"
+
 namespace nagato {
 	class Vector4
 	{
@@ -45,6 +47,17 @@ namespace nagato {
 			inline Vector4 operator*(double a) const
 			{
 				return Vector4(x * a, y * a, z * a, w * a);
+			}
+
+			inline Vector4 operator*(Vector4 a, Matrix4 b)
+			{
+				Vector4 v(0);
+
+				v.x = a.x * b.data[0][0] + a.y * b.data[0][1] + a.z * b.data[0][2];
+				v.y = a.x * b.data[1][0] + a.y * b.data[1][1] + a.z * b.data[1][2];
+				v.x = a.x * b.data[2][0] + a.y * b.data[2][1] + a.z * b.data[2][2];
+
+				return v;
 			}
 
 			inline Vector4 operator/(Vector4 b) const
