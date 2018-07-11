@@ -5,6 +5,7 @@
 #ifndef PATHTRACING_MATRIX4_HPP
 #define PATHTRACING_MATRIX4_HPP
 
+#include <cmath>
 namespace nagato
 {
 	class Matrix4
@@ -74,6 +75,52 @@ namespace nagato
 
 				return m;
 			}
+
+			inline static Matrix4 transform(double x, double y, double z)
+			{
+				Matrix4 m = identity();
+				m.data[0][3] = x;
+				m.data[1][3] = y;
+				m.data[2][3] = z;
+				return m;
+			}
+
+			inline static Matrix4 scale(double x, double y, double z)
+			{
+				Matrix4 m = identity();
+				m.data[0][0] = x;
+				m.data[1][1] = y;
+				m.data[2][2] = z;
+				return m;
+			}
+
+			inline static Matrix4 rotate(int a, double theta)
+			{
+				Matrix4 m = identity();
+
+				if (a == 0) {
+					// x軸を中心に回転
+					m.data[1][1] = cos(theta);
+					m.data[1][2] = sin(theta);
+					m.data[2][1] = -sin(theta);
+					m.data[2][2] = cos(theta);
+				}
+				else if (a == 1) {
+					// y軸を中心に回転
+					m.data[0][0] = cos(theta);
+					m.data[0][2] = -sin(theta);
+					m.data[2][0] = sin(theta);
+					m.data[2][2] = cos(theta);
+				}
+				else if (a == 2) {
+					// z軸を中心に回転
+					m.data[0][0] = cos(theta);
+					m.data[0][1] = sin(theta);
+					m.data[1][0] = -sin(theta);
+					m.data[1][1] = cos(theta);
+				}
+				return m;
+			}
 	};
 
 	void printMatrix4(Matrix4 a)
@@ -83,7 +130,6 @@ namespace nagato
 			std::cout << i[0] << " " << i[1] << " " << i[2] << " " << i[3] << std::endl;
 		}
 		std::cout << "--------------------------------" << std::endl;
-
 	}
 }
 
