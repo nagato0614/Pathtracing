@@ -60,10 +60,16 @@ namespace nagato {
 				return Vector3(-x, -y, -z);
 			}
 
-			inline Vector4 toVec4(double a = 1) {
-				return Vector4(x, y, z, a);
-			}
 	};
+
+	inline Vector4 toVec4(Vector3 v, double a = 1) {
+		return Vector4(v.x, v.y, v.z, a);
+	}
+
+	inline Vector3 toVec3(Vector4 v)
+	{
+		return Vector3(v.x / v.w, v.y / v.w, v.z / v.w);
+	}
 
 	inline double dot(Vector3 a, Vector3 b)
 	{
