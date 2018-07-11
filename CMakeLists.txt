@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(pathtracing)
+project(matrixtest)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -10,6 +11,8 @@ file(GLOB src
         ${PROJECT_SOURCE_DIR}/*.cpp)
 
 add_executable(pathtracing ${src})
+
+add_executable(matrixtest test/test.cpp)
 
 # compile option
 add_compile_options(-O2)

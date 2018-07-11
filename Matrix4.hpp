@@ -24,12 +24,12 @@ namespace nagato
 
 			explicit Matrix4(double a[4][4])
 			{
-				for (int i = 0 ;i < 4; i++)
-					for (int j= 0; j < 4; j++)
+				for (int i = 0; i < 4; i++)
+					for (int j = 0; j < 4; j++)
 						data[i][j] = a[i][j];
 			}
 
-			inline Matrix4 operator+(Matrix4 a, Matrix4 b)
+			friend inline Matrix4 operator+(Matrix4 a, Matrix4 b)
 			{
 				Matrix4 m;
 				for (int i = 0; i < 4; i++) {
@@ -40,7 +40,7 @@ namespace nagato
 				return m;
 			}
 
-			inline Matrix4 operator-(Matrix4 a, Matrix4 b)
+			friend inline Matrix4 operator-(Matrix4 a, Matrix4 b)
 			{
 				Matrix4 m;
 				for (int i = 0; i < 4; i++) {
@@ -51,7 +51,7 @@ namespace nagato
 				return m;
 			}
 
-			inline Matrix4 operator*(Matrix4 a, Matrix4 b)
+			friend inline Matrix4 operator*(Matrix4 a, Matrix4 b)
 			{
 				Matrix4 m;
 
@@ -70,11 +70,21 @@ namespace nagato
 				Matrix4 m;
 
 				for (int i = 0; i < 4; i++)
-					m.data[i][i] = 0;
+					m.data[i][i] = 1;
 
 				return m;
 			}
 	};
+
+	void printMatrix4(Matrix4 a)
+	{
+		std::cout << "--------------------------------" << std::endl;
+		for (auto &i : a.data) {
+			std::cout << i[0] << " " << i[1] << " " << i[2] << " " << i[3] << std::endl;
+		}
+		std::cout << "--------------------------------" << std::endl;
+
+	}
 }
 
 #endif //PATHTRACING_MATRIX4_HPP
