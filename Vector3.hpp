@@ -7,7 +7,8 @@
 
 #include "Vector4.hpp"
 
-namespace nagato {
+namespace nagato
+{
 	class Vector3
 	{
 	public:
@@ -60,9 +61,19 @@ namespace nagato {
 				return Vector3(-x, -y, -z);
 			}
 
+			friend inline bool operator==(Vector3 a, Vector3 b) const
+			{
+				return a.x == b.x && a.y == b.y && a.z == b.z;
+			}
+
+			friend inline bool operator!=(Vector3 a, Vector3 b) const
+			{
+				return a.x != b.x || a.y != b.y || a.z != b.z;
+			}
 	};
 
-	inline Vector4 toVec4(Vector3 v, double a = 1) {
+	inline Vector4 toVec4(Vector3 v, double a = 1)
+	{
 		return Vector4(v.x, v.y, v.z, a);
 	}
 

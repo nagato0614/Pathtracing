@@ -98,7 +98,8 @@ namespace nagato
 					: position(p), type(t), color(color), emittance(em)
 			{}
 
-			virtual std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) {}
+			virtual std::optional<Hit> intersect(Ray &ray, double tmin, double tmax)
+			{}
 	};
 
 	class Sphere: public Object
@@ -122,16 +123,14 @@ namespace nagato
 				if (det < 0) { return {}; }
 				const double t1 = b - sqrt(det);
 
-				if (tmin < t1 && t1 < tmax)
-				{
+				if (tmin < t1 && t1 < tmax) {
 					auto point = ray.origin + ray.direction * t1;
 					auto normal = (point - position) / radius;
 					return Hit{t1, point, normal, this};
 				}
 
 				const double t2 = b + sqrt(det);
-				if (tmin < t2 && t2 < tmax)
-				{
+				if (tmin < t2 && t2 < tmax) {
 					auto point = ray.origin + ray.direction * t2;
 					auto normal = (point - position) / radius;
 					return Hit{t2, point, normal, this};
@@ -145,30 +144,43 @@ namespace nagato
 	public:
 			double edge;
 			Vector3 normal;
+			Vector3 point[4];
 			Plane(Vector3 p, double e, Vector3 n, SurfaceType t, Vector3 color, Vector3 em = Vector3())
 					: Object(p, t, color, em), edge(e), normal(n)
-			{}
+			{
+				auto half = edge / 2.0;
+				point[0] = Vector3{-half, 0, half};
+				point[1] = Vector3{half, 0, half};
+				point[2] = Vector3{half, 0, -half};
+				point[3] = Vector3{-half, 0, -half};
+
+				auto trans = Matrix4::transform(position.x, position.y, position.z);
+				for (auto &i : point) {
+					auto v = toVec4(i);
+					i = toVec3(v * trans);
+				}
+			}
 
 			std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) override
 			{
-				const Vector3 s = ray.origin - position;
-				const auto sn = dot(s, normal);
-				const auto dn = dot(ray.direction, normal);
+				auto v1 = ray.origin + (ray.direction * tmin) - position;
+				auto v2 = ray.origin + (ray.direction * tmax) - position;
 
-				if (dn == 0.0) {
-					return {};
-				}
+				if (dot(v1, normal) * dot(v2, normal) <= 0 && dot(normal, ray.direction) >= 0) {
+					// レイと平面が交わっている場合
+					for (int i = 0; i < 4; i++) {
+						auto p = point[i] - position;
+						auto pp = point[(i + 1) % 4] - point[i];
+						if (normalize(cross(p, pp)) != normal)
+							break;
+					}
 
-				const auto t = -(sn / dn);
-				if (t > 0.0) {
-					return Hit{t, {}, {}, this};
+					auto hitpoint = ray.direction * (dot(v1, normal) / (dot(v1, normal), dot(v2, normal)));
+					auto dis = sqrt(dot(hitpoint - ray.origin + (ray.direction * tmin),
+															hitpoint - ray.origin + (ray.direction * tmin)));
+					return Hit{dis, hitpoint, normal, this};
 				}
-				else if (t == 0.0) {
-					return {};
-				}
-				else if (t < 0.0) {
-					return {};
-				}
+				return {};
 			}
 	};
 
