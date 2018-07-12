@@ -148,17 +148,22 @@ namespace nagato
 			Plane(Vector3 p, double e, Vector3 n, SurfaceType t, Vector3 color, Vector3 em = Vector3())
 					: Object(p, t, color, em), edge(e), normal(n)
 			{
-				auto half = edge / 2.0;
-				point[0] = Vector3{-half, 0, half};
-				point[1] = Vector3{half, 0, half};
-				point[2] = Vector3{half, 0, -half};
-				point[3] = Vector3{-half, 0, -half};
-
-				auto trans = Matrix4::transform(position.x, position.y, position.z);
-				for (auto &i : point) {
-					auto v = toVec4(i);
-					i = toVec3(v * trans);
-				}
+//				auto half = edge / 2.0;
+//				point[0] = Vector3{-half, 0, half};
+//				point[1] = Vector3{half, 0, half};
+//				point[2] = Vector3{half, 0, -half};
+//				point[3] = Vector3{-half, 0, -half};
+//
+//				const auto trans = Matrix4::transform(position.x, position.y, position.z);
+//				const auto up = Vector3(0, 1, 0);
+//				const auto theta = acos(up.x * normal.x + up.y * normal.y);
+//				const auto phi = asin(up.y * normal.y + up.z * normal.z);
+//				const auto rot = Matrix4::rotate(2, theta) * Matrix4::rotate(0, phi);
+//				for (auto &i : point) {
+//					auto vec4 = toVec4(i);
+//					i = toVec3(trans * rot * vec4);
+//					printVector3(i);
+//				}
 			}
 
 			std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) override
@@ -166,18 +171,23 @@ namespace nagato
 				auto v1 = ray.origin + (ray.direction * tmin) - position;
 				auto v2 = ray.origin + (ray.direction * tmax) - position;
 
-				if (dot(v1, normal) * dot(v2, normal) <= 0 && dot(normal, ray.direction) >= 0) {
+				if (dot(v1, normal) * dot(v2, normal) <= 0.0) {
 					// レイと平面が交わっている場合
-					for (int i = 0; i < 4; i++) {
-						auto p = point[i] - position;
-						auto pp = point[(i + 1) % 4] - point[i];
-						if (normalize(cross(p, pp)) != normal)
-							break;
-					}
+//					auto p = point[0] - position;
+//					auto pp = point[0] - point[0];
+//					auto n = normalize(cross(p, pp));
+//					for (int i = 1; i < 4; i++) {
+//						p = point[i] - position;
+//						pp = point[(i + 1) % 4] - point[i];
+//						if (normalize(cross(p, pp)) != n) {
+//							return {};
+//						}
+//					}
 
 					auto hitpoint = ray.direction * (dot(v1, normal) / (dot(v1, normal), dot(v2, normal)));
 					auto dis = sqrt(dot(hitpoint - ray.origin + (ray.direction * tmin),
 															hitpoint - ray.origin + (ray.direction * tmin)));
+
 					return Hit{dis, hitpoint, normal, this};
 				}
 				return {};
@@ -187,18 +197,32 @@ namespace nagato
 	class Scene
 	{
 	public:
+//			std::vector<Object *> spheres{
+//					new Sphere{Vector3(1e5 + 1, 40.8, 81.6), 1e5, SurfaceType::Diffuse,
+//										 Vector3(.75, .25, .25)},
+//					new Sphere{Vector3(-1e5 + 99, 40.8, 81.6), 1e5, SurfaceType::Diffuse,
+//										 Vector3(.25, .25, .75)},
+//					new Sphere{Vector3(50, 40.8, 1e5), 1e5, SurfaceType::Diffuse, Vector3(.75)},
+//					new Sphere{Vector3(50, 1e5, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
+//					new Sphere{Vector3(50, -1e5 + 81.6, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
+//					new Sphere{Vector3(27, 16.5, 47), 16.5, SurfaceType::Mirror, Vector3(.999)},
+//					new Sphere{Vector3(73, 16.5, 78), 16.5, SurfaceType::Fresnel, Vector3(.999)},
+//					new Sphere{Vector3(50, 681.6 - .27, 81.6), 600, SurfaceType::Diffuse, Vector3(),
+//										 Vector3(12)},
+//			};
+
 			std::vector<Object *> spheres{
-					new Sphere{Vector3(1e5 + 1, 40.8, 81.6), 1e5, SurfaceType::Diffuse,
-										 Vector3(.75, .25, .25)},
-					new Sphere{Vector3(-1e5 + 99, 40.8, 81.6), 1e5, SurfaceType::Diffuse,
-										 Vector3(.25, .25, .75)},
-					new Sphere{Vector3(50, 40.8, 1e5), 1e5, SurfaceType::Diffuse, Vector3(.75)},
-					new Sphere{Vector3(50, 1e5, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
-					new Sphere{Vector3(50, -1e5 + 81.6, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
-					new Sphere{Vector3(27, 16.5, 47), 16.5, SurfaceType::Mirror, Vector3(.999)},
-					new Sphere{Vector3(73, 16.5, 78), 16.5, SurfaceType::Fresnel, Vector3(.999)},
-					new Sphere{Vector3(50, 681.6 - .27, 81.6), 600, SurfaceType::Diffuse, Vector3(),
-										 Vector3(12)},
+					new Plane{Vector3(-3, 0, 0), 6, Vector3(1, 0, 0), SurfaceType::Diffuse,
+										Vector3(.75, .25, .25)},
+					new Plane{Vector3(3, 0, 0), 6, Vector3(-1, 0, 0), SurfaceType::Diffuse,
+										Vector3(.25, .25, .75)},
+					new Plane{Vector3(0, 3, 0), 6, Vector3(0, -1, 0), SurfaceType::Diffuse, Vector3(.75)},
+					new Plane{Vector3(0, -3, 0), 6, Vector3(0, 1, 0), SurfaceType::Diffuse, Vector3(.75)},
+					new Plane{Vector3(0, 0, -3), 6, Vector3(0, 0, 1), SurfaceType::Diffuse, Vector3(.75)},
+
+					new Sphere{Vector3(-1.5, -2, 0), 1, SurfaceType::Mirror, Vector3(.999)},
+					new Sphere{Vector3(1.5, -2, 0), 1, SurfaceType::Fresnel, Vector3(.999)},
+					new Sphere{Vector3(0, 3, 0), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
 			};
 
 			std::optional<Hit> intersect(Ray &ray, double tmin, double tmax)
@@ -230,8 +254,12 @@ int main()
 	const int spp = 50;
 
 	// Camera parameters
-	const Vector3 eye(50, 52, 295.6);
-	const Vector3 center = eye + Vector3(0, -0.042612, -1);
+//	const Vector3 eye(50, 52, 295.6);
+//	const Vector3 center = eye + Vector3(0, -0.042612, -1);
+
+	const Vector3 eye(0, 0, 30);
+	const Vector3 center = eye + Vector3(0, 0, -1);
+
 	const Vector3 up(0, 1, 0);
 	const double fov = 30 * M_PI / 180;
 	const double aspect = double(w) / h;

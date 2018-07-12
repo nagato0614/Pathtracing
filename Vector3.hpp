@@ -61,12 +61,12 @@ namespace nagato
 				return Vector3(-x, -y, -z);
 			}
 
-			friend inline bool operator==(Vector3 a, Vector3 b) const
+			friend inline bool operator==(Vector3 a, Vector3 b)
 			{
 				return a.x == b.x && a.y == b.y && a.z == b.z;
 			}
 
-			friend inline bool operator!=(Vector3 a, Vector3 b) const
+			friend inline bool operator!=(Vector3 a, Vector3 b)
 			{
 				return a.x != b.x || a.y != b.y || a.z != b.z;
 			}
@@ -97,6 +97,11 @@ namespace nagato
 	inline Vector3 normalize(Vector3 v)
 	{
 		return v / sqrt(dot(v, v));
+	}
+
+	inline void printVector3(Vector3 v)
+	{
+		std::cout << v.x << " " << v.y << " " << v.z << std::endl;
 	}
 }
 
