@@ -47,8 +47,8 @@ int main(void)
 //	printVector4(v2);
 
 	double edge = 6;
-	auto position = Vector3(0, 0, 3);
-	auto normal = Vector3(0, 0, -1);
+	auto position = Vector3(0, 0, -3);
+	auto normal = Vector3(0, 0, 1);
 	Vector3 point[4];
 	auto half = edge / 2.0;
 	point[0] = Vector3{-half, 0, half};
@@ -63,17 +63,24 @@ int main(void)
 
 	const auto trans = Matrix4::transform(position.x, position.y, position.z);
 	printMatrix4(trans);
+
 	const auto up = Vector3(0, 1, 0);
+
 	const auto theta = acos(up.x * normal.x + up.y * normal.y);
-	const auto phi = asin(up.y * normal.y + up.z * normal.z);
+	const auto phi = acos(up.x * normal.x + up.z * normal.z);
 
+	std::cout << "--------------------------------" << std::endl;
 	std::cout << theta << " " << phi << std::endl;
+	std::cout << "--------------------------------" << std::endl;
 
+	// z軸中心の回転
 	const auto theta_m =  Matrix4::rotate(2, theta);
-	const auto phi_m =  Matrix4::rotate(0, phi);
 
-	printMatrix4(theta_m);
-	printMatrix4(phi_m);
+	// x軸中心の回転
+	const auto phi_m =  Matrix4::rotate(1, phi);
+
+//	printMatrix4(theta_m);
+//	printMatrix4(phi_m);
 
 	const auto rot = theta_m * phi_m;
 
