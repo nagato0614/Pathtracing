@@ -149,24 +149,40 @@ class Plane : public Object {
 		}
 	}
 
+	Plane(Vector3 p,
+				Vector3 p0,
+				Vector3 p1,
+				Vector3 p2,
+				Vector3 p3,
+				Vector3 n,
+				SurfaceType t,
+				Vector3 color,
+				Vector3 em = Vector3())
+			: Object(p, t, color, em), normal(n) {
+		point[0] = p0;
+		point[1] = p1;
+		point[2] = p2;
+		point[3] = p3;
+	}
+
 	std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) override {
 		auto v1 = ray.origin + (ray.direction * tmin) - position;
 		auto v2 = ray.origin + (ray.direction * tmax) - position;
 
 		if (dot(v1, normal) * dot(v2, normal) <= 0.0) {
 			// レイと平面が交わっている場合
-//					auto p = point[0] - position;
-//					auto pp = point[0] - point[0];
-//					auto n = normalize(cross(p, pp));
-//					for (int i = 1; i < 4; i++) {
-//						p = point[i] - position;
-//						pp = point[(i + 1) % 4] - point[i];
-//						if (normalize(cross(p, pp)) != n) {
-//							return {};
-//						}
-//					}
+//			auto p = point[0] - position;
+//			auto pp = point[0] - point[0];
+//			auto n = normalize(cross(p, pp));
+//			for (int i = 1; i < 4; i++) {
+//				p = point[i] - position;
+//				pp = point[(i + 1) % 4] - point[i];
+//				if (normalize(cross(p, pp)) != n) {
+//					return {};
+//				}
+//			}
 
-			auto hitpoint = ray.origin +  ray.direction * (abs(dot(v1, normal)) / abs(dot(v1, normal) + dot(v2, normal)));
+			auto hitpoint = ray.direction * (abs(dot(v1, normal)) / abs(dot(v1, normal) + dot(v2, normal)));
 			auto dis = sqrt(dot(hitpoint - ray.origin,
 													hitpoint - ray.origin));
 
@@ -192,15 +208,32 @@ class Scene {
 //								 Vector3(12)},
 //	};
 
-	std::vector<Object *> spheres{
-			new Plane{Vector3(-3, 0, 0), 6, Vector3(1, 0, 0), SurfaceType::Diffuse,
-								Vector3(.75, .25, .25)},
-			new Plane{Vector3(3, 0, 0), 6, Vector3(-1, 0, 0), SurfaceType::Diffuse,
-								Vector3(.25, .25, .75)},
-			new Plane{Vector3(0, 3, 0), 6, Vector3(0, -1, 0), SurfaceType::Diffuse, Vector3(.75)},
-			new Plane{Vector3(0, -3, 0), 6, Vector3(0, 1, 0), SurfaceType::Diffuse, Vector3(.75)},
-			new Plane{Vector3(0, 0, -3), 6, Vector3(0, 0, 1), SurfaceType::Diffuse, Vector3(.75)},
+//	std::vector<Object *> spheres{
+//			new Plane{Vector3(-3, 0, 0), 6, Vector3(1, 0, 0), SurfaceType::Diffuse,
+//								Vector3(.75, .25, .25)},
+//			new Plane{Vector3(3, 0, 0), 6, Vector3(-1, 0, 0), SurfaceType::Diffuse,
+//								Vector3(.25, .25, .75)},
+//			new Plane{Vector3(0, 3, 0), 6, Vector3(0, -1, 0), SurfaceType::Diffuse, Vector3(.75)},
+//			new Plane{Vector3(0, -3, 0), 6, Vector3(0, 1, 0), SurfaceType::Diffuse, Vector3(.75)},
+////			new Plane{Vector3(0, 0, -3), 6, Vector3(0, 0, 1), SurfaceType::Diffuse, Vector3(.75)},
+//			new Sphere{Vector3(-1.5, -2, 0), 1, SurfaceType::Mirror, Vector3(.999)},
+//			new Sphere{Vector3(1.5, -2, 0), 1, SurfaceType::Fresnel, Vector3(.999)},
+//			new Sphere{Vector3(0, 3, 0), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
+//	};
 
+	std::vector<Object *> spheres{
+			new Plane{Vector3(3, 0, 0), Vector3(3, 3, 3), Vector3(3, 3, -3), Vector3(3, -3, -3), Vector3(3, -3, 3),
+								Vector3(-1, 0, 0), SurfaceType::Diffuse,
+								Vector3(.75, .25, .25)},
+			new Plane{Vector3(-3, 0, 0), Vector3(-3, 3, -3), Vector3(-3, 3, 3), Vector3(-3, -3, 3), Vector3(-3, -3, -3),
+								Vector3(1, 0, 0), SurfaceType::Diffuse,
+								Vector3(.25, .25, .75)},
+			new Plane{Vector3(0, 3, 0), Vector3(-3, 3, -3), Vector3(3, 3, -3), Vector3(3, 3, 3), Vector3(-3, 3, 3),
+								Vector3(0, -1, 0), SurfaceType::Diffuse, Vector3(.75)},
+			new Plane{Vector3(0, -3, 0), Vector3(-3, -3, -3), Vector3(3, -3, -3), Vector3(3, -3, 3), Vector3(-3, -3, 3),
+								Vector3(0, 1, 0), SurfaceType::Diffuse, Vector3(.75)},
+			new Plane{Vector3(0, 0, -3), Vector3(-3, 3, -3), Vector3(3, 3, -3), Vector3(3, -3, -3), Vector3(-3, -3, -3),
+								Vector3(0, 0, 1), SurfaceType::Diffuse, Vector3(.75)},
 			new Sphere{Vector3(-1.5, -2, 0), 1, SurfaceType::Mirror, Vector3(.999)},
 			new Sphere{Vector3(1.5, -2, 0), 1, SurfaceType::Fresnel, Vector3(.999)},
 			new Sphere{Vector3(0, 3, 0), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
@@ -366,8 +399,8 @@ int main() {
 									<< tonemap(i.y) << " "
 									<< tonemap(i.z) << "\n";
 		std::cout << tonemap(i.x) << " "
-									<< tonemap(i.y) << " "
-									<< tonemap(i.z) << "\n";
+							<< tonemap(i.y) << " "
+							<< tonemap(i.z) << "\n";
 	}
 
 	std::cout << "\nFINISH" << std::endl;
