@@ -156,6 +156,111 @@ class Sphere : public Object {
 	}
 };
 
+class TriangleMesh : public Object {
+ public :
+	tinyobj::attrib_t &attrib;
+	std::vector<tinyobj::shape_t> &shapes;
+	std::vector<tinyobj::material_t> &materials;
+
+	TriangleMesh(
+			tinyobj::attrib_t &attrib,
+			std::vector<tinyobj::shape_t> &shapes,
+			std::vector<tinyobj::material_t> &materials,
+			Vector3 p,
+			SurfaceType t,
+			Vector3 color,
+			Vector3 em) :
+			Object(p, t, color, em), attrib(attrib), shapes(shapes), materials(materials) {
+
+	}
+
+	std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) override {
+
+		// すべてのポリゴンに対して辺り判定を行う(線形探索)
+		// その中で最も近いものをレイの交点とする
+		for (auto &shape : shapes) {
+			size_t index_offset = 0;
+			auto shapeNumber = shape.mesh.num_face_vertices;
+			std::vector<Vector3> points;
+			std::vector<Vector3> normals;
+
+
+			// .objファイルに含まれている各オブジェクトに対しての処理
+			for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); ++f) {
+				size_t fnum = shape.mesh.num_face_vertices[f];
+
+				points.clear();
+				normals.clear();
+
+				// 各面の頂点に対する処理
+				for (size_t v = 0; v < fnum; v++) {
+
+					// 各面の頂点情報と法線情報の取得
+					tinyobj::index_t idx = shape.mesh.indices[index_offset + v];
+					auto vertexIndex = idx.vertex_index;
+					auto normalIndex = idx.normal_index;
+
+					printf("(vertex, normal) = (%d, %d)\n", vertexIndex, normalIndex);
+					auto vertex =
+							Vector3(attrib.vertices[3 * vertexIndex],
+											attrib.vertices[3 * vertexIndex + 1],
+											attrib.vertices[3 * vertexIndex + 2]);
+					printVector3(vertex);
+					points.push_back(vertex);
+
+					// 法線情報がない場合はスキップ
+					if (normalIndex >= 0) {
+						auto normal =
+								Vector3(attrib.normals[normalIndex], attrib.normals[normalIndex + 1], attrib.normals[normalIndex + 2]);
+						printVector3(normal);
+						normals.push_back(normal);
+					}
+				}
+
+				// 各ポリゴンに対する当たり判定
+				auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
+				auto dot_noraml_ray = dot(ray.origin + ray.direction * tmin - points[0], normal);
+				auto dot_raydir_normal = dot(ray.direction, normal);
+
+				// レイと平面が平行になっている
+				if (dot_raydir_normal == 0.0)
+					continue;
+
+				auto t = - dot_noraml_ray / dot_raydir_normal;
+
+				// 視点の後方に平面座存在するか視点が平面に存在する
+				if (t <= 0)
+					continue;
+
+				// レイと平面のヒットポイント(内部に存在するかどうかはまだわからない)
+				auto hitPoint = ray.direction * t + ray.origin;
+
+				// どの面に射影するか決める
+				auto absMax = std::max(abs(normal.x), std::max(abs(normal.y), abs(normal.z)));
+
+				int flag = 0;
+				for (int i = 0; i < points.size(); i++) {
+					auto vv = points[(i + 1) % points.size()] - points[i % points.size()];
+					auto pv = hitPoint - points[i % points.size()];
+
+					if (cross(vv, pv).norm() < 0)
+						flag++;
+				}
+
+				if (flag == points.size()) {
+					double distance = sqrt((hitPoint - (ray.origin + ray.direction * tmin)).norm());
+					return Hit{distance, hitPoint, normal, this};
+				}
+
+				index_offset += fnum;
+			}
+		}
+
+		// 何も当たらなかった場合
+		return {};
+	}
+};
+
 class Plane : public Object {
  public:
 	double edge;
