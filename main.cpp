@@ -1,5 +1,9 @@
 #define _USE_MATH_DEFINES
+
+// オブジェクトローダーの読み込み関連
 #define TINYOBJLOADER_IMPLEMENTATION
+#define TINYOBJLOADER_USE_DOUBLE
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -8,7 +12,9 @@
 #include <random>
 #include <tuple>
 #include <omp.h>
+#include <map>
 #include "Vector3.hpp"
+#include "tiny_obj_loader.h"
 
 using namespace nagato;
 
@@ -27,6 +33,31 @@ std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n) {
 			Vector3(b, s + n.y * n.y * a, -n.y)
 	};
 }
+
+class MaterialStringStreamReader : public tinyobj::MaterialReader {
+ public:
+	MaterialStringStreamReader(const std::string &matSStream)
+			: m_matSStream(matSStream) {}
+	virtual ~MaterialStringStreamReader() {}
+	virtual bool operator()(const std::string &matId,
+													std::vector<tinyobj::material_t> *materials,
+													std::map<std::string, int> *matMap,
+													std::string *err) {
+		(void) matId;
+		std::string warning;
+		tinyobj::LoadMtl(matMap, materials, &m_matSStream, &warning);
+
+		if (!warning.empty()) {
+			if (err) {
+				(*err) += warning;
+			}
+		}
+		return true;
+	}
+
+ private:
+	std::stringstream m_matSStream;
+};
 
 int tonemap(double v) {
 	return std::min(
@@ -262,18 +293,54 @@ class Scene {
 
 int main() {
 
+	// スレッド数の表示
 	#ifdef _OPENMP
 	std::cout << "The number of processors is " << omp_get_num_procs() << std::endl;
 	std::cout << "OpenMP : Enabled (Max # of threads = " << omp_get_max_threads() << ")" << std::endl;
 	omp_set_num_threads(omp_get_max_threads());
 	#endif
 
+	// オブジェクトファイルを読み込み
+	std::ifstream objctFile("./models/cornellbox_suzanne.obj");
+	std::ifstream materialFile("./models/cornellbox_suzanne.mtl");
+
+	if (objctFile.fail()) {
+		std::cerr << "オブジェクトファイルを開けませんでした" << std::endl;
+		exit(-1);
+	}
+	if (materialFile.fail()) {
+		std::cerr << "マテリアルファイルを開けませんでした" << std::endl;
+		exit(-1);
+	}
+
+	// オブジェクトファイルを文字列に変換
+	std::stringstream objectFileStream;
+	objectFileStream << objctFile.rdbuf();
+	objctFile.close();
+
+	std::stringstream strstream;
+	strstream.str("");
+	strstream << materialFile.rdbuf();
+	materialFile.close();
+	std::string materialFileString(strstream.str());
+
+
+	//　マテリアルローダを初期化
+	MaterialStringStreamReader materialStringStreamReader(materialFileString);
+
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string err;
+	bool red = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, &objectFileStream, &materialStringStreamReader);
+
+
 	// Image size
 	const int w = 460;
 	const int h = 320;
 
 	// Samples per pixel
-	const int spp = 50;
+	const int spp = 1;
 
 	// Camera parameters
 //	const Vector3 eye(50, 52, 295.6);
@@ -399,9 +466,9 @@ int main() {
 		output_normal << tonemap(i.x) << " "
 									<< tonemap(i.y) << " "
 									<< tonemap(i.z) << "\n";
-		std::cout << tonemap(i.x) << " "
-							<< tonemap(i.y) << " "
-							<< tonemap(i.z) << "\n";
+//		std::cout << tonemap(i.x) << " "
+//							<< tonemap(i.y) << " "
+//							<< tonemap(i.z) << "\n";
 	}
 
 	std::cout << "\nFINISH" << std::endl;
