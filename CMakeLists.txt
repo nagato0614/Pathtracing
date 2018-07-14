@@ -12,6 +12,7 @@ file(GLOB src
 add_executable(pathtracing ${src})
 add_executable(matrixtest test/test.cpp)
 add_executable(test_tinyexr test/test_tinyexr.cc tinyexr.h tinyexr.cc)
+add_executable(test_obj_loader test/loader_example.cc tiny_obj_loader.h)
 
 # compile option
 add_compile_options(-O2)

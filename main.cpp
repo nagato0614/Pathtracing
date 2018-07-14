@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <iostream>
 #include <fstream>
 #include <vector>
