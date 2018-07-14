@@ -1,13 +1,13 @@
 #include <cstdlib>
 #include <cstdio>
 #include <vector>
+#include "../tinyexr.h"
 
 // Uncomment if you want to use system provided zlib.
 // #define TINYEXR_USE_MINIZ (0)
 // #include <zlib.h>
 
 #define TINYEXR_IMPLEMENTATION
-#include "tinyexr.h"
 
 #ifdef __clang__
 #if __has_warning("-Wzero-as-null-pointer-constant")
