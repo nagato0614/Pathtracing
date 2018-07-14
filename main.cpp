@@ -13,6 +13,7 @@
 #include <tuple>
 #include <omp.h>
 #include <map>
+#include <cfloat>
 #include "Vector3.hpp"
 #include "tiny_obj_loader.h"
 
@@ -169,13 +170,15 @@ class TriangleMesh : public Object {
 			Vector3 p,
 			SurfaceType t,
 			Vector3 color,
-			Vector3 em) :
+			Vector3 em = Vector3()) :
 			Object(p, t, color, em), attrib(attrib), shapes(shapes), materials(materials) {
 
 	}
 
 	std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) override {
 
+		std::optional<Hit> min = {};
+		auto mindis = DBL_MAX;
 		// すべてのポリゴンに対して辺り判定を行う(線形探索)
 		// その中で最も近いものをレイの交点とする
 		for (auto &shape : shapes) {
@@ -200,33 +203,33 @@ class TriangleMesh : public Object {
 					auto vertexIndex = idx.vertex_index;
 					auto normalIndex = idx.normal_index;
 
-					printf("(vertex, normal) = (%d, %d)\n", vertexIndex, normalIndex);
+//					printf("(vertex, normal) = (%d, %d)\n", vertexIndex, normalIndex);
 					auto vertex =
 							Vector3(attrib.vertices[3 * vertexIndex],
 											attrib.vertices[3 * vertexIndex + 1],
 											attrib.vertices[3 * vertexIndex + 2]);
-					printVector3(vertex);
+//					printVector3(vertex);
 					points.push_back(vertex);
 
 					// 法線情報がない場合はスキップ
 					if (normalIndex >= 0) {
 						auto normal =
 								Vector3(attrib.normals[normalIndex], attrib.normals[normalIndex + 1], attrib.normals[normalIndex + 2]);
-						printVector3(normal);
+//						printVector3(normal);
 						normals.push_back(normal);
 					}
 				}
 
 				// 各ポリゴンに対する当たり判定
 				auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
-				auto dot_noraml_ray = dot(ray.origin + ray.direction * tmin - points[0], normal);
-				auto dot_raydir_normal = dot(ray.direction, normal);
+				auto dotNoramlRay = dot(ray.origin + ray.direction * tmin - points[0], normal);
+				auto raydirNormal = dot(ray.direction, normal);
 
 				// レイと平面が平行になっている
-				if (dot_raydir_normal == 0.0)
+				if (raydirNormal == 0.0)
 					continue;
 
-				auto t = - dot_noraml_ray / dot_raydir_normal;
+				auto t = -dotNoramlRay / raydirNormal;
 
 				// 視点の後方に平面座存在するか視点が平面に存在する
 				if (t <= 0)
@@ -243,13 +246,17 @@ class TriangleMesh : public Object {
 					auto vv = points[(i + 1) % points.size()] - points[i % points.size()];
 					auto pv = hitPoint - points[i % points.size()];
 
-					if (cross(vv, pv).norm() < 0)
+					if (cross(vv, pv).norm() > 0.0)
 						flag++;
 				}
 
 				if (flag == points.size()) {
 					double distance = sqrt((hitPoint - (ray.origin + ray.direction * tmin)).norm());
-					return Hit{distance, hitPoint, normal, this};
+					if (mindis > distance) {
+//						std::cout << "hit" << std::endl;
+						mindis = distance;
+						min = Hit{distance, hitPoint, normal, this};
+					}
 				}
 
 				index_offset += fnum;
@@ -257,7 +264,7 @@ class TriangleMesh : public Object {
 		}
 
 		// 何も当たらなかった場合
-		return {};
+		return min;
 	}
 };
 
@@ -323,7 +330,7 @@ class Plane : public Object {
 			auto dis = sqrt(dot(hitpoint - ray.origin,
 													hitpoint - ray.origin));
 
-			return Hit{dis, hitpoint, normal, this};
+			return Hit{dis, hitpoint, -normal, this};
 		}
 		return {};
 	}
@@ -358,21 +365,25 @@ class Scene {
 //			new Sphere{Vector3(0, 3, 0), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
 //	};
 
+//	std::vector<Object *> spheres{
+//			new Plane{Vector3(3, 0, 0), Vector3(3, 3, 3), Vector3(3, 3, -3), Vector3(3, -3, -3), Vector3(3, -3, 3),
+//								Vector3(-1, 0, 0), SurfaceType::Diffuse,
+//								Vector3(.75, .25, .25)},
+//			new Plane{Vector3(-3, 0, 0), Vector3(-3, 3, -3), Vector3(-3, 3, 3), Vector3(-3, -3, 3), Vector3(-3, -3, -3),
+//								Vector3(1, 0, 0), SurfaceType::Diffuse,
+//								Vector3(.25, .25, .75)},
+//			new Plane{Vector3(0, 3, 0), Vector3(-3, 3, -3), Vector3(3, 3, -3), Vector3(3, 3, 3), Vector3(-3, 3, 3),
+//								Vector3(0, -1, 0), SurfaceType::Diffuse, Vector3(.75)},
+//			new Plane{Vector3(0, -3, 0), Vector3(-3, -3, -3), Vector3(3, -3, -3), Vector3(3, -3, 3), Vector3(-3, -3, 3),
+//								Vector3(0, 1, 0), SurfaceType::Diffuse, Vector3(.75)},
+//			new Plane{Vector3(0, 0, -3), Vector3(-3, 3, -3), Vector3(3, 3, -3), Vector3(3, -3, -3), Vector3(-3, -3, -3),
+//								Vector3(0, 0, 1), SurfaceType::Diffuse, Vector3(.75)},
+//			new Sphere{Vector3(-1.5, -2, 0), 1, SurfaceType::Mirror, Vector3(.999)},
+//			new Sphere{Vector3(1.5, -2, 0), 1, SurfaceType::Fresnel, Vector3(.999)},
+//			new Sphere{Vector3(0, 3, 0), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
+//	};
+
 	std::vector<Object *> spheres{
-			new Plane{Vector3(3, 0, 0), Vector3(3, 3, 3), Vector3(3, 3, -3), Vector3(3, -3, -3), Vector3(3, -3, 3),
-								Vector3(-1, 0, 0), SurfaceType::Diffuse,
-								Vector3(.75, .25, .25)},
-			new Plane{Vector3(-3, 0, 0), Vector3(-3, 3, -3), Vector3(-3, 3, 3), Vector3(-3, -3, 3), Vector3(-3, -3, -3),
-								Vector3(1, 0, 0), SurfaceType::Diffuse,
-								Vector3(.25, .25, .75)},
-			new Plane{Vector3(0, 3, 0), Vector3(-3, 3, -3), Vector3(3, 3, -3), Vector3(3, 3, 3), Vector3(-3, 3, 3),
-								Vector3(0, -1, 0), SurfaceType::Diffuse, Vector3(.75)},
-			new Plane{Vector3(0, -3, 0), Vector3(-3, -3, -3), Vector3(3, -3, -3), Vector3(3, -3, 3), Vector3(-3, -3, 3),
-								Vector3(0, 1, 0), SurfaceType::Diffuse, Vector3(.75)},
-			new Plane{Vector3(0, 0, -3), Vector3(-3, 3, -3), Vector3(3, 3, -3), Vector3(3, -3, -3), Vector3(-3, -3, -3),
-								Vector3(0, 0, 1), SurfaceType::Diffuse, Vector3(.75)},
-			new Sphere{Vector3(-1.5, -2, 0), 1, SurfaceType::Mirror, Vector3(.999)},
-			new Sphere{Vector3(1.5, -2, 0), 1, SurfaceType::Fresnel, Vector3(.999)},
 			new Sphere{Vector3(0, 3, 0), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
 	};
 
@@ -439,7 +450,6 @@ int main() {
 	std::string err;
 	bool red = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, &objectFileStream, &materialStringStreamReader);
 
-
 	// Image size
 	const int w = 460;
 	const int h = 320;
@@ -451,11 +461,11 @@ int main() {
 //	const Vector3 eye(50, 52, 295.6);
 //	const Vector3 center = eye + Vector3(0, -0.042612, -1);
 
-	const Vector3 eye(0, 0, 30);
+	const Vector3 eye(0, 0, 50);
 	const Vector3 center = eye + Vector3(0, 0, -1);
 
 	const Vector3 up(0, 1, 0);
-	const double fov = 30 * M_PI / 180;
+	const double fov = 90 * M_PI / 180;
 	const double aspect = double(w) / h;
 
 	// Basis vectors for camera coordinates
@@ -464,6 +474,12 @@ int main() {
 	const auto vE = cross(wE, uE);
 
 	Scene scene;
+	scene.spheres.push_back(new TriangleMesh(attrib,
+																					 shapes,
+																					 materials,
+																					 Vector3(),
+																					 SurfaceType::Diffuse,
+																					 Vector3(0.7, 0.7, 0.7)));
 	std::vector<Vector3> I(w * h);
 	std::vector<Vector3> nom(w * h);
 	for (int j = 0; j < spp; j++) {
@@ -486,7 +502,7 @@ int main() {
 			}();
 
 			Vector3 L(0), th(1);
-			for (int depth = 0; depth < 10; depth++) {
+			for (int depth = 0; depth < 5; depth++) {
 				// Intersection
 				const auto h = scene.intersect(
 						ray, 1e-4, 1e+10);
