@@ -206,10 +206,16 @@ int main(void) {
 			{-1, 0, 0},
 	};
 
-	Vector3 rayorigin(0, 0.5, 1);
-	Vector3 raydirection(0, 0,-1);
-	double tmin = 1e-4;
-	double tmax = 1e+10;
+	std::cout << "-- vertex --" << std::endl;
+	for (auto i : points)
+		printVector3(i);
+
+	Vector3 rayorigin(-3, 0, 0.0001);
+	Vector3 lookat(0, 0.5, 0);
+	Vector3 raydirection = lookat - rayorigin;
+
+	double tmin = 1e-100;
+	double tmax = 1e+100;
 
 	auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
 	std::cout << "-- noraml --" << std::endl;
@@ -234,25 +240,20 @@ int main(void) {
 	std::cout << "-- hitpoint --" << std::endl;
 	printVector3(hitPoint);
 
-	std::vector<double> v;
+	std::vector<Vector3> v;
 	for (int i = 0; i < 3; i++) {
 		auto vv = points[(i + 1) % 3] - points[i % 3];
 		auto pv = hitPoint - points[i % 3];
 
 		auto c = cross(vv, pv);
-		v.push_back(c.z);
+		v.push_back(c);
 	}
 
-	int plus = 0;
-	int nega = 0;
-	for (const auto i : v) {
-		if (&v > 0)
-			plus++;
-		else
-			nega++;
-	}
+	std::cout << "-- flag --" << std::endl;
 
-	std::cout << "puls : " << plus << std::endl;
-	std::cout << "nega : " << nega << std::endl;
+	if (dot(v[0], v[1]) > 0 && dot(v[1], v[2]) > 0)
+		std::cout << "hit" << std::endl;
+	else
+		std::cout << "miss" << std::endl;
 
 }

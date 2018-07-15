@@ -244,20 +244,11 @@ class TriangleMesh : public Object {
 					auto pv = hitPoint - points[i % points.size()];
 
 					auto cross_vv_pv = cross(vv, pv);
-					z.push_back(cross_vv_pv);
-				}
-
-				int plus = 0;
-				int negative = 0;
-				for (auto &i : z) {
-					if (i.z > 0.0)
-						plus++;
-					else
-						negative++;
+					z.push_back(normalize(cross_vv_pv));
 				}
 
 				// もしヒットしていた場合の処理
-				if (plus == points.size() || negative == points.size()) {
+				if (dot(z[0], z[1]) > 0.0 && dot(z[1], z[2]) > 0.0) {
 					double distance = sqrt((hitPoint - (ray.origin + ray.direction * tmin)).norm());
 					if (tmax > distance) {
 //						std::cout << "hit" << std::endl;
@@ -391,6 +382,8 @@ class Scene {
 //	};
 
 	std::vector<Object *> spheres{
+			new Sphere{Vector3(-2.5, 1, 0),0.5, SurfaceType::Mirror, Vector3(.999)},
+			new Sphere{Vector3(2.5, 1, 0), 0.5, SurfaceType::Fresnel, Vector3(.999)},
 			new Sphere{Vector3(0, 8, 0), 0.5, SurfaceType::Diffuse, Vector3(),
 								 Vector3(12)},
 	};
@@ -418,23 +411,25 @@ class Scene {
 int main() {
 
 	#ifdef _DEBUG
-	std::cout << "DEBUF MODE" << std::endl;
+	std::cout << "-- DEBUF MODE --" << std::endl;
 	#endif
 
 	#ifndef _DEBUG
-	std::cout << "REREASE MODE" << std::endl;
+	std::cout << "-- REREASE MODE --" << std::endl;
 	#endif
 
 	// スレッド数の表示
 	#ifdef _OPENMP
+	std::cout << "-- openMP --" << std::endl;
 	std::cout << "The number of processors is " << omp_get_num_procs() << std::endl;
 	std::cout << "OpenMP : Enabled (Max # of threads = " << omp_get_max_threads() << ")" << std::endl;
 	omp_set_num_threads(omp_get_max_threads());
 	#endif
 
+	std::cout << "-- Load Object File --" << std::endl;
 	// オブジェクトファイルを読み込み
-	std::ifstream objctFile("./models/cornellbox_suzanne.obj");
-	std::ifstream materialFile("./models/cornellbox_suzanne.mtl");
+	std::ifstream objctFile("./models/cornellbox_suzanne_lucy.obj");
+	std::ifstream materialFile("./models/cornellbox_suzanne_lucy.mtl");
 
 	if (objctFile.fail()) {
 		std::cerr << "オブジェクトファイルを開けませんでした" << std::endl;
@@ -471,7 +466,7 @@ int main() {
 	const int h = 320;
 
 	// Samples per pixel
-	const int spp = 100;
+	const int spp = 1;
 
 	// Camera parameters
 //	const Vector3 eye(50, 52, 295.6);
@@ -480,11 +475,8 @@ int main() {
 	const Vector3 eye(0, 5, 20);
 	const Vector3 center = eye + Vector3(0, 0, -1);
 
-//	const Vector3 eye(50, 52, 295.6);
-//	const Vector3 center = eye + Vector3(0, -0.042612, -1);
-
 	const Vector3 up(0, 1, 0);
-	const double fov = 30 * M_PI / 180;
+	const double fov = 40 * M_PI / 180;
 	const double aspect = double(w) / h;
 
 	// Basis vectors for camera coordinates
@@ -503,11 +495,12 @@ int main() {
 	std::vector<Vector3> nom(w * h);
 	std::vector<Vector3> depth_buffer(w * h);
 
+	std::cout << "width : height = " << w << " : " << h << std::endl;
 	std::cout << "number of vertices  : " << (attrib.vertices.size() / 3) << std::endl;
 	std::cout << "-- RENDERING START --" << std::endl;
 
 	for (int j = 0; j < spp; j++) {
-		std::cout << "\rpath : " << j;
+		std::cout << "\rpath : " << (j + 1) << " / " << spp;
 		fflush(stdout);
 #pragma omp parallel for schedule(dynamic, 1)
 		for (int i = 0; i < w * h; i++) {
@@ -526,7 +519,7 @@ int main() {
 			}();
 
 			Vector3 L(0), th(1);
-			for (int depth = 0; depth < 10; depth++) {
+			for (int depth = 0; depth < 1; depth++) {
 				// Intersection
 				const auto intersect = scene.intersect(
 						ray, 1e-4, 1e+100);
