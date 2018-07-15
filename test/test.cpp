@@ -234,14 +234,25 @@ int main(void) {
 	std::cout << "-- hitpoint --" << std::endl;
 	printVector3(hitPoint);
 
-	int flag = 0;
+	std::vector<double> v;
 	for (int i = 0; i < 3; i++) {
 		auto vv = points[(i + 1) % 3] - points[i % 3];
 		auto pv = hitPoint - points[i % 3];
 
-		if (cross(vv ,pv).norm() < 0.0)
-			flag++;
+		auto c = cross(vv, pv);
+		v.push_back(c.z);
 	}
 
-	std::cout << "flag : " << flag << std::endl;
+	int plus = 0;
+	int nega = 0;
+	for (const auto i : v) {
+		if (&v > 0)
+			plus++;
+		else
+			nega++;
+	}
+
+	std::cout << "puls : " << plus << std::endl;
+	std::cout << "nega : " << nega << std::endl;
+
 }

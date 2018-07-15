@@ -238,16 +238,26 @@ class TriangleMesh : public Object {
 				// レイと平面のヒットポイント(内部に存在するかどうかはまだわからない)
 				auto hitPoint = ray.direction * t + ray.origin;
 
-				int flag = 0;
+				std::vector<Vector3> z;
 				for (int i = 0; i < points.size(); i++) {
 					auto vv = points[(i + 1) % points.size()] - points[i % points.size()];
 					auto pv = hitPoint - points[i % points.size()];
 
-					if (cross(vv, pv).norm() > 0.0)
-						flag++;
+					auto cross_vv_pv = cross(vv, pv);
+					z.push_back(cross_vv_pv);
 				}
 
-				if (flag == points.size()) {
+				int plus = 0;
+				int negative = 0;
+				for (auto &i : z) {
+					if (i.z > 0.0)
+						plus++;
+					else
+						negative++;
+				}
+
+				// もしヒットしていた場合の処理
+				if (plus == points.size() || negative == points.size()) {
 					double distance = sqrt((hitPoint - (ray.origin + ray.direction * tmin)).norm());
 					if (tmax > distance) {
 //						std::cout << "hit" << std::endl;
@@ -381,7 +391,7 @@ class Scene {
 //	};
 
 	std::vector<Object *> spheres{
-			new Sphere{Vector3(50, 681.6 - .27, 81.6), 300, SurfaceType::Diffuse, Vector3(),
+			new Sphere{Vector3(0, 8, 0), 0.5, SurfaceType::Diffuse, Vector3(),
 								 Vector3(12)},
 	};
 
@@ -406,6 +416,14 @@ class Scene {
 }
 
 int main() {
+
+	#ifdef _DEBUG
+	std::cout << "DEBUF MODE" << std::endl;
+	#endif
+
+	#ifndef _DEBUG
+	std::cout << "REREASE MODE" << std::endl;
+	#endif
 
 	// スレッド数の表示
 	#ifdef _OPENMP
@@ -453,20 +471,20 @@ int main() {
 	const int h = 320;
 
 	// Samples per pixel
-	const int spp = 1;
+	const int spp = 100;
 
 	// Camera parameters
 //	const Vector3 eye(50, 52, 295.6);
 //	const Vector3 center = eye + Vector3(0, -0.042612, -1);
 
-	const Vector3 eye(-5, 5, 20);
+	const Vector3 eye(0, 5, 20);
 	const Vector3 center = eye + Vector3(0, 0, -1);
 
-//		const Vector3 eye(50, 52, 295.6);
+//	const Vector3 eye(50, 52, 295.6);
 //	const Vector3 center = eye + Vector3(0, -0.042612, -1);
 
 	const Vector3 up(0, 1, 0);
-	const double fov = 90 * M_PI / 180;
+	const double fov = 30 * M_PI / 180;
 	const double aspect = double(w) / h;
 
 	// Basis vectors for camera coordinates
@@ -614,8 +632,8 @@ int main() {
 	output_depth << "P3\n" << w << " " << h << "\n255\n";
 	for (const auto &i : depth_buffer) {
 		output_depth << tonemap(i.x) << " "
-									<< tonemap(i.y) << " "
-									<< tonemap(i.z) << "\n";
+								 << tonemap(i.y) << " "
+								 << tonemap(i.z) << "\n";
 	}
 	std::cout << "\n-- FINISH --" << std::endl;
 	return 0;
