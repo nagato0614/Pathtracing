@@ -65,6 +65,10 @@ int tonemap(double v) {
 			std::max(int(std::pow(v, 1 / 2.2) * 255), 0), 255);
 };
 
+int clamp(double v) {
+	return std::min(std::max(0, int(v)), 255);
+}
+
 class Random {
  public:
 	std::mt19937 engine;
@@ -221,9 +225,9 @@ class TriangleMesh : public Object {
 				}
 
 				// 各ポリゴンに対する当たり判定
-				auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
-				auto dotNoramlRay = dot(ray.origin + ray.direction * tmin - points[0], normal);
-				auto raydirNormal = dot(ray.direction, normal);
+				const auto normal = normalize(cross(points[0] - points[1], points[1] - points[2]));
+				const auto dotNoramlRay = dot(ray.origin + ray.direction * tmin - points[0], normal);
+				const auto raydirNormal = dot(ray.direction, normal);
 
 				// レイと平面が平行になっている
 				if (raydirNormal == 0.0)
@@ -231,8 +235,8 @@ class TriangleMesh : public Object {
 
 				auto t = -dotNoramlRay / raydirNormal;
 
-				// 視点の後方に平面座存在するか視点が平面に存在する
-				if (t <= 0)
+				// 視点の後方に平面が存在するか視点が平面に存在する
+				if (t <= 0.0)
 					continue;
 
 				// レイと平面のヒットポイント(内部に存在するかどうかはまだわからない)
@@ -250,9 +254,9 @@ class TriangleMesh : public Object {
 				// もしヒットしていた場合の処理
 				if (dot(z[0], z[1]) > 0.0 && dot(z[1], z[2]) > 0.0) {
 					double distance = sqrt((hitPoint - (ray.origin + ray.direction * tmin)).norm());
-					if (tmax > distance) {
+					if (mindis > distance && tmax > distance) {
 //						std::cout << "hit" << std::endl;
-						tmax = distance;
+						mindis = distance;
 						min = Hit{distance, hitPoint, normal, this};
 					}
 				}
@@ -428,29 +432,29 @@ int main() {
 
 	std::cout << "-- Load Object File --" << std::endl;
 	// オブジェクトファイルを読み込み
-	std::ifstream objctFile("./models/cornellbox_suzanne_lucy.obj");
-	std::ifstream materialFile("./models/cornellbox_suzanne_lucy.mtl");
+	std::ifstream cornellbox("./models/cornellbox.obj");
+	std::ifstream cornellob_material("./models/cornellbox.mtl");
 
-	if (objctFile.fail()) {
+
+	if (cornellbox.fail()) {
 		std::cerr << "オブジェクトファイルを開けませんでした" << std::endl;
 		exit(-1);
 	}
-	if (materialFile.fail()) {
+	if (cornellob_material.fail()) {
 		std::cerr << "マテリアルファイルを開けませんでした" << std::endl;
 		exit(-1);
 	}
 
 	// オブジェクトファイルを文字列に変換
 	std::stringstream objectFileStream;
-	objectFileStream << objctFile.rdbuf();
-	objctFile.close();
+	objectFileStream << cornellbox.rdbuf();
+	cornellbox.close();
 
 	std::stringstream strstream;
 	strstream.str("");
-	strstream << materialFile.rdbuf();
-	materialFile.close();
+	strstream << cornellob_material.rdbuf();
+	cornellob_material.close();
 	std::string materialFileString(strstream.str());
-
 
 	//　マテリアルローダを初期化
 	MaterialStringStreamReader materialStringStreamReader(materialFileString);
@@ -466,7 +470,7 @@ int main() {
 	const int h = 320;
 
 	// Samples per pixel
-	const int spp = 1;
+	const int spp = 10000;
 
 	// Camera parameters
 //	const Vector3 eye(50, 52, 295.6);
@@ -476,7 +480,7 @@ int main() {
 	const Vector3 center = eye + Vector3(0, 0, -1);
 
 	const Vector3 up(0, 1, 0);
-	const double fov = 40 * M_PI / 180;
+	const double fov = 30 * M_PI / 180;
 	const double aspect = double(w) / h;
 
 	// Basis vectors for camera coordinates
@@ -490,7 +494,7 @@ int main() {
 																					 materials,
 																					 Vector3(),
 																					 SurfaceType::Diffuse,
-																					 Vector3(0.7, 0.7, 0.7)));
+																					 Vector3(0.3, 0.7, 0.3)));
 	std::vector<Vector3> I(w * h);
 	std::vector<Vector3> nom(w * h);
 	std::vector<Vector3> depth_buffer(w * h);
@@ -499,12 +503,12 @@ int main() {
 	std::cout << "number of vertices  : " << (attrib.vertices.size() / 3) << std::endl;
 	std::cout << "-- RENDERING START --" << std::endl;
 
-	for (int j = 0; j < spp; j++) {
-		std::cout << "\rpath : " << (j + 1) << " / " << spp;
+	for (int pass = 0; pass < spp; pass++) {
+		std::cout << "\rpath : " << (pass + 1) << " / " << spp;
 		fflush(stdout);
 #pragma omp parallel for schedule(dynamic, 1)
 		for (int i = 0; i < w * h; i++) {
-			thread_local Random rng(42 + omp_get_thread_num() + j);
+			thread_local Random rng(42 + omp_get_thread_num() + pass);
 			const int x = i % w;
 			const int y = h - i / w;
 			Ray ray;
@@ -519,7 +523,7 @@ int main() {
 			}();
 
 			Vector3 L(0), th(1);
-			for (int depth = 0; depth < 1; depth++) {
+			for (int depth = 0; depth < 10; depth++) {
 				// Intersection
 				const auto intersect = scene.intersect(
 						ray, 1e-4, 1e+100);
@@ -527,8 +531,8 @@ int main() {
 					break;
 				}
 
-				if (j == 0 && depth == 0) {
-					nom[i] = intersect->normal;
+				if (pass == 0 && depth == 0) {
+					nom[i] = (normalize(intersect->normal) + 1.0) / 2.0 * 255;
 					auto d = intersect->distance;
 					depth_buffer[i] = {d, d, d};
 				}
@@ -603,9 +607,9 @@ int main() {
 	std::ofstream output_normal("normal.ppm");
 	output_normal << "P3\n" << w << " " << h << "\n255\n";
 	for (const auto &i : nom) {
-		output_normal << tonemap(i.x) << " "
-									<< tonemap(i.y) << " "
-									<< tonemap(i.z) << "\n";
+		output_normal << clamp(i.x) << " "
+									<< clamp(i.y)  << " "
+									<< clamp(i.z)  << "\n";
 	}
 
 	double max = 0;
