@@ -221,7 +221,7 @@ class TriangleMesh : public Object {
 				}
 
 				// 各ポリゴンに対する当たり判定
-				auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
+				auto normal = normalize(cross(points[2] - points[0], points[1] - points[0]));
 				auto dotNoramlRay = dot(ray.origin + ray.direction * tmin - points[0], normal);
 				auto raydirNormal = dot(ray.direction, normal);
 
@@ -237,9 +237,6 @@ class TriangleMesh : public Object {
 
 				// レイと平面のヒットポイント(内部に存在するかどうかはまだわからない)
 				auto hitPoint = ray.direction * t + ray.origin;
-
-				// どの面に射影するか決める
-				auto absMax = std::max(abs(normal.x), std::max(abs(normal.y), abs(normal.z)));
 
 				int flag = 0;
 				for (int i = 0; i < points.size(); i++) {
@@ -330,7 +327,7 @@ class Plane : public Object {
 			auto dis = sqrt(dot(hitpoint - ray.origin,
 													hitpoint - ray.origin));
 
-			return Hit{dis, hitpoint, -normal, this};
+			return Hit{dis, hitpoint, normal, this};
 		}
 		return {};
 	}
@@ -384,7 +381,7 @@ class Scene {
 //	};
 
 	std::vector<Object *> spheres{
-			new Sphere{Vector3(0, 3, 0), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
+			new Sphere{Vector3(0, 0, 3), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
 	};
 
 	std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) {
@@ -461,11 +458,11 @@ int main() {
 //	const Vector3 eye(50, 52, 295.6);
 //	const Vector3 center = eye + Vector3(0, -0.042612, -1);
 
-	const Vector3 eye(0, 0, 50);
-	const Vector3 center = eye + Vector3(0, 0, -1);
+	const Vector3 eye(0, -30, 0);
+	const Vector3 center = eye + Vector3(0, 1, 0);
 
-	const Vector3 up(0, 1, 0);
-	const double fov = 90 * M_PI / 180;
+	const Vector3 up(0, 0, 1);
+	const double fov = 40 * M_PI / 180;
 	const double aspect = double(w) / h;
 
 	// Basis vectors for camera coordinates
@@ -480,6 +477,7 @@ int main() {
 																					 Vector3(),
 																					 SurfaceType::Diffuse,
 																					 Vector3(0.7, 0.7, 0.7)));
+	std::cout << scene.spheres.size() << std::endl;
 	std::vector<Vector3> I(w * h);
 	std::vector<Vector3> nom(w * h);
 	for (int j = 0; j < spp; j++) {
@@ -502,25 +500,25 @@ int main() {
 			}();
 
 			Vector3 L(0), th(1);
-			for (int depth = 0; depth < 5; depth++) {
+			for (int depth = 0; depth < 1; depth++) {
 				// Intersection
-				const auto h = scene.intersect(
+				const auto intersect = scene.intersect(
 						ray, 1e-4, 1e+10);
-				if (!h) {
+				if (!intersect) {
 					break;
 				}
 
 				if (j == 0 && depth == 0) {
-					nom[i] = normalize(h->normal) * 255.0;
+					nom[i] = normalize(intersect->normal) * 255.0;
 				}
 				// Add contribution
-				L = L + th * h->sphere->emittance;
+				L = L + th * intersect->sphere->emittance;
 				// Update next direction
-				ray.origin = h->point;
+				ray.origin = intersect->point;
 				ray.direction = [&]() {
-					if (h->sphere->type == SurfaceType::Diffuse) {
+					if (intersect->sphere->type == SurfaceType::Diffuse) {
 						// Sample direction in local coordinates
-						const auto n = dot(h->normal, -ray.direction) > 0 ? h->normal : -h->normal;
+						const auto n = dot(intersect->normal, -ray.direction) > 0 ? intersect->normal : -intersect->normal;
 						const auto&[u, v] = tangentSpace(n);
 						const auto d = [&]() {
 							const double r = sqrt(rng.next());
@@ -533,14 +531,14 @@ int main() {
 						}();
 						// Convert to world coordinates
 						return u * d.x + v * d.y + n * d.z;
-					} else if (h->sphere->type == SurfaceType::Mirror) {
+					} else if (intersect->sphere->type == SurfaceType::Mirror) {
 						const auto wi = -ray.direction;
-						return h->normal * 2 * dot(wi, h->normal) - wi;
-					} else if (h->sphere->type == SurfaceType::Fresnel) {
+						return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
+					} else if (intersect->sphere->type == SurfaceType::Fresnel) {
 						const auto wi = -ray.direction;
-						const auto into = dot(wi, h->normal) > 0;
-						const auto n = into ? h->normal : -h->normal;
-						const auto ior = h->sphere->ior;
+						const auto into = dot(wi, intersect->normal) > 0;
+						const auto n = into ? intersect->normal : -intersect->normal;
+						const auto ior = intersect->sphere->ior;
 						const auto eta = into ? 1 / ior : ior;
 						const auto wt = [&]() -> std::optional<Vector3> {
 							const auto t = dot(wi, n);
@@ -551,20 +549,20 @@ int main() {
 							return (n * t - wi) * eta - n * sqrt(t2);
 						}();
 						if (!wt) {
-							return h->normal * 2 * dot(wi, h->normal) - wi;
+							return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
 						}
 						const auto Fr = [&]() {
-							const auto cos = into ? dot(wi, h->normal) : dot(*wt, h->normal);
+							const auto cos = into ? dot(wi, intersect->normal) : dot(*wt, intersect->normal);
 							const auto r = (1 - ior) / (1 + ior);
 							return r * r + (1 - r * r) * pow(1 - cos, 5);
 						}();
 
-						return rng.next() < Fr ? h->normal * 2 * dot(wi, h->normal) * h->normal - wi : *wt;
+						return rng.next() < Fr ? intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi : *wt;
 					}
 				}();
 
 				// Update throughput
-				th = th * h->sphere->color;
+				th = th * intersect->sphere->color;
 				if (std::max({th.x, th.y, th.z}) == 0) {
 					break;
 				}

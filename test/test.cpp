@@ -121,82 +121,127 @@ int main(void) {
 
 
 	// オブジェクトファイルを読み込み
-	std::ifstream objctFile("./models/cornellbox_suzanne.obj");
-	std::ifstream materialFile("./models/cornellbox_suzanne.mtl");
+//	std::ifstream objctFile("./models/cornellbox_suzanne.obj");
+//	std::ifstream materialFile("./models/cornellbox_suzanne.mtl");
+//
+//	if (objctFile.fail()) {
+//		std::cerr << "オブジェクトファイルを開けませんでした" << std::endl;
+//		exit(-1);
+//	}
+//	if (materialFile.fail()) {
+//		std::cerr << "マテリアルファイルを開けませんでした" << std::endl;
+//		exit(-1);
+//	}
+//
+//	// オブジェクトファイルを文字列に変換
+//	std::stringstream objectFileStream;
+//	objectFileStream << objctFile.rdbuf();
+//	objctFile.close();
+//
+//	std::stringstream strstream;
+//	strstream.str("");
+//	strstream << materialFile.rdbuf();
+//	materialFile.close();
+//	std::string materialFileString(strstream.str());
+//
+//
+//	//　マテリアルローダを初期化
+//	MaterialStringStreamReader materialStringStreamReader(materialFileString);
+//
+//	tinyobj::attrib_t attrib;
+//	std::vector<tinyobj::shape_t> shapes;
+//	std::vector<tinyobj::material_t> materials;
+//	std::string err;
+//	bool red = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, &objectFileStream, &materialStringStreamReader);
+//
+//	// すべてのポリゴンに対して辺り判定を行う(線形探索)
+//	// その中で最も近いものをレイの交点とする
+//	for (auto &shape : shapes) {
+//		size_t index_offset = 0;
+//		auto shapeNumber = shape.mesh.num_face_vertices;
+//		std::vector<Vector3> points;
+//		std::vector<Vector3> normals;
+//
+//		std::cout << "-------------- " << shape.name << " ------------------" << std::endl;
+//
+//		// .objファイルに含まれている各オブジェクトに対しての処理
+//		for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); ++f) {
+//			size_t fnum = shape.mesh.num_face_vertices[f];
+//
+//			points.clear();
+//			normals.clear();
+//
+//			std::cout << "-------------- " << fnum << " ------------------" << std::endl;
+//			// 各面の頂点に対する処理
+//			for (size_t v = 0; v < fnum; v++) {
+//
+//				// 各面の頂点情報と法線情報の取得
+//				tinyobj::index_t idx = shape.mesh.indices[index_offset + v];
+//				auto vertexIndex = idx.vertex_index;
+//				auto normalIndex = idx.normal_index;
+//
+//				printf("(vertex, normal) = (%d, %d)\n", vertexIndex, normalIndex);
+//				auto vertex =
+//						Vector3(attrib.vertices[3 * vertexIndex],
+//										attrib.vertices[3 * vertexIndex + 1],
+//										attrib.vertices[3 * vertexIndex + 2]);
+//				printVector3(vertex);
+//				points.push_back(vertex);
+//
+//				// 法線情報がない場合はスキップcmaek
+//				if (normalIndex >= 0) {
+//					auto normal =
+//							Vector3(attrib.normals[normalIndex], attrib.normals[normalIndex + 1], attrib.normals[normalIndex + 2]);
+//					printVector3(normal);
+//					normals.push_back(normal);
+//				}
+//			}
+//			index_offset += fnum;
+//		}
+//	}
 
-	if (objctFile.fail()) {
-		std::cerr << "オブジェクトファイルを開けませんでした" << std::endl;
-		exit(-1);
+	Vector3 points[3] = {
+			{0, 1, 0},
+			{1, 0, 0},
+			{-1, 0, 0},
+	};
+
+	Vector3 rayorigin(0, 0, 1);
+	Vector3 raydirection(0, 1, -1);
+	double tmin = 1e-4;
+	double tmax = 1e+10;
+
+	auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
+	std::cout << "-- noraml --" << std::endl;
+	printVector3(normal);
+
+
+	auto dotNormalRay = dot(rayorigin + raydirection * tmin - points[0], normal);
+	auto raydirNormal = dot(raydirection, normal);
+
+	if (raydirNormal == 0.0) {
+		std::cout << "並行" << std::endl;
+		exit(0);
 	}
-	if (materialFile.fail()) {
-		std::cerr << "マテリアルファイルを開けませんでした" << std::endl;
-		exit(-1);
+
+	auto t = -dotNormalRay / raydirNormal;
+	if (t <= 0) {
+		std::cout << "視点が平面" << std::endl;
+		exit(0);
 	}
 
-	// オブジェクトファイルを文字列に変換
-	std::stringstream objectFileStream;
-	objectFileStream << objctFile.rdbuf();
-	objctFile.close();
+	auto hitPoint = raydirection * t + rayorigin;
+	std::cout << "-- hitpoint --" << std::endl;
+	printVector3(hitPoint);
 
-	std::stringstream strstream;
-	strstream.str("");
-	strstream << materialFile.rdbuf();
-	materialFile.close();
-	std::string materialFileString(strstream.str());
+	int flag = 0;
+	for (int i = 0; i < 3; i++) {
+		auto vv = points[(i + 1) % 3] - points[i % 3];
+		auto pv = hitPoint - points[i % 3];
 
-
-	//　マテリアルローダを初期化
-	MaterialStringStreamReader materialStringStreamReader(materialFileString);
-
-	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-	std::string err;
-	bool red = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, &objectFileStream, &materialStringStreamReader);
-
-	// すべてのポリゴンに対して辺り判定を行う(線形探索)
-	// その中で最も近いものをレイの交点とする
-	for (auto &shape : shapes) {
-		size_t index_offset = 0;
-		auto shapeNumber = shape.mesh.num_face_vertices;
-		std::vector<Vector3> points;
-		std::vector<Vector3> normals;
-
-		std::cout << "-------------- " << shape.name << " ------------------" << std::endl;
-
-		// .objファイルに含まれている各オブジェクトに対しての処理
-		for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); ++f) {
-			size_t fnum = shape.mesh.num_face_vertices[f];
-
-			points.clear();
-			normals.clear();
-
-			std::cout << "-------------- " << fnum << " ------------------" << std::endl;
-			// 各面の頂点に対する処理
-			for (size_t v = 0; v < fnum; v++) {
-
-				// 各面の頂点情報と法線情報の取得
-				tinyobj::index_t idx = shape.mesh.indices[index_offset + v];
-				auto vertexIndex = idx.vertex_index;
-				auto normalIndex = idx.normal_index;
-
-				printf("(vertex, normal) = (%d, %d)\n", vertexIndex, normalIndex);
-				auto vertex =
-						Vector3(attrib.vertices[3 * vertexIndex],
-										attrib.vertices[3 * vertexIndex + 1],
-										attrib.vertices[3 * vertexIndex + 2]);
-				printVector3(vertex);
-				points.push_back(vertex);
-
-				// 法線情報がない場合はスキップ
-				if (normalIndex >= 0) {
-					auto normal =
-							Vector3(attrib.normals[normalIndex], attrib.normals[normalIndex + 1], attrib.normals[normalIndex + 2]);
-					printVector3(normal);
-					normals.push_back(normal);
-				}
-			}
-			index_offset += fnum;
-		}
+		if (cross(vv ,pv).norm() < 0.0)
+			flag++;
 	}
+
+	std::cout << "flag : " << flag << std::endl;
 }
