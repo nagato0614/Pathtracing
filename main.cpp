@@ -221,7 +221,7 @@ class TriangleMesh : public Object {
 				}
 
 				// 各ポリゴンに対する当たり判定
-				auto normal = normalize(cross(points[2] - points[0], points[1] - points[0]));
+				auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
 				auto dotNoramlRay = dot(ray.origin + ray.direction * tmin - points[0], normal);
 				auto raydirNormal = dot(ray.direction, normal);
 
@@ -249,9 +249,9 @@ class TriangleMesh : public Object {
 
 				if (flag == points.size()) {
 					double distance = sqrt((hitPoint - (ray.origin + ray.direction * tmin)).norm());
-					if (mindis > distance) {
+					if (tmax > distance) {
 //						std::cout << "hit" << std::endl;
-						mindis = distance;
+						tmax = distance;
 						min = Hit{distance, hitPoint, normal, this};
 					}
 				}
@@ -381,7 +381,8 @@ class Scene {
 //	};
 
 	std::vector<Object *> spheres{
-			new Sphere{Vector3(0, 0, 3), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
+			new Sphere{Vector3(50, 681.6 - .27, 81.6), 300, SurfaceType::Diffuse, Vector3(),
+								 Vector3(12)},
 	};
 
 	std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) {
@@ -458,11 +459,14 @@ int main() {
 //	const Vector3 eye(50, 52, 295.6);
 //	const Vector3 center = eye + Vector3(0, -0.042612, -1);
 
-	const Vector3 eye(0, -30, 0);
-	const Vector3 center = eye + Vector3(0, 1, 0);
+	const Vector3 eye(-5, 5, 20);
+	const Vector3 center = eye + Vector3(0, 0, -1);
 
-	const Vector3 up(0, 0, 1);
-	const double fov = 40 * M_PI / 180;
+//		const Vector3 eye(50, 52, 295.6);
+//	const Vector3 center = eye + Vector3(0, -0.042612, -1);
+
+	const Vector3 up(0, 1, 0);
+	const double fov = 90 * M_PI / 180;
 	const double aspect = double(w) / h;
 
 	// Basis vectors for camera coordinates
@@ -477,9 +481,13 @@ int main() {
 																					 Vector3(),
 																					 SurfaceType::Diffuse,
 																					 Vector3(0.7, 0.7, 0.7)));
-	std::cout << scene.spheres.size() << std::endl;
 	std::vector<Vector3> I(w * h);
 	std::vector<Vector3> nom(w * h);
+	std::vector<Vector3> depth_buffer(w * h);
+
+	std::cout << "number of vertices  : " << (attrib.vertices.size() / 3) << std::endl;
+	std::cout << "-- RENDERING START --" << std::endl;
+
 	for (int j = 0; j < spp; j++) {
 		std::cout << "\rpath : " << j;
 		fflush(stdout);
@@ -500,16 +508,18 @@ int main() {
 			}();
 
 			Vector3 L(0), th(1);
-			for (int depth = 0; depth < 1; depth++) {
+			for (int depth = 0; depth < 10; depth++) {
 				// Intersection
 				const auto intersect = scene.intersect(
-						ray, 1e-4, 1e+10);
+						ray, 1e-4, 1e+100);
 				if (!intersect) {
 					break;
 				}
 
 				if (j == 0 && depth == 0) {
-					nom[i] = normalize(intersect->normal) * 255.0;
+					nom[i] = intersect->normal;
+					auto d = intersect->distance;
+					depth_buffer[i] = {d, d, d};
 				}
 				// Add contribution
 				L = L + th * intersect->sphere->emittance;
@@ -585,11 +595,28 @@ int main() {
 		output_normal << tonemap(i.x) << " "
 									<< tonemap(i.y) << " "
 									<< tonemap(i.z) << "\n";
-//		std::cout << tonemap(i.x) << " "
-//							<< tonemap(i.y) << " "
-//							<< tonemap(i.z) << "\n";
 	}
 
-	std::cout << "\nFINISH" << std::endl;
+	double max = 0;
+
+	for (const auto &i : depth_buffer) {
+		if (i.x > max) {
+			max = i.x;
+		}
+	}
+
+	for (auto &i : depth_buffer) {
+		i = i / max;
+	}
+
+	// デプスを出力
+	std::ofstream output_depth("depth.ppm");
+	output_depth << "P3\n" << w << " " << h << "\n255\n";
+	for (const auto &i : depth_buffer) {
+		output_depth << tonemap(i.x) << " "
+									<< tonemap(i.y) << " "
+									<< tonemap(i.z) << "\n";
+	}
+	std::cout << "\n-- FINISH --" << std::endl;
 	return 0;
 }

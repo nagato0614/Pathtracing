@@ -206,8 +206,8 @@ int main(void) {
 			{-1, 0, 0},
 	};
 
-	Vector3 rayorigin(0, 0, 1);
-	Vector3 raydirection(0, 1, -1);
+	Vector3 rayorigin(0, 0.5, 1);
+	Vector3 raydirection(0, 0,-1);
 	double tmin = 1e-4;
 	double tmax = 1e+10;
 
