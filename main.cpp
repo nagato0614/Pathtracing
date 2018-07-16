@@ -467,11 +467,11 @@ int main() {
 	bool red = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, &objectFileStream, &materialStringStreamReader);
 
 	// Image size
-	const int w = 460;
-	const int h = 320;
+	const int width = 460;
+	const int height = 320;
 
 	// Samples per pixel
-	const int spp = 1;
+	const int samples = 1;
 
 	// Camera parameters
 //	const Vector3 eye(50, 52, 295.6);
@@ -482,7 +482,7 @@ int main() {
 
 	const Vector3 up(0, 1, 0);
 	const double fov = 30 * M_PI / 180;
-	const double aspect = double(w) / h;
+	const double aspect = double(width) / height;
 
 	// Basis vectors for camera coordinates
 	const auto wE = normalize(eye - center);
@@ -496,31 +496,31 @@ int main() {
 																					 Vector3(),
 																					 SurfaceType::Diffuse,
 																					 Vector3(0.3, 0.7, 0.3)));
-	std::vector<Vector3> I(w * h);
-	std::vector<Vector3> nom(w * h);
-	std::vector<Vector3> depth_buffer(w * h);
+	std::vector<Vector3> I(width * height);
+	std::vector<Vector3> nom(width * height);
+	std::vector<Vector3> depth_buffer(width * height);
 
-	std::cout << "width : height = " << w << " : " << h << std::endl;
+	std::cout << "width : height = " << width << " : " << height << std::endl;
 	std::cout << "number of vertices  : " << (attrib.vertices.size() / 3) << std::endl;
 	std::cout << "-- RENDERING START --" << std::endl;
 
-	for (int pass = 0; pass < spp; pass++) {
-		std::cout << "\rpath : " << (pass + 1) << " / " << spp;
+	for (int pass = 0; pass < samples; pass++) {
+		std::cout << "\rpath : " << (pass + 1) << " / " << samples;
 		fflush(stdout);
 #pragma omp parallel for schedule(dynamic, 1)
-		for (int i = 0; i < w * h; i++) {
+		for (int i = 0; i < width * height; i++) {
 			thread_local Random rng(42 + omp_get_thread_num() + pass);
-			const int x = i % w;
-			const int y = h - i / w;
+			const int x = i % width;
+			const int y = height - i / width;
 			Ray ray;
 			ray.origin = eye;
 			ray.direction = [&]() {
 				const double tf = std::tan(fov * .5);
-				const double rpx = 2. * (x + rng.next()) / w - 1;
-				const double rpy = 2. * (y + rng.next()) / h - 1;
-				const Vector3 w = normalize(
+				const double rpx = 2. * (x + rng.next()) / width - 1;
+				const double rpy = 2. * (y + rng.next()) / height - 1;
+				const Vector3 ww = normalize(
 						Vector3(aspect * tf * rpx, tf * rpy, -1));
-				return uE * w.x + vE * w.y + wE * w.z;
+				return uE * ww.x + vE * ww.y + wE * ww.z;
 			}();
 
 			Vector3 L(0), th(1);
@@ -593,11 +593,11 @@ int main() {
 					break;
 				}
 			}
-			I[i] = I[i] + L / spp;
+			I[i] = I[i] + L / samples;
 		}
 	}
 	std::ofstream ofs("result.ppm");
-	ofs << "P3\n" << w << " " << h << "\n255\n";
+	ofs << "P3\n" << width << " " << height << "\n255\n";
 	for (const auto &i : I) {
 		ofs << tonemap(i.x) << " "
 				<< tonemap(i.y) << " "
@@ -607,7 +607,7 @@ int main() {
 	// 法線マップを出力
 	// [-1,1] を [0,255]に変換している
 	std::ofstream output_normal("normal.ppm");
-	output_normal << "P3\n" << w << " " << h << "\n255\n";
+	output_normal << "P3\n" << width << " " << height << "\n255\n";
 	for (const auto &i : nom) {
 		output_normal << clamp(i.x) << " "
 									<< clamp(i.y)  << " "
@@ -628,7 +628,7 @@ int main() {
 
 	// デプスを出力
 	std::ofstream output_depth("depth.ppm");
-	output_depth << "P3\n" << w << " " << h << "\n255\n";
+	output_depth << "P3\n" << width << " " << height << "\n255\n";
 	for (const auto &i : depth_buffer) {
 		output_depth << tonemap(i.x) << " "
 								 << tonemap(i.y) << " "

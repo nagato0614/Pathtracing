@@ -39,7 +39,7 @@ class MaterialStringStreamReader : public tinyobj::MaterialReader {
 	std::stringstream m_matSStream;
 };
 
-int main(void) {
+int main() {
 	std::cout << "TEST MATRIX" << std::endl;
 //
 //	double d[4][4] = {
