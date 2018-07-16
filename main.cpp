@@ -226,7 +226,7 @@ class TriangleMesh : public Object {
 
 
 				// 各ポリゴンに対する当たり判定
-				const auto normal = normalize(cross(points[0] - points[1], points[1] - points[2]));
+				const auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
 				const auto dotNoramlRay = dot(ray.origin + ray.direction * tmin - points[0], normal);
 				const auto raydirNormal = dot(ray.direction, normal);
 
@@ -237,8 +237,8 @@ class TriangleMesh : public Object {
 				auto t = -dotNoramlRay / raydirNormal;
 
 				// 視点の後方に平面が存在するか視点が平面に存在する
-				if (t <= 0.0)
-					continue;
+//				if (t <= 0.0)
+//					continue;
 
 				// レイと平面のヒットポイント(内部に存在するかどうかはまだわからない)
 				auto hitPoint = ray.direction * t + ray.origin;
@@ -255,7 +255,7 @@ class TriangleMesh : public Object {
 				// もしヒットしていた場合の処理
 				if (dot(z[0], z[1]) > 0.0 && dot(z[1], z[2]) > 0.0) {
 					double distance = sqrt((hitPoint - (ray.origin + ray.direction * tmin)).norm());
-					if (mindis > distance && tmax > distance) {
+					if (mindis > distance && tmax > distance && distance > tmin) {
 //						std::cout << "hit" << std::endl;
 						mindis = distance;
 						min = Hit{distance, hitPoint, normal, this};
@@ -605,6 +605,7 @@ int main() {
 	}
 
 	// 法線マップを出力
+	// [-1,1] を [0,255]に変換している
 	std::ofstream output_normal("normal.ppm");
 	output_normal << "P3\n" << w << " " << h << "\n255\n";
 	for (const auto &i : nom) {
