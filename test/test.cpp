@@ -255,5 +255,4 @@ int main(void) {
 //		std::cout << "hit" << std::endl;
 //	else
 //		std::cout << "miss" << std::endl;
-
 }
