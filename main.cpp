@@ -224,6 +224,7 @@ class TriangleMesh : public Object {
 					}
 				}
 
+
 				// 各ポリゴンに対する当たり判定
 				const auto normal = normalize(cross(points[0] - points[1], points[1] - points[2]));
 				const auto dotNoramlRay = dot(ray.origin + ray.direction * tmin - points[0], normal);
@@ -247,7 +248,7 @@ class TriangleMesh : public Object {
 					auto vv = points[(i + 1) % points.size()] - points[i % points.size()];
 					auto pv = hitPoint - points[i % points.size()];
 
-					auto cross_vv_pv = cross(vv, pv);
+					auto cross_vv_pv = (cross(normalize(vv), normalize(pv)));
 					z.push_back(normalize(cross_vv_pv));
 				}
 
@@ -432,8 +433,8 @@ int main() {
 
 	std::cout << "-- Load Object File --" << std::endl;
 	// オブジェクトファイルを読み込み
-	std::ifstream cornellbox("./models/cornellbox.obj");
-	std::ifstream cornellob_material("./models/cornellbox.mtl");
+	std::ifstream cornellbox("./models/cornellbox_suzanne.obj");
+	std::ifstream cornellob_material("./models/cornellbox_suzanne.mtl");
 
 
 	if (cornellbox.fail()) {
@@ -470,7 +471,7 @@ int main() {
 	const int h = 320;
 
 	// Samples per pixel
-	const int spp = 10000;
+	const int spp = 1;
 
 	// Camera parameters
 //	const Vector3 eye(50, 52, 295.6);
@@ -523,7 +524,7 @@ int main() {
 			}();
 
 			Vector3 L(0), th(1);
-			for (int depth = 0; depth < 10; depth++) {
+			for (int depth = 0; depth < 1; depth++) {
 				// Intersection
 				const auto intersect = scene.intersect(
 						ray, 1e-4, 1e+100);
