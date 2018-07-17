@@ -70,6 +70,11 @@ namespace nagato
 			{
 				return a.x != b.x || a.y != b.y || a.z != b.z;
 			}
+
+			inline double norm()
+			{
+				return x * x + y * y + z * z;
+			}
 	};
 
 	inline Vector4 toVec4(Vector3 v, double a = 1)

@@ -53,5 +53,5 @@ fabric.properties
 
 .idea/
 build/
-
+.DS_Store
 
