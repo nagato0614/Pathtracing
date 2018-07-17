@@ -92,6 +92,17 @@ namespace nagato
           return m;
         }
 
+        inline double det()
+        {
+          double sum = 0;
+          sum += data[0][0] * data[1][1] * data[2][2];
+          sum += data[0][1] * data[1][2] * data[2][0];
+          sum += data[0][2] * data[1][0] * data[2][1];
+          sum -= data[0][2] * data[1][1] * data[2][0];
+          sum -= data[0][1] * data[1][2] * data[2][0];
+          sum -= data[0][0] * data[1][2] * data[2][1];
+          return sum;
+        }
 
     };
 
