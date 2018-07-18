@@ -471,7 +471,7 @@ const int wl_max = 95;
 int main(int argc, char **argv) {
 	int width = 640;
 	int height = 480;
-	int samples = 32;
+	int samples = 1000;
 
 	// カメラ位置
 	Ray camera(Vec(50.0, 52.0, 295.6), Normalize(Vec(0.0, -0.042612, -1.0)));
@@ -504,7 +504,7 @@ int main(int argc, char **argv) {
 		pdf[i] /= total;
 	}
 
-// #pragma omp parallel for schedule(dynamic, 1) num_threads(3)
+ #pragma omp parallel for schedule(dynamic, 1) num_threads(4)
 	for (int y = 0; y < height; y ++) {
 		std::cerr << "Rendering (" << samples * 4 << " spp) " << (100.0 * y / (height - 1)) << "%" << std::endl;
 		srand(y * y * y);
