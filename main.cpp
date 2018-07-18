@@ -1,18 +1,16 @@
 // オブジェクトローダーの読み込み関連
-#define TINYOBJLOADER_IMPLEMENTATION
 #define TINYOBJLOADER_USE_DOUBLE
-#define _USE_MATH_DEFINES
 
 #include <iostream>
-#include <cstdio>
 #include <omp.h>
+#include <cmath>
 #include <vector>
 #include <optional>
 #include <fstream>
-#include "Vector3.hpp"
 #include "Scene.hpp"
 #include "TriangleMesh.hpp"
-#include "Common.hpp"
+#include "Sphere.hpp"
+#include "Random.hpp"
 
 using namespace nagato;
 
@@ -41,7 +39,7 @@ int main() {
   const int height = 360;
 
   // Samples per pixel
-  const int samples = 2;
+  const int samples = 1;
 
   // Camera parameters
   const Vector3 eye(0, 5, 22);
@@ -58,6 +56,9 @@ int main() {
 
   // シーンの読み込み
   Scene scene;
+  scene.spheres.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, SurfaceType::Mirror, Vector3(.999)});
+  scene.spheres.push_back(new Sphere{Vector3(2, 1, 0), 1.1, SurfaceType::Fresnel, Vector3(.999)});
+  scene.spheres.push_back(new Sphere{Vector3(0, 10, 0), 1, SurfaceType::Diffuse, Vector3(), Vector3(50, 50, 50)});
   scene.spheres.push_back(new TriangleMesh("./models/left.obj",
                                            "./models/left.mtl",
                                            Vector3(),
@@ -73,11 +74,11 @@ int main() {
                                            Vector3(),
                                            SurfaceType::Diffuse,
                                            Vector3(.75, .75, .75)));
-  scene.spheres.push_back(new TriangleMesh("./models/suzanne.obj",
-                                           "./models/suzanne.mtl",
-                                           Vector3(),
-                                           SurfaceType::Diffuse,
-                                           Vector3(0.8, 0.3, 0.3)));
+//  scene.spheres.push_back(new TriangleMesh("./models/suzanne.obj",
+//                                           "./models/suzanne.mtl",
+//                                           Vector3(),
+//                                           SurfaceType::Diffuse,
+//                                           Vector3(0.8, 0.3, 0.3)));
   std::vector<Vector3> I(width * height);
   std::vector<Vector3> nom(width * height);
   std::vector<Vector3> depth_buffer(width * height);
@@ -96,7 +97,7 @@ int main() {
 #ifdef _OPENMP
       thread_local Random rng(42 + omp_get_thread_num() + pass);
 #else
-        Random rng(42 + pass + i);
+      Random rng(42 + pass + i);
 #endif
       const int x = i % width;
       const int y = height - i / width;
@@ -176,6 +177,8 @@ int main() {
               return rng.next() < Fr ?
                      intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi
                                      : *wt;
+            } else {
+              return Vector3();
             }
         }();
 

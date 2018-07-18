@@ -5,13 +5,15 @@
 #ifndef PATHTRACING_OBJECT_HPP
 #define PATHTRACING_OBJECT_HPP
 
-#include "Vector3.hpp"
-#include "Hit.hpp"
-#include "Ray.hpp"
-#include "Common.hpp"
 
+#include <optional>
+#include "Ray.hpp"
+#include "SurfaceType.hpp"
+#include "Vector3.hpp"
 
 namespace nagato {
+
+    class Hit;
 
     class Object {
     public:
@@ -21,12 +23,9 @@ namespace nagato {
         Vector3 emittance;
         double ior = 1.5;
 
-        Object(Vector3 p, SurfaceType t, Vector3 color, Vector3 em = Vector3())
-                : position(p), type(t), color(color), emittance(em) {}
+        Object(Vector3 p, SurfaceType t, Vector3 color, Vector3 em = Vector3());
 
-        virtual std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) {
-            return {};
-        }
+        virtual std::optional<Hit> intersect(Ray &ray, double tmin, double tmax);
     };
 }
 

@@ -5,95 +5,79 @@
 #ifndef PATHTRACING_VECTOR4_HPP
 #define PATHTRACING_VECTOR4_HPP
 
-#include <cmath>
+
 #include "Matrix4.hpp"
 
 namespace nagato {
-	class Vector4
-	{
-	public:
-			double x;
-			double y;
-			double z;
-			double w;
+    class Vector4 {
+    public:
+        double x;
+        double y;
+        double z;
+        double w;
 
-			Vector4(double v = 0)
-					: Vector4(v, v, v, v)
-			{}
+        explicit Vector4(double v = 0);
 
-			Vector4(double x, double y, double z, double w)
-					: x(x), y(y), z(z), w(w)
-			{}
-			double operator[](int i)
-			{
-				return (&x)[i];
-			}
+        Vector4(double x, double y, double z, double w);
 
-			inline Vector4 operator+(Vector4 b) const
-			{
-				return Vector4(x + b.x, y + b.y, z + b.z, w + b.w);
-			}
+        double operator[](int i);
 
-			inline Vector4 operator-(Vector4 b) const
-			{
-				return Vector4(x - b.x, y - b.y, z - b.z, w - b.w);
-			}
+        inline Vector4 operator+(Vector4 b) const {
+          return Vector4(x + b.x, y + b.y, z + b.z, w + b.w);
+        }
 
-			inline Vector4 operator*(Vector4 b) const
-			{
-				return Vector4(x * b.x, y * b.y, z * b.z, w * b.w);
-			}
+        inline Vector4 operator-(Vector4 b) const {
+          return Vector4(x - b.x, y - b.y, z - b.z, w - b.w);
+        }
 
-			inline Vector4 operator*(double a) const
-			{
-				return Vector4(x * a, y * a, z * a, w * a);
-			}
+        inline Vector4 operator*(Vector4 b) const {
+          return Vector4(x * b.x, y * b.y, z * b.z, w * b.w);
+        }
 
-			friend inline Vector4 operator*(Vector4 a, Matrix4 b)
-			{
-				Vector4 v(0);
+        inline Vector4 operator*(double a) const {
+          return Vector4(x * a, y * a, z * a, w * a);
+        }
 
-				v.x = a.x * b.data[0][0] + a.y * b.data[1][0] + a.z * b.data[2][0] + a.w * b.data[3][0];
-				v.y = a.x * b.data[0][1] + a.y * b.data[1][1] + a.z * b.data[2][1] + a.w * b.data[3][1];
-				v.z = a.x * b.data[0][2] + a.y * b.data[1][2] + a.z * b.data[2][2] + a.w * b.data[3][2];
-				v.w = a.x * b.data[0][3] + a.y * b.data[1][3] + a.z * b.data[2][3] + a.w * b.data[3][3];
 
-				return v;
-			}
+        friend inline Vector4 operator*(Vector4 a, Matrix4 b) {
+          Vector4 v(0);
 
-			friend inline Vector4 operator*(Matrix4 a, Vector4 b)
-			{
-				Vector4 v(0);
+          v.x = a.x * b.data[0][0] + a.y * b.data[1][0] + a.z * b.data[2][0] + a.w * b.data[3][0];
+          v.y = a.x * b.data[0][1] + a.y * b.data[1][1] + a.z * b.data[2][1] + a.w * b.data[3][1];
+          v.z = a.x * b.data[0][2] + a.y * b.data[1][2] + a.z * b.data[2][2] + a.w * b.data[3][2];
+          v.w = a.x * b.data[0][3] + a.y * b.data[1][3] + a.z * b.data[2][3] + a.w * b.data[3][3];
 
-				v.x = a.data[0][0] * b.x + a.data[0][1] * b.y + a.data[0][2] * b.z + a.data[0][3] * b.w;
-				v.y = a.data[1][0] * b.x + a.data[1][1] * b.y + a.data[1][2] * b.z + a.data[1][3] * b.w;
-				v.z = a.data[2][0] * b.x + a.data[2][1] * b.y + a.data[2][2] * b.z + a.data[2][3] * b.w;
-				v.w = a.data[3][0] * b.x + a.data[3][1] * b.y + a.data[3][2] * b.z + a.data[3][3] * b.w;
+          return v;
+        }
 
-				return v;
-			}
+        friend inline Vector4 operator*(Matrix4 a, Vector4 b) {
+          Vector4 v(0);
 
-			inline Vector4 operator/(Vector4 b) const
-			{
-				return Vector4(x / b.x, y / b.y, z / b.z, w / b.w);
-			}
+          v.x = a.data[0][0] * b.x + a.data[0][1] * b.y + a.data[0][2] * b.z + a.data[0][3] * b.w;
+          v.y = a.data[1][0] * b.x + a.data[1][1] * b.y + a.data[1][2] * b.z + a.data[1][3] * b.w;
+          v.z = a.data[2][0] * b.x + a.data[2][1] * b.y + a.data[2][2] * b.z + a.data[2][3] * b.w;
+          v.w = a.data[3][0] * b.x + a.data[3][1] * b.y + a.data[3][2] * b.z + a.data[3][3] * b.w;
 
-			inline Vector4 operator/(double b) const
-			{
-				return Vector4(x / b, y / b, z / b, w / b);
-			}
+          return v;
+        }
 
-			inline Vector4 operator-() const
-			{
-				return Vector4(-x, -y, -z, -w);
-			}
+        inline Vector4 operator/(Vector4 b) const {
+          return Vector4(x / b.x, y / b.y, z / b.z, w / b.w);
+        }
 
-	};
+        inline Vector4 operator/(double b) const {
+          return Vector4(x / b, y / b, z / b, w / b);
+        }
 
-	inline double dot(Vector4 a, Vector4 b)
-	{
-		return a.x * b.x + a.y * b.y + a.z * b.z + a.w * a.w;
-	}
+        inline Vector4 operator-() const {
+          return Vector4(-x, -y, -z, -w);
+        }
+
+    };
+
+    inline double dot(Vector4 a, Vector4 b) {
+      return a.x * b.x + a.y * b.y + a.z * b.z + a.w * a.w;
+    }
 
 //	inline Vector4 cross(Vector4 a, Vector4 b)
 //	{
@@ -102,17 +86,11 @@ namespace nagato {
 //									 a.x * b.y - a.y * b.x);
 //	}
 
-	inline Vector4 normalize(Vector4 v)
-	{
-		return v / sqrt(dot(v, v));
-	}
+    inline Vector4 normalize(Vector4 v) {
+      return v / sqrt(dot(v, v));
+    }
 
-	void printVector4(Vector4 a)
-	{
-		std::cout << "--------------------------------" << std::endl;
-		std::cout << a.x << " " << a.y << " " << a.z << " " << a.w << std::endl;
-		std::cout << "--------------------------------" << std::endl;
-	}
+    void printVector4(Vector4 a);
 }
 
 #endif //PATHTRACING_VECTOR4_HPP

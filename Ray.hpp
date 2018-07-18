@@ -5,6 +5,7 @@
 #ifndef PATHTRACING_RAY_HPP
 #define PATHTRACING_RAY_HPP
 
+
 #include "Vector3.hpp"
 
 namespace nagato {

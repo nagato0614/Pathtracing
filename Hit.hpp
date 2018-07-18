@@ -5,9 +5,8 @@
 #ifndef PATHTRACING_HIT_HPP
 #define PATHTRACING_HIT_HPP
 
-
-
 #include "Object.hpp"
+#include "Vector3.hpp"
 
 namespace nagato {
     class Object;
@@ -19,11 +18,7 @@ namespace nagato {
         Vector3 normal;
         Object *sphere;
 
-        Hit(double d, Vector3 p, Vector3 n, Object *sphere)
-                :
-                distance(d), point(p), normal(n), sphere(sphere) {
-
-        }
+        Hit(double d, Vector3 p, Vector3 n, Object *sphere);
     };
 }
 
