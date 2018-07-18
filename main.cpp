@@ -25,8 +25,6 @@ namespace nagato {
 
     class Object;
 
-    class Plane;
-
     class Hit;
 
     std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n) {
@@ -222,9 +220,6 @@ namespace nagato {
           // マテリアルローダを初期化
           MaterialStringStreamReader materialStringStreamReader(materialFileString);
 
-//				tinyobj::attrib_t attrib;
-//				std::vector<tinyobj::shape_t> shapes;
-//				std::vector<tinyobj::material_t> materials;
           std::string err;
           bool red = tinyobj::LoadObj(&this->attrib,
                                       &this->shapes,
@@ -264,13 +259,10 @@ namespace nagato {
                 tinyobj::index_t idx = shape.mesh.indices[index_offset + v];
                 auto vertexIndex = idx.vertex_index;
                 auto normalIndex = idx.normal_index;
-
-//					printf("(vertex, normal) = (%d, %d)\n", vertexIndex, normalIndex);
                 auto vertex =
                         Vector3(attrib.vertices[3 * vertexIndex],
                                 attrib.vertices[3 * vertexIndex + 1],
                                 attrib.vertices[3 * vertexIndex + 2]);
-//					printVector3(vertex);
                 points.push_back(vertex);
 
                 // 法線情報がない場合はスキップ
@@ -279,7 +271,6 @@ namespace nagato {
                           Vector3(attrib.normals[normalIndex],
                                   attrib.normals[normalIndex + 1],
                                   attrib.normals[normalIndex + 2]);
-//						printVector3(normal);
                   normals.push_back(normal);
                 }
               }
@@ -314,45 +305,6 @@ namespace nagato {
                 }
               }
 
-
-//              // 各ポリゴンに対する当たり判定
-//              const auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
-//              const auto dotNoramlRay = dot(ray.origin + ray.direction * tmin - points[0], normal);
-//              const auto raydirNormal = dot(ray.direction, normal);
-//
-//              // レイと平面が平行になっている
-//              if (raydirNormal == 0.0)
-//                continue;
-//
-//              auto t = -dotNoramlRay / raydirNormal;
-//
-//              // TODO : 当たり判定がおかしいためスーザンが表示されない
-//              // 視点の後方に平面が存在するか視点が平面に存在する
-//              if (t <= 0.0)
-//                continue;
-//
-//              // レイと平面のヒットポイント(内部に存在するかどうかはまだわからない)
-//              auto hitPoint = ray.direction * t + ray.origin;
-//
-//              std::vector<Vector3> z;
-//              for (int i = 0; i < points.size(); i++) {
-//                auto vv = points[(i + 1) % points.size()] - points[i % points.size()];
-//                auto pv = hitPoint - points[i % points.size()];
-//
-//                auto cross_vv_pv = (cross(normalize(vv), normalize(pv)));
-//                z.push_back(normalize(cross_vv_pv));
-//              }
-//
-//              // もしヒットしていた場合の処理
-//              if (dot(z[0], z[1]) > 0.0 && dot(z[1], z[2]) > 0.0) {
-//                double distance = sqrt((hitPoint - (ray.origin + ray.direction * tmin)).norm());
-//                if (mindis > distance && tmax > distance && distance > tmin) {
-////						std::cout << "hit" << std::endl;
-//                  mindis = distance;
-//                  min = Hit{distance, hitPoint, normal, this};
-//                }
-//              }
-
               index_offset += fnum;
             }
           }
@@ -367,128 +319,14 @@ namespace nagato {
         std::vector<tinyobj::material_t> materials;
     };
 
-    class Plane : public Object {
-    public:
-        double edge;
-        Vector3 normal;
-        Vector3 point[4];
-
-        Plane(Vector3 p, double e, Vector3 n, SurfaceType t, Vector3 color, Vector3 em = Vector3())
-                : Object(p, t, color, em), edge(e), normal(n) {
-          auto half = edge / 2.0;
-          point[0] = Vector3{-half, 0, half};
-          point[1] = Vector3{half, 0, half};
-          point[2] = Vector3{half, 0, -half};
-          point[3] = Vector3{-half, 0, -half};
-
-          const auto trans = Matrix4::transform(position.x, position.y, position.z);
-          const auto up = Vector3(0, 1, 0);
-          const auto theta = acos(up.x * normal.x + up.y * normal.y);
-          const auto phi = acos(up.x * normal.x + up.z * normal.z);
-          const auto rot = Matrix4::rotate(2, theta) * Matrix4::rotate(1, phi);
-          for (auto &i : point) {
-            auto vec4 = toVec4(i);
-            i = toVec3(trans * rot * vec4);
-            printVector3(i);
-          }
-        }
-
-        Plane(Vector3 p,
-              Vector3 p0,
-              Vector3 p1,
-              Vector3 p2,
-              Vector3 p3,
-              Vector3 n,
-              SurfaceType t,
-              Vector3 color,
-              Vector3 em = Vector3())
-                : Object(p, t, color, em), normal(n) {
-          point[0] = p0;
-          point[1] = p1;
-          point[2] = p2;
-          point[3] = p3;
-        }
-
-        std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) override {
-          auto v1 = ray.origin + (ray.direction * tmin) - position;
-          auto v2 = ray.origin + (ray.direction * tmax) - position;
-
-          if (dot(v1, normal) * dot(v2, normal) <= 0.0) {
-            // レイと平面が交わっている場合
-//			auto p = point[0] - position;
-//			auto pp = point[0] - point[0];
-//			auto n = normalize(cross(p, pp));
-//			for (int i = 1; i < 4; i++) {
-//				p = point[i] - position;
-//				pp = point[(i + 1) % 4] - point[i];
-//				if (normalize(cross(p, pp)) != n) {
-//					return {};
-//				}
-//			}
-
-            auto hitpoint =
-                    ray.direction * (abs(dot(v1, normal)) / abs(dot(v1, normal) + dot(v2, normal)));
-            auto dis = sqrt(dot(hitpoint - ray.origin,
-                                hitpoint - ray.origin));
-
-            return Hit{dis, hitpoint, normal, this};
-          }
-          return {};
-        }
-    };
-
     class Scene {
     public:
-//	std::vector<Object *> spheres{
-//			new Sphere{Vector3(1e5 + 1, 40.8, 81.6), 1e5, SurfaceType::Diffuse,
-//								 Vector3(.75, .25, .25)},
-//			new Sphere{Vector3(-1e5 + 99, 40.8, 81.6), 1e5, SurfaceType::Diffuse,
-//								 Vector3(.25, .25, .75)},
-//			new Sphere{Vector3(50, 40.8, 1e5), 1e5, SurfaceType::Diffuse, Vector3(.75)},
-//			new Sphere{Vector3(50, 1e5, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
-//			new Sphere{Vector3(50, -1e5 + 81.6, 81.6), 1e5, SurfaceType::Diffuse, Vector3(.75)},
-//			new Sphere{Vector3(27, 16.5, 47), 16.5, SurfaceType::Mirror, Vector3(.999)},
-//			new Sphere{Vector3(73, 16.5, 78), 16.5, SurfaceType::Fresnel, Vector3(.999)},
-//			new Sphere{Vector3(50, 681.6 - .27, 81.6), 600, SurfaceType::Diffuse, Vector3(),
-//								 Vector3(12)},
-//	};
-
-//	std::vector<Object *> spheres{
-//			new Plane{Vector3(-3, 0, 0), 6, Vector3(1, 0, 0), SurfaceType::Diffuse,
-//								Vector3(.75, .25, .25)},
-//			new Plane{Vector3(3, 0, 0), 6, Vector3(-1, 0, 0), SurfaceType::Diffuse,
-//								Vector3(.25, .25, .75)},
-//			new Plane{Vector3(0, 3, 0), 6, Vector3(0, -1, 0), SurfaceType::Diffuse, Vector3(.75)},
-//			new Plane{Vector3(0, -3, 0), 6, Vector3(0, 1, 0), SurfaceType::Diffuse, Vector3(.75)},
-////			new Plane{Vector3(0, 0, -3), 6, Vector3(0, 0, 1), SurfaceType::Diffuse, Vector3(.75)},
-//			new Sphere{Vector3(-1.5, -2, 0), 1, SurfaceType::Mirror, Vector3(.999)},
-//			new Sphere{Vector3(1.5, -2, 0), 1, SurfaceType::Fresnel, Vector3(.999)},
-//			new Sphere{Vector3(0, 3, 0), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
-//	};
-
-//	std::vector<Object *> spheres{
-//			new Plane{Vector3(3, 0, 0), Vector3(3, 3, 3), Vector3(3, 3, -3), Vector3(3, -3, -3), Vector3(3, -3, 3),
-//								Vector3(-1, 0, 0), SurfaceType::Diffuse,
-//								Vector3(.75, .25, .25)},
-//			new Plane{Vector3(-3, 0, 0), Vector3(-3, 3, -3), Vector3(-3, 3, 3), Vector3(-3, -3, 3), Vector3(-3, -3, -3),
-//								Vector3(1, 0, 0), SurfaceType::Diffuse,
-//								Vector3(.25, .25, .75)},
-//			new Plane{Vector3(0, 3, 0), Vector3(-3, 3, -3), Vector3(3, 3, -3), Vector3(3, 3, 3), Vector3(-3, 3, 3),
-//								Vector3(0, -1, 0), SurfaceType::Diffuse, Vector3(.75)},
-//			new Plane{Vector3(0, -3, 0), Vector3(-3, -3, -3), Vector3(3, -3, -3), Vector3(3, -3, 3), Vector3(-3, -3, 3),
-//								Vector3(0, 1, 0), SurfaceType::Diffuse, Vector3(.75)},
-//			new Plane{Vector3(0, 0, -3), Vector3(-3, 3, -3), Vector3(3, 3, -3), Vector3(3, -3, -3), Vector3(-3, -3, -3),
-//								Vector3(0, 0, 1), SurfaceType::Diffuse, Vector3(.75)},
-//			new Sphere{Vector3(-1.5, -2, 0), 1, SurfaceType::Mirror, Vector3(.999)},
-//			new Sphere{Vector3(1.5, -2, 0), 1, SurfaceType::Fresnel, Vector3(.999)},
-//			new Sphere{Vector3(0, 3, 0), 0.5, SurfaceType::Diffuse, Vector3(), Vector3(12)}
-//	};
 
         std::vector<Object *> spheres{
                 new Sphere{Vector3(-2, 1, 0), 1.1, SurfaceType::Mirror, Vector3(.999)},
                 new Sphere{Vector3(2, 1, 0), 1.1, SurfaceType::Fresnel, Vector3(.999)},
                 new Sphere{Vector3(0, 10, 0), 1, SurfaceType::Diffuse, Vector3(),
-                           Vector3(50)},
+                           Vector3(50, 50, 50)},
         };
 
         std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) {
@@ -501,11 +339,6 @@ namespace nagato {
             minh = h;
             tmax = minh->distance;
           }
-//				if (minh) {
-//					const auto *s = static_cast<Sphere *>(minh->sphere);
-//					minh->point = ray.origin + ray.direction * minh->distance;
-//					minh->normal = (minh->point - s->position) / s->radius;
-//				}
           return minh;
         }
     };
@@ -527,6 +360,8 @@ int main() {
   std::cout << "The number of processors is " << omp_get_num_procs() << std::endl;
   std::cout << "OpenMP : Enabled (Max # of threads = " << omp_get_max_threads() << ")" << std::endl;
   omp_set_num_threads(omp_get_max_threads());
+#else
+  std::cout << "OpenMP : OFF" << std::endl;
 #endif
 
   // Image size
@@ -534,13 +369,10 @@ int main() {
   const int height = 360;
 
   // Samples per pixel
-  const int samples = 10;
+  const int samples = 2;
 
   // Camera parameters
-//	const Vector3 eye(50, 52, 295.6);
-//	const Vector3 center = eye + Vector3(0, -0.042612, -1);
-
-  const Vector3 eye(0, 5, 20);
+  const Vector3 eye(0, 5, 22);
   const Vector3 center = eye + Vector3(0, 0, -1);
 
   const Vector3 up(0, 1, 0);
@@ -552,14 +384,8 @@ int main() {
   const auto uE = normalize(cross(up, wE));
   const auto vE = cross(wE, uE);
 
+  // シーンの読み込み
   Scene scene;
-
-	scene.spheres.push_back(new TriangleMesh("./models/cornellbox.obj",
-																					 "./models/cornellbox.mtl",
-																					 Vector3(),
-																					 SurfaceType::Diffuse,
-																					 Vector3(.75, .25, .25)));
-
   scene.spheres.push_back(new TriangleMesh("./models/left.obj",
                                            "./models/left.mtl",
                                            Vector3(),
@@ -591,9 +417,15 @@ int main() {
   for (int pass = 0; pass < samples; pass++) {
     std::cout << "\rpath : " << (pass + 1) << " / " << samples;
     fflush(stdout);
+#ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1)
+#endif
     for (int i = 0; i < width * height; i++) {
+#ifdef _OPENMP
       thread_local Random rng(42 + omp_get_thread_num() + pass);
+#else
+        Random rng(42 + pass + i);
+#endif
       const int x = i % width;
       const int y = height - i / width;
       Ray ray;
@@ -702,8 +534,9 @@ int main() {
                   << clamp(i.z) << "\n";
   }
 
-  double max = 0;
 
+  // デプスマップ用に正規化
+  double max = 0;
   for (const auto &i : depth_buffer) {
     if (i.x > max) {
       max = i.x;
@@ -714,7 +547,7 @@ int main() {
     i = i / max;
   }
 
-  // デプスを出力
+  // depthを出力
   std::ofstream output_depth("depth.ppm");
   output_depth << "P3\n" << width << " " << height << "\n255\n";
   for (const auto &i : depth_buffer) {
