@@ -54,4 +54,5 @@ fabric.properties
 .idea/
 build/
 .DS_Store
+build-debug/
 
