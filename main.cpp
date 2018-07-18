@@ -41,6 +41,12 @@ int main() {
 	// Samples per pixel
 	const int samples = 1000;
 
+	// 380[nm]から780[nm]までの波長を分解す
+	constexpr int resolution = 80;
+
+	// 波長のサンプル数
+	constexpr int spectrumSample = 4;
+
 	// Camera parameters
 	const Vector3 eye(0, 5, 10);
 	const Vector3 center = eye + Vector3(0, 0, -1);
