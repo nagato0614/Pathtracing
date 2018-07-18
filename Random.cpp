@@ -12,4 +12,10 @@ namespace nagato {
     }
 
     double Random::next() { return dist(engine); }
+
+    int Random::next(int from, int to)
+    {
+        std::uniform_int_distribution<> rand(from, to);
+        return rand(engine);
+    }
 }

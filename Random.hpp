@@ -19,6 +19,8 @@ namespace nagato {
         Random(int seed);
 
         double next();
+
+        int next(int from, int to);
     };
 }
 
