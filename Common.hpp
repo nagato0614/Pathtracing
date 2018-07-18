@@ -7,6 +7,7 @@
 
 
 #include <tuple>
+#include <vector>
 #include "Vector3.hpp"
 
 namespace nagato {
@@ -16,5 +17,7 @@ namespace nagato {
     int tonemap(double v);;
 
     int clamp(double v);
+
+    std::vector<int> make_rand_array_unique(size_t size, int rand_min, int rand_max);
 }
 #endif //PATHTRACING_COMMON_HPP
