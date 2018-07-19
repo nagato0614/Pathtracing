@@ -31,6 +31,8 @@ namespace nagato {
       return {};
     }
 
-    Sphere::Sphere(Vector3 p, double r, SurfaceType t, Vector3 color, Vector3 em)
-            : Object(p, t, color, em), radius(r) {}
+    Sphere::Sphere(Vector3 p, double r, SurfaceType t, Spectrum color, Spectrum em) : Object(p, t, color, em), radius(r)
+    {
+
+    }
 }

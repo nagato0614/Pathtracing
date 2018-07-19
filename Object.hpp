@@ -10,6 +10,7 @@
 #include "Ray.hpp"
 #include "SurfaceType.hpp"
 #include "Vector3.hpp"
+#include "Spectrum.hpp"
 
 namespace nagato {
 
@@ -19,11 +20,11 @@ namespace nagato {
     public:
         Vector3 position;
         SurfaceType type;
-        Vector3 color;
-        Vector3 emittance;
+        Spectrum color;
+        Spectrum emittance;
         double ior = 1.5;
 
-        Object(Vector3 p, SurfaceType t, Vector3 color, Vector3 em = Vector3());
+        Object(Vector3 p, SurfaceType t, Spectrum color, Spectrum em = Spectrum());
 
         virtual std::optional<Hit> intersect(Ray &ray, double tmin, double tmax);
     };

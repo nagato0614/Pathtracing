@@ -27,16 +27,16 @@ namespace nagato {
                 std::vector<tinyobj::material_t> &materials,
                 Vector3 p,
                 SurfaceType t,
-                Vector3 color,
-                Vector3 em = Vector3());
+                Spectrum color,
+                Spectrum em = Spectrum());
 
         TriangleMesh(
                 const std::string &objfilename,
                 const std::string &mtlfilename,
                 Vector3 p,
                 SurfaceType t,
-                Vector3 color,
-                Vector3 em = Vector3());
+                Spectrum color,
+                Spectrum em = Spectrum());
 
         std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) override;
 

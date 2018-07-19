@@ -13,7 +13,7 @@ namespace nagato
 
     TriangleMesh::TriangleMesh(
             const std::string &objfilename, const std::string &mtlfilename, Vector3 p, SurfaceType t,
-            Vector3 color, Vector3 em)
+            Spectrum color, Spectrum em)
             : Object(p, t, color, em)
     {
         // オブジェクトファイルを読み込み
@@ -148,10 +148,9 @@ namespace nagato
 
     TriangleMesh::TriangleMesh(
             tinyobj::attrib_t &attrib, std::vector<tinyobj::shape_t> &shapes,
-            std::vector<tinyobj::material_t> &materials, Vector3 p, SurfaceType t, Vector3 color,
-            Vector3 em)
-            :
+            std::vector<tinyobj::material_t> &materials, Vector3 p, SurfaceType t, Spectrum color, Spectrum em) :
             Object(p, t, color, em), attrib(attrib), shapes(shapes), materials(materials)
     {
+
     }
 }

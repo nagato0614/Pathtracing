@@ -19,7 +19,7 @@ namespace nagato {
     public:
         double radius;
 
-        Sphere(Vector3 p, double r, SurfaceType t, Vector3 color, Vector3 em = Vector3());
+        Sphere(Vector3 p, double r, SurfaceType t, Spectrum color, Spectrum em = Spectrum());
 
         std::optional<Hit> intersect(
                 Ray &ray,
