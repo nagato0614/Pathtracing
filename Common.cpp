@@ -33,7 +33,15 @@ namespace nagato {
     {
         if(rand_min > rand_max) std::swap(rand_min, rand_max);
         const auto max_min_diff = (rand_max - rand_min + 1);
-        if(max_min_diff < size) throw std::runtime_error("引数が異常です");
+        if(max_min_diff < size)
+        {
+            std::cout << "引数が異常です" << std::endl;
+            std::cout << "size : " << size << std::endl;
+            std::cout << "rand_min : " << rand_min << std::endl;
+            std::cout << "rand_max : " << rand_max << std::endl;
+
+            exit(2);
+        }
 
         std::vector<int> tmp;
         std::mt19937 engine;

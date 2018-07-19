@@ -5,6 +5,8 @@
 #ifndef PATHTRACING_COMMON_HPP
 #define PATHTRACING_COMMON_HPP
 
+#define RESOLUTION 400
+#define SAMPLE 16
 
 #include <tuple>
 #include <vector>

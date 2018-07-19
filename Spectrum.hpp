@@ -9,6 +9,7 @@
 #include <iostream>
 #include "Random.hpp"
 #include "ColorRGB.hpp"
+#include "Common.hpp"
 
 namespace nagato
 {
@@ -23,28 +24,20 @@ namespace nagato
 
         Spectrum();
 
-        explicit Spectrum(int resolution, int sample);
-
         // すべての波長をinit_numの値で初期化する
-        Spectrum(int resolution, int sample, double init_num);
+        explicit Spectrum(double init_num);
 
         // 波長に対する反射率を保存したcsvから読み込む1
-        Spectrum(int resolution, int sample, std::string filenam);
+        explicit Spectrum(std::string filenam);
 
         // 設定したサンプル数だけランダムにサンプル点を決める
         void sample();
 
         friend inline Spectrum operator*(Spectrum a, Spectrum b)
         {
-            Spectrum s(a.resolution_, a.sample_);
+            Spectrum s;
 
-            if (a.resolution_ != b.resolution_) {
-                std::cerr << "波長解像度が違います" << std::endl;
-                exit(-2);
-            }
-
-            auto size = a.resolution_;
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < a.resolution_; ++i) {
                 s.spectrum[i] = a.spectrum[i] * b.spectrum[i];
             }
             return s;
@@ -53,15 +46,9 @@ namespace nagato
 
         friend inline Spectrum operator+(Spectrum a, Spectrum b)
         {
-            Spectrum s(a.resolution_, a.sample_);
+            Spectrum s;
 
-            if (a.resolution_ != b.resolution_) {
-                std::cerr << "波長解像度が違います" << std::endl;
-                exit(-2);
-            }
-
-            auto size = a.resolution_;
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < a.resolution_; ++i) {
                 s.spectrum[i] = a.spectrum[i] + b.spectrum[i];
             }
             return s;
@@ -70,15 +57,9 @@ namespace nagato
 
         friend inline Spectrum operator-(Spectrum a, Spectrum b)
         {
-            Spectrum s(a.resolution_, a.sample_);
+            Spectrum s;
 
-            if (a.resolution_ != b.resolution_) {
-                std::cerr << "波長解像度が違います" << std::endl;
-                exit(-2);
-            }
-
-            auto size = a.resolution_;
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < a.resolution_; ++i) {
                 s.spectrum[i] = a.spectrum[i] - b.spectrum[i];
             }
             return s;
@@ -87,15 +68,9 @@ namespace nagato
 
         friend inline Spectrum operator/(Spectrum a, Spectrum b)
         {
-            Spectrum s(a.resolution_, a.sample_);
+            Spectrum s;
 
-            if (a.resolution_ != b.resolution_) {
-                std::cerr << "波長解像度が違います" << std::endl;
-                exit(-2);
-            }
-
-            auto size = a.resolution_;
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < a.resolution_; ++i) {
                 s.spectrum[i] = a.spectrum[i] / b.spectrum[i];
             }
             return s;
@@ -104,10 +79,9 @@ namespace nagato
 
         friend inline Spectrum operator/(Spectrum a, double b)
         {
-            Spectrum s(a.resolution_, a.sample_);
+            Spectrum s;
 
-            auto size = a.resolution_;
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < a.resolution_; ++i) {
                 s.spectrum[i] = a.spectrum[i] / b;
             }
 
@@ -118,13 +92,13 @@ namespace nagato
         inline int getOneSampledPoint()
         {
             Random rnd(static_cast<int>(time(nullptr)));
-            return rnd.next(0, sample_);
+            return rnd.next(0, int(sample_));
         }
 
-        ColorRGB toRGB();
+        ColorRGB toRGB() const;
 
-        int sample_;
-        int resolution_;
+        constexpr size_t sample_ = SAMPLE;
+        constexpr int resolution_ = RESOLUTION;
 
         // サンプルした波長
         std::vector<int> samplePoints;

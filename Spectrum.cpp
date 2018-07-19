@@ -5,33 +5,36 @@
 #include "Spectrum.hpp"
 #include "Common.hpp"
 #include "csv.h"
+#include "Matrix3.hpp"
 
-namespace nagato {
+namespace nagato
+{
 
-    Spectrum::Spectrum(int resolution, int sample) : resolution_(resolution), sample_(sample)
+    Spectrum::Spectrum()
     {
-        spectrum.resize(static_cast<unsigned long>(resolution + 1), 0.0); // NOLINT
+        spectrum.resize(static_cast<unsigned long>(resolution_ + 1), 0.0); // NOLINT
         samplePoints.resize(static_cast<unsigned long>(sample), 0);
     }
 
     void Spectrum::sample()
     {
-        samplePoints = make_rand_array_unique(static_cast<size_t>(sample_), 0, resolution_);
+//        std::cout << sample_ << " : " << resolution_ << std::endl;
+        samplePoints = make_rand_array_unique(sample_, 0, resolution_);
     }
 
-    Spectrum::Spectrum(int resolution, int sample, double init_num)
+    Spectrum::Spectrum(double init_num)
     {
-        spectrum.resize(static_cast<unsigned long>(resolution + 1), init_num); // NOLINT
+        spectrum.resize(static_cast<unsigned long>(resolution_ + 1), init_num); // NOLINT
         samplePoints.resize(static_cast<unsigned long>(sample), 0);
     }
 
-    Spectrum::Spectrum()
-    = default;
+    Spectrum::Spectrum() = default;
 
-    Spectrum::Spectrum(int resolution, int sample, std::string filename) : resolution_(resolution), sample_(sample)
+    Spectrum::Spectrum(std::string filename)
     {
+        std::cout << "load spectrum data : " << filename << std::endl;
         io::CSVReader<2> in(filename);
-        in.read_header(io::ignore_extra_column, "Wavelength (nm)", "Intensity");
+        in.read_header(io::ignore_extra_column, "Wavelength", "Intensity");
         int wave;
         double intensity;
         std::vector<std::tuple<int, double>> spectrumData;
@@ -116,14 +119,14 @@ namespace nagato {
         }
     }
 
-    ColorRGB Spectrum::toRGB()
+    ColorRGB Spectrum::toRGB() const
     {
         ColorRGB color;
 
         // スペクトルからXYZに変換する等色関数
-        Spectrum red(resolution_, sample_, "../property/cie_1931_red.csv");
-        Spectrum bule(resolution_, sample_, "../property/cie_1931_bule.csv");
-        Spectrum green(resolution_, sample_, "../property/cie_1931_green.csv");
+        Spectrum red("../property/cie_1931_red.csv");
+        Spectrum bule("../property/cie_1931_bule.csv");
+        Spectrum green("../property/cie_1931_green.csv");
 
         auto spectrumX = red * *this;
         auto spectrumY = bule * *this;
@@ -135,6 +138,14 @@ namespace nagato {
             color.z += spectrumZ.spectrum[i];
         }
 
+        double torgb[3][3] = {{2.3655,  -0.8971, -0.4683},
+                              {-0.5151, 1.4264,  0.0887},
+                              {0.0052,  -0.0144, 1.0089},};
+        color.x = color.x * torgb[0][0] + color.y * torgb[0][1] + color.z * torgb[0][2];
+        color.y = color.x * torgb[1][0] + color.y * torgb[1][1] + color.z * torgb[1][2];
+        color.z = color.x * torgb[2][0] + color.y * torgb[2][1] + color.z * torgb[2][2];
+
         return color;
+
     }
 }
