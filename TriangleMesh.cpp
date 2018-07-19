@@ -25,7 +25,7 @@ namespace nagato
                       << objfilename << std::endl;
             exit(-1);
         } else {
-            std::cout << "load object file : "
+            std::cout << "load object file \t: "
                       << objfilename << std::endl;
         }
 
@@ -34,7 +34,7 @@ namespace nagato
                       << mtlfilename << std::endl;
             exit(-1);
         } else {
-            std::cout << "load material file : "
+            std::cout << "load material file \t: "
                       << mtlfilename << std::endl;
         }
 
