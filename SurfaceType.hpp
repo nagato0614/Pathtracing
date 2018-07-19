@@ -10,6 +10,7 @@ namespace nagato {
         Diffuse,
         Mirror,
         Fresnel,
+        Emitter,
     };
 
 }
