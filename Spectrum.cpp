@@ -115,4 +115,26 @@ namespace nagato {
                       << filename << std::endl;
         }
     }
+
+    ColorRGB Spectrum::toRGB()
+    {
+        ColorRGB color;
+
+        // スペクトルからXYZに変換する等色関数
+        Spectrum red(resolution_, sample_, "../property/cie_1931_red.csv");
+        Spectrum bule(resolution_, sample_, "../property/cie_1931_bule.csv");
+        Spectrum green(resolution_, sample_, "../property/cie_1931_green.csv");
+
+        auto spectrumX = red * *this;
+        auto spectrumY = bule * *this;
+        auto spectrumZ = green * *this;
+
+        for (int i = 0; i < this->resolution_ + 1; ++i) {
+            color.x += spectrumX.spectrum[i];
+            color.y += spectrumY.spectrum[i];
+            color.z += spectrumZ.spectrum[i];
+        }
+
+        return color;
+    }
 }

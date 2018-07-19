@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include "Random.hpp"
+#include "ColorRGB.hpp"
 
 namespace nagato
 {
@@ -119,6 +120,8 @@ namespace nagato
             Random rnd(static_cast<int>(time(nullptr)));
             return rnd.next(0, sample_);
         }
+
+        ColorRGB toRGB();
 
         int sample_;
         int resolution_;
