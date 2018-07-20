@@ -106,6 +106,9 @@ namespace nagato
             return rnd.next(0, int(sample_));
         }
 
+        // すべての波長要素を足し合わせる
+        double sum();
+
         // 波長の最大値を見つけて返す
         double findMaxSpectrum();
 

@@ -133,6 +133,15 @@ namespace nagato
 
     }
 
+    double Spectrum::sum()
+    {
+        double sum = 0.0;
+        for (auto i : spectrum) {
+            sum += i;
+        }
+        return sum;
+    }
+
     void printSpectrum(Spectrum s)
     {
         for (int i = 0; i < 401; i++) {
