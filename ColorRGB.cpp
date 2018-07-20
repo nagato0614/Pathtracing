@@ -17,11 +17,11 @@ namespace nagato
 
     }
 
-    void ColorRGB::spectrum2rgb(Spectrum s, Spectrum red, Spectrum blue, Spectrum green)
+    void ColorRGB::spectrum2rgb(Spectrum s, Spectrum red, Spectrum green, Spectrum blue)
     {
         const auto spectrumX = red * s;
-        const auto spectrumY = blue * s;
-        const auto spectrumZ = green * s;
+        const auto spectrumY = green * s;
+        const auto spectrumZ = blue * s;
 
         ColorRGB buff;
         for (int i = 0; i < s.resolution_ + 1; ++i) {
