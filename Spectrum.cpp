@@ -17,8 +17,10 @@ namespace nagato
 
     void Spectrum::sample()
     {
-//        std::cout << sample_ << " : " << resolution_ << std::endl;
         samplePoints = make_rand_array_unique(sample_, 0, resolution_ + 1);
+        for (auto i : samplePoints) {
+            spectrum[i] = 1.0;
+        }
     }
 
     Spectrum::Spectrum(double init_num = 0.0)
@@ -120,8 +122,8 @@ namespace nagato
     {
         double max = 0.0;
         for (auto i : spectrum) {
-            if (max > i)
-                max = 0.0;
+            if (i > max)
+                max = i;
         }
         return max;
     }

@@ -106,11 +106,6 @@ int main()
         std::cout << "\rpath : " << (pass + 1) << " / " << samples;
         fflush(stdout);
 
-
-        // 各パスごとにサンプルする波長を変化させる
-        Spectrum sampledSpectrum(0.0);
-        sampledSpectrum.sample();
-
         #ifdef _OPENMP
             #pragma omp parallel for schedule(dynamic, 1)
         #endif
@@ -136,8 +131,9 @@ int main()
             // スペクトルの最終的な寄与
             Spectrum spectrumL(0.0);
 
-            // 現在の寄与の割合
-            Spectrum spectrumTH(1.0);
+            // 各パスごとにサンプルする波長を変化させる
+            Spectrum sampledSpectrum(1.0);
+//            sampledSpectrum.sample();
 
             for (int depth = 0; depth < 10; depth++) {
                 // Intersection
@@ -157,7 +153,7 @@ int main()
 //                L = L + th * intersect->sphere->emittance;
 
                 // スペクトル寄与を追加する
-                spectrumL = spectrumL + spectrumTH * intersect->sphere->emittance;
+                spectrumL = spectrumL + sampledSpectrum * intersect->sphere->emittance;
 
                 // Update next direction
                 ray.origin = intersect->point;
@@ -213,8 +209,8 @@ int main()
                 }();
 
                 // Update throughput
-                spectrumTH = spectrumTH * intersect->sphere->color;
-                if (spectrumTH.findMaxSpectrum() == 0) {
+                sampledSpectrum = sampledSpectrum * intersect->sphere->color;
+                if (sampledSpectrum.findMaxSpectrum() == 0) {
                     break;
                 }
             }
@@ -241,9 +237,6 @@ int main()
         ofs << tonemap(pixelColor.r) << " "
             << tonemap(pixelColor.g) << " "
             << tonemap(pixelColor.b) << "\n";
-        std::cout << tonemap(pixelColor.r) << " "
-                  << tonemap(pixelColor.g) << " "
-                  << tonemap(pixelColor.b) << "\n";
     }
 
     // 法線マップを出力
