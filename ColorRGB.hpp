@@ -6,17 +6,25 @@
 #define PATHTRACING_COLORRGB_HPP
 
 #include "Vector3.hpp"
+#include "Spectrum.hpp"
 
 namespace nagato
 {
-    class ColorRGB : public Vector3
+    class Spectrum;
+    class ColorRGB
     {
      public:
-        ColorRGB();
+        explicit ColorRGB(double color = 0.0);
 
         ColorRGB(double r, double g, double b);
+
+        void spectrum2rgb(Spectrum s, Spectrum red, Spectrum blue, Spectrum green);
+
+        double r;
+        double g;
+        double b;
     };
-}
+};
 
 
 #endif //PATHTRACING_COLORRGB_HPP
