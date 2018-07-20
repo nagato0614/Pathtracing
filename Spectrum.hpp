@@ -107,7 +107,7 @@ namespace nagato
         }
 
         // すべての波長要素を足し合わせる
-        double sum();
+        double sum() const;
 
         // 波長の最大値を見つけて返す
         double findMaxSpectrum();

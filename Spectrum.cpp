@@ -133,7 +133,7 @@ namespace nagato
 
     }
 
-    double Spectrum::sum()
+    double Spectrum::sum() const
     {
         double sum = 0.0;
         for (auto i : spectrum) {
