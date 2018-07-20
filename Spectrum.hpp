@@ -106,6 +106,8 @@ namespace nagato
         // 実際の波長を保存する
         std::vector<double> spectrum;
     };
+
+    void printSpectrum(Spectrum s);
 }
 
 #endif //PATHTRACING_SPECTRUM_HPP

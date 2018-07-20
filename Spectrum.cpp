@@ -126,4 +126,10 @@ namespace nagato
         return max;
     }
 
+    void printSpectrum(Spectrum s)
+    {
+        for (int i = 0; i < 401; i++) {
+            printf("%3d \t : %10.5f\n", 380 + i, s.spectrum[i]);
+        }
+    }
 }
