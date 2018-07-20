@@ -19,15 +19,15 @@ namespace nagato
 
     void ColorRGB::spectrum2rgb(Spectrum s, Spectrum red, Spectrum green, Spectrum blue)
     {
-        auto k = 1.0 / red.sum();
-        const auto spectrumX = (red * s) * k;
-        const auto spectrumY = (green * s) * k;
-        const auto spectrumZ = (blue * s) * k;
+        auto k = 1.0 / green.sum();
+        const auto spectrumX = (red * s);
+        const auto spectrumY = (green * s);
+        const auto spectrumZ = (blue * s);
 
         ColorRGB buff(0);
-        buff.r = spectrumX.sum();
-        buff.g = spectrumY.sum();
-        buff.b = spectrumZ.sum();
+        buff.r = spectrumX.sum() * k;
+        buff.g = spectrumY.sum() * k;
+        buff.b = spectrumZ.sum() * k;
 
         // XYZ色相系からRGBに変換する行列
         const double torgb[3][3] = {{3.2404542,  -1.5371385, -0.4985314},

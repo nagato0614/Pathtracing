@@ -42,7 +42,7 @@ int main()
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 200;
+    const int samples = 10;
 
     // Camera parameters
     const Vector3 eye(0, 5, 10);
