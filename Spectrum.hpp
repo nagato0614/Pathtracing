@@ -88,6 +88,17 @@ namespace nagato
             return s;
         }
 
+        friend inline Spectrum operator*(Spectrum a, double b)
+        {
+            Spectrum s;
+
+            for (int i = 0; i < a.resolution_; ++i) {
+                s.spectrum[i] = a.spectrum[i] * b;
+            }
+
+            return s;
+        }
+
         // サンプル点ランダムに一つ抽出
         inline int getOneSampledPoint()
         {
