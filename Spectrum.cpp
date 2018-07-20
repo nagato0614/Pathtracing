@@ -9,11 +9,10 @@
 
 namespace nagato
 {
-
     Spectrum::Spectrum()
     {
         spectrum.resize(static_cast<unsigned long>(resolution_ + 1), 0.0); // NOLINT
-        samplePoints.resize(static_cast<unsigned long>(sample), 0);
+        samplePoints.resize(static_cast<unsigned long>(sample_), 0);
     }
 
     void Spectrum::sample()
@@ -22,13 +21,11 @@ namespace nagato
         samplePoints = make_rand_array_unique(sample_, 0, resolution_);
     }
 
-    Spectrum::Spectrum(double init_num)
+    Spectrum::Spectrum(double init_num = 0.0)
     {
         spectrum.resize(static_cast<unsigned long>(resolution_ + 1), init_num); // NOLINT
-        samplePoints.resize(static_cast<unsigned long>(sample), 0);
+        samplePoints.resize(static_cast<unsigned long>(sample_), 0);
     }
-
-    Spectrum::Spectrum() = default;
 
     Spectrum::Spectrum(std::string filename)
     {
@@ -119,33 +116,14 @@ namespace nagato
         }
     }
 
-    ColorRGB Spectrum::toRGB() const
+    double Spectrum::findMaxSpectrum()
     {
-        ColorRGB color;
-
-        // スペクトルからXYZに変換する等色関数
-        Spectrum red("../property/cie_1931_red.csv");
-        Spectrum bule("../property/cie_1931_bule.csv");
-        Spectrum green("../property/cie_1931_green.csv");
-
-        auto spectrumX = red * *this;
-        auto spectrumY = bule * *this;
-        auto spectrumZ = green * *this;
-
-        for (int i = 0; i < this->resolution_ + 1; ++i) {
-            color.x += spectrumX.spectrum[i];
-            color.y += spectrumY.spectrum[i];
-            color.z += spectrumZ.spectrum[i];
+        double max = 0.0;
+        for (auto i : spectrum) {
+            if (max > i)
+                max = 0.0;
         }
-
-        double torgb[3][3] = {{2.3655,  -0.8971, -0.4683},
-                              {-0.5151, 1.4264,  0.0887},
-                              {0.0052,  -0.0144, 1.0089},};
-        color.x = color.x * torgb[0][0] + color.y * torgb[0][1] + color.z * torgb[0][2];
-        color.y = color.x * torgb[1][0] + color.y * torgb[1][1] + color.z * torgb[1][2];
-        color.z = color.x * torgb[2][0] + color.y * torgb[2][1] + color.z * torgb[2][2];
-
-        return color;
-
+        return max;
     }
+
 }

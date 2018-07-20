@@ -95,10 +95,10 @@ namespace nagato
             return rnd.next(0, int(sample_));
         }
 
-        ColorRGB toRGB() const;
+        double findMaxSpectrum();
 
-        constexpr size_t sample_ = SAMPLE;
-        constexpr int resolution_ = RESOLUTION;
+        size_t sample_ = SAMPLE;
+        int resolution_ = RESOLUTION;
 
         // サンプルした波長
         std::vector<int> samplePoints;
