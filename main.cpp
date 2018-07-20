@@ -7,10 +7,12 @@
 #include <vector>
 #include <optional>
 #include <fstream>
+#include <chrono>
 #include "Scene.hpp"
 #include "TriangleMesh.hpp"
 #include "Sphere.hpp"
 #include "Random.hpp"
+#include "Spectrum.hpp"
 
 using namespace nagato;
 
@@ -40,13 +42,7 @@ int main()
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 10;
-
-    // 380[nm]から780[nm]までの波長を分解す
-    constexpr int resolution = 80;
-
-    // 波長のサンプル数
-    constexpr int spectrumSample = 4;
+    const int samples = 1;
 
     // Camera parameters
     const Vector3 eye(0, 5, 10);
@@ -61,49 +57,60 @@ int main()
     const auto uE = normalize(cross(up, wE));
     const auto vE = cross(wE, uE);
 
+    std::cout << "-- Load Scene -- " << std::endl;
     // シーンの読み込み
     Scene scene;
-    scene.spheres.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, SurfaceType::Mirror, Vector3(.999)});
-    scene.spheres.push_back(new Sphere{Vector3(2, 1, 0), 1.1, SurfaceType::Fresnel, Vector3(.999)});
+    scene.spheres.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, SurfaceType::Mirror, Spectrum(0.99)});
+//    scene.spheres.push_back(new Sphere{Vector3(2, 1, 0), 1.1, SurfaceType::Fresnel, Spectrum(0.99)});
     scene.spheres.push_back(new TriangleMesh("../models/left.obj",
                                              "../models/left.mtl",
                                              Vector3(),
                                              SurfaceType::Diffuse,
-                                             Vector3(.75, .25, .25)));
+                                             Spectrum("../property/macbeth_15_red.csv")));
     scene.spheres.push_back(new TriangleMesh("../models/right.obj",
                                              "../models/right.mtl",
                                              Vector3(),
                                              SurfaceType::Diffuse,
-                                             Vector3(.25, .25, .75)));
+                                             Spectrum("../property/macbeth_13_blue.csv"
+                                             )));
     scene.spheres.push_back(new TriangleMesh("../models/back_ceil_floor_plane.obj",
                                              "../models/back_ceil_floor_plane.mtl",
                                              Vector3(),
                                              SurfaceType::Diffuse,
-                                             Vector3(.75, .75, .75)));
+                                             Spectrum("../property/macbeth_19_white.csv")));
     scene.spheres.push_back(new TriangleMesh("../models/light_plane.obj",
                                              "../models/light_plane.mtl",
                                              Vector3(),
                                              SurfaceType::Diffuse,
-                                             Vector3(), Vector3(50, 50, 50)));
+                                             Spectrum(),
+                                             Spectrum("../property/cie_si_d65.csv")));
 //  scene.spheres.push_back(new TriangleMesh("../models/suzanne.obj",
 //                                           "../models/suzanne.mtl",
 //                                           Vector3(),
 //                                           SurfaceType::Diffuse,
 //                                           Vector3(0.8, 0.3, 0.3)));
-    std::vector<Vector3> I(width * height);
 
-    #ifdef _DEBUG
+    // 波長データを保存
+    std::vector<Spectrum> S(width * height);
+
     std::vector<Vector3> nom(width * height);
     std::vector<Vector3> depth_buffer(width * height);
-    #endif
 
     std::cout << "-- Image Size --" << std::endl;
     std::cout << "width : height = " << width << " : " << height << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
+    std::chrono::system_clock::time_point start, end;
+    start = std::chrono::system_clock::now(); // 計測開始時間
     for (int pass = 0; pass < samples; pass++) {
         std::cout << "\rpath : " << (pass + 1) << " / " << samples;
         fflush(stdout);
+
+
+        // 各パスごとにサンプルする波長を変化させる
+        Spectrum sampledSpectrum(0.0);
+        sampledSpectrum.sample();
+
         #ifdef _OPENMP
             #pragma omp parallel for schedule(dynamic, 1)
         #endif
@@ -126,7 +133,12 @@ int main()
                 return uE * ww.x + vE * ww.y + wE * ww.z;
             }();
 
-            Vector3 L(0), th(1);
+            // スペクトルの最終的な寄与
+            Spectrum spectrumL(0.0);
+
+            // 現在の寄与の割合
+            Spectrum spectrumTH(1.0);
+
             for (int depth = 0; depth < 10; depth++) {
                 // Intersection
                 const auto intersect = scene.intersect(
@@ -135,16 +147,18 @@ int main()
                     break;
                 }
 
-                #ifdef _DEBUG
                 if (pass == 0 && depth == 0) {
                     nom[i] = (normalize(intersect->normal) + 1.0) / 2.0 * 255;
                     auto d = intersect->distance;
                     depth_buffer[i] = {d, d, d};
                 }
-                #endif
 
                 // Add contribution
-                L = L + th * intersect->sphere->emittance;
+//                L = L + th * intersect->sphere->emittance;
+
+                // スペクトル寄与を追加する
+                spectrumL = spectrumL + spectrumTH * intersect->sphere->emittance;
+
                 // Update next direction
                 ray.origin = intersect->point;
                 ray.direction = [&]() {
@@ -159,9 +173,7 @@ int main()
                             const double t = 2 * M_PI * rng.next();
                             const double x = r * cos(t);
                             const double y = r * sin(t);
-                            return Vector3(x, y,
-                                           std::sqrt(
-                                                   std::max(.0, 1 - x * x - y * y)));
+                            return Vector3(x, y, std::sqrt(std::max(.0, 1 - x * x - y * y)));
                         }();
                         // Convert to world coordinates
                         return u * d.x + v * d.y + n * d.z;
@@ -169,62 +181,79 @@ int main()
                         const auto wi = -ray.direction;
                         return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
                     } else if (intersect->sphere->type == SurfaceType::Fresnel) {
-                        const auto wi = -ray.direction;
-                        const auto into = dot(wi, intersect->normal) > 0;
-                        const auto n = into ? intersect->normal : -intersect->normal;
-                        const auto ior = intersect->sphere->ior;
-                        const auto eta = into ? 1 / ior : ior;
-                        const auto wt = [&]() -> std::optional<Vector3> {
-                            const auto t = dot(wi, n);
-                            const auto t2 = 1 - eta * eta * (1 - t * t);
-                            if (t2 < 0) {
-                                return {};
-                            };
-                            return (n * t - wi) * eta - n * sqrt(t2);
-                        }();
-                        if (!wt) {
-                            return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
-                        }
-                        const auto Fr = [&]() {
-                            const auto cos = into ? dot(wi, intersect->normal) : dot(*wt, intersect->normal);
-                            const auto r = (1 - ior) / (1 + ior);
-                            return r * r + (1 - r * r) * pow(1 - cos, 5);
-                        }();
-
-                        return rng.next() < Fr ?
-                               intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi
-                                               : *wt;
+                        // #TODO : 波長を考慮した屈折の実装
+//                        const auto wi = -ray.direction;
+//                        const auto into = dot(wi, intersect->normal) > 0;
+//                        const auto n = into ? intersect->normal : -intersect->normal;
+//                        const auto ior = intersect->sphere->ior;
+//                        const auto eta = into ? 1 / ior : ior;
+//                        const auto wt = [&]() -> std::optional<Vector3> {
+//                            const auto t = dot(wi, n);
+//                            const auto t2 = 1 - eta * eta * (1 - t * t);
+//                            if (t2 < 0) {
+//                                return {};
+//                            };
+//                            return (n * t - wi) * eta - n * sqrt(t2);
+//                        }();
+//                        if (!wt) {
+//                            return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
+//                        }
+//                        const auto Fr = [&]() {
+//                            const auto cos = into ? dot(wi, intersect->normal) : dot(*wt, intersect->normal);
+//                            const auto r = (1 - ior) / (1 + ior);
+//                            return r * r + (1 - r * r) * pow(1 - cos, 5);
+//                        }();
+//
+//                        return rng.next() < Fr ?
+//                               intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi
+//                                               : *wt;
                     } else {
                         return Vector3();
                     }
                 }();
 
                 // Update throughput
-                th = th * intersect->sphere->color;
-                if (std::max(std::max(th.x, th.y), th.z) == 0) {
+                spectrumTH = spectrumTH * intersect->sphere->color;
+                if (spectrumTH.findMaxSpectrum() == 0) {
                     break;
                 }
             }
-            I[i] = I[i] + L / samples;
+            // 各波長の重みを更新
+            S[i] = S[i] + spectrumL / samples;
         }
     }
+    end = std::chrono::system_clock::now();  // 計測終了時間
+    double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); //処理に要した時間をミリ秒に変換
+    std::cout << "\n-- Rendering Time --" << std::endl;
+    std::cout << elapsed / 1000.0 << "[sec]" << std::endl;
+
+    // スペクトルからXYZに変換する等色関数
+    Spectrum red("../property/cie_1931_red.csv");
+    Spectrum blue("../property/cie_1931_blue.csv");
+    Spectrum green("../property/cie_1931_green.csv");
+
+    std::cout << "-- Output ppm File --" << std::endl;
     std::ofstream ofs("result.ppm");
     ofs << "P3\n" << width << " " << height << "\n255\n";
-    for (const auto &i : I) {
-        ofs << tonemap(i.x) << " "
-            << tonemap(i.y) << " "
-            << tonemap(i.z) << "\n";
+    for (const auto &i : S) {
+        ColorRGB pixelColor;
+        pixelColor.spectrum2rgb(i, red, green, blue);
+        ofs << tonemap(pixelColor.r) << " "
+            << tonemap(pixelColor.g) << " "
+            << tonemap(pixelColor.b) << "\n";
+        std::cout << tonemap(pixelColor.r) << " "
+                  << tonemap(pixelColor.g) << " "
+                  << tonemap(pixelColor.b) << "\n";
     }
 
-    #ifdef _DEBUG
     // 法線マップを出力
     // [-1,1] を [0,255]に変換している
     std::ofstream output_normal("normal.ppm");
     output_normal << "P3\n" << width << " " << height << "\n255\n";
     for (const auto &i : nom) {
         output_normal << clamp(i.x) << " "
-                                    << clamp(i.y) << " "
-                                    << clamp(i.z) << "\n";
+                      << clamp(i.y) << " "
+                      << clamp(i.z) << "\n";
     }
 
 
@@ -245,11 +274,11 @@ int main()
     output_depth << "P3\n" << width << " " << height << "\n255\n";
     for (const auto &i : depth_buffer) {
         output_depth << tonemap(i.x) << " "
-                                 << tonemap(i.y) << " "
-                                 << tonemap(i.z) << "\n";
+                     << tonemap(i.y) << " "
+                     << tonemap(i.z) << "\n";
     }
-    std::cout << "\n-- FINISH --" << std::endl;
-    #endif
+
+    std::cout << "-- FINISH --" << std::endl;
 
     return 0;
 }

@@ -95,7 +95,11 @@ namespace nagato
             return rnd.next(0, int(sample_));
         }
 
+        // 波長の最大値を見つけて返す
         double findMaxSpectrum();
+
+        // 寄与を更新する
+        void addContribution(Spectrum weight, Spectrum emitter);
 
         size_t sample_ = SAMPLE;
         int resolution_ = RESOLUTION;

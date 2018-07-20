@@ -18,7 +18,7 @@ namespace nagato
     void Spectrum::sample()
     {
 //        std::cout << sample_ << " : " << resolution_ << std::endl;
-        samplePoints = make_rand_array_unique(sample_, 0, resolution_);
+        samplePoints = make_rand_array_unique(sample_, 0, resolution_ + 1);
     }
 
     Spectrum::Spectrum(double init_num = 0.0)
@@ -124,6 +124,11 @@ namespace nagato
                 max = 0.0;
         }
         return max;
+    }
+    
+    void Spectrum::addContribution(Spectrum weight, Spectrum emitter)
+    {
+
     }
 
     void printSpectrum(Spectrum s)
