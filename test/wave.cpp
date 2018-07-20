@@ -471,7 +471,7 @@ const int wl_max = 95;
 int main(int argc, char **argv) {
 	int width = 640;
 	int height = 480;
-	int samples = 1000;
+	int samples = 10;
 
 	// カメラ位置
 	Ray camera(Vec(50.0, 52.0, 295.6), Normalize(Vec(0.0, -0.042612, -1.0)));

@@ -6,7 +6,7 @@
 #define PATHTRACING_COMMON_HPP
 
 #define RESOLUTION 400
-#define SAMPLE 16
+#define SAMPLE 32
 
 #include <tuple>
 #include <vector>
@@ -21,5 +21,7 @@ namespace nagato {
     int clamp(double v);
 
     std::vector<int> make_rand_array_unique(size_t size, int rand_min, int rand_max);
+
+    std::string getNowTimeString();
 }
 #endif //PATHTRACING_COMMON_HPP

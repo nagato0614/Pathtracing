@@ -42,7 +42,7 @@ int main()
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 1;
+    const int samples = 1000;
 
     // Camera parameters
     const Vector3 eye(0, 5, 10);
@@ -90,6 +90,17 @@ int main()
 //                                           SurfaceType::Diffuse,
 //                                           Vector3(0.8, 0.3, 0.3)));
 
+    // スペクトルからXYZに変換する等色関数
+    Spectrum red("../property/cie_sco_2degree_xbar.csv");
+    Spectrum blue("../property/cie_sco_2degree_ybar.csv");
+    Spectrum green("../property/cie_sco_2degree_zbar.csv");
+
+    // レンダリングした画像を保存するディレクトリを作成
+    auto saveDirName = getNowTimeString() + "_results";
+    auto command = "mkdir -p " + saveDirName;
+    system(command.c_str());
+
+
     // 波長データを保存
     std::vector<Spectrum> S(width * height);
 
@@ -132,8 +143,8 @@ int main()
             Spectrum spectrumL(0.0);
 
             // 各パスごとにサンプルする波長を変化させる
-            Spectrum sampledSpectrum(1.0);
-//            sampledSpectrum.sample();
+            Spectrum sampledSpectrum(0.0);
+            sampledSpectrum.sample();
 
             for (int depth = 0; depth < 10; depth++) {
                 // Intersection
@@ -217,16 +228,24 @@ int main()
             // 各波長の重みを更新
             S[i] = S[i] + spectrumL / samples;
         }
+
+        if ((pass + 1) % 5 == 0) {
+            std::string outputfile = "./" + saveDirName + "/result_" + std::to_string(pass) + ".ppm";
+            std::ofstream ofs(outputfile);
+            ofs << "P3\n" << width << " " << height << "\n255\n";
+            for (const auto &i : S) {
+                ColorRGB pixelColor;
+                pixelColor.spectrum2rgb(i, red, green, blue);
+                ofs << tonemap(pixelColor.r) << " "
+                    << tonemap(pixelColor.g) << " "
+                    << tonemap(pixelColor.b) << "\n";
+            }
+        }
     }
     end = std::chrono::system_clock::now();  // 計測終了時間
     double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); //処理に要した時間をミリ秒に変換
     std::cout << "\n-- Rendering Time --" << std::endl;
     std::cout << elapsed / 1000.0 << "[sec]" << std::endl;
-
-    // スペクトルからXYZに変換する等色関数
-    Spectrum red("../property/cie_1931_red.csv");
-    Spectrum blue("../property/cie_1931_blue.csv");
-    Spectrum green("../property/cie_1931_green.csv");
 
     std::cout << "-- Output ppm File --" << std::endl;
     std::ofstream ofs("result.ppm");

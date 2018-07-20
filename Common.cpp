@@ -44,7 +44,7 @@ namespace nagato {
         }
 
         std::vector<int> tmp;
-        std::mt19937 engine;
+        std::mt19937 engine(static_cast<unsigned int>(time(NULL)));
         std::uniform_int_distribution<int> distribution(rand_min, rand_max);
 
         const auto make_size = static_cast<size_t>(size*1.2);
@@ -62,5 +62,15 @@ namespace nagato {
 
         std::shuffle(tmp.begin(), tmp.end(), engine);
         return std::move(tmp);
+    }
+
+    std::string getNowTimeString()
+    {
+        char buff[] = "";
+        time_t now = time(NULL);
+        struct tm *pnow = localtime(&now);
+        sprintf(buff, "%04d%02d%02d%02d%02d", pnow->tm_year + 1900, pnow->tm_mon + 1, pnow->tm_mday,
+                pnow->tm_hour, pnow->tm_min);
+        return std::string(buff);
     }
 }
