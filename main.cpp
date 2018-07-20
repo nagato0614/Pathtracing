@@ -42,7 +42,7 @@ int main()
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 1000;
+    const int samples = 200;
 
     // Camera parameters
     const Vector3 eye(0, 5, 10);
@@ -91,15 +91,17 @@ int main()
 //                                           Vector3(0.8, 0.3, 0.3)));
 
     // スペクトルからXYZに変換する等色関数
-    Spectrum red("../property/cie_sco_2degree_xbar.csv");
-    Spectrum blue("../property/cie_sco_2degree_ybar.csv");
-    Spectrum green("../property/cie_sco_2degree_zbar.csv");
+    const Spectrum red("../property/cie_1931_red.csv");
+    const Spectrum blue("../property/cie_1931_blue.csv");
+    const Spectrum green("../property/cie_1931_green.csv");
 
     // レンダリングした画像を保存するディレクトリを作成
+    bool isOutput = false;
     auto saveDirName = getNowTimeString() + "_results";
     auto command = "mkdir -p " + saveDirName;
-    system(command.c_str());
-
+    if (isOutput) {
+        system(command.c_str());
+    }
 
     // 波長データを保存
     std::vector<Spectrum> S(width * height);
@@ -143,8 +145,8 @@ int main()
             Spectrum spectrumL(0.0);
 
             // 各パスごとにサンプルする波長を変化させる
-            Spectrum sampledSpectrum(0.0);
-            sampledSpectrum.sample();
+            Spectrum sampledSpectrum(1.0);
+//            sampledSpectrum.sample();
 
             for (int depth = 0; depth < 10; depth++) {
                 // Intersection
@@ -229,7 +231,7 @@ int main()
             S[i] = S[i] + spectrumL / samples;
         }
 
-        if ((pass + 1) % 5 == 0) {
+        if ((pass + 1) % 5 == 0 && isOutput) {
             std::string outputfile = "./" + saveDirName + "/result_" + std::to_string(pass) + ".ppm";
             std::ofstream ofs(outputfile);
             ofs << "P3\n" << width << " " << height << "\n255\n";
@@ -256,6 +258,9 @@ int main()
         ofs << tonemap(pixelColor.r) << " "
             << tonemap(pixelColor.g) << " "
             << tonemap(pixelColor.b) << "\n";
+        std::cout << (pixelColor.r) << " "
+                  << (pixelColor.g) << " "
+                  << (pixelColor.b) << "\n";
     }
 
     // 法線マップを出力
