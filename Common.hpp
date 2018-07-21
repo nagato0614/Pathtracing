@@ -11,8 +11,10 @@
 #include <tuple>
 #include <vector>
 #include "Vector3.hpp"
+#include "Spectrum.hpp"
 
-namespace nagato {
+namespace nagato
+{
 
     std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n);
 
@@ -23,5 +25,11 @@ namespace nagato {
     std::vector<int> make_rand_array_unique(size_t size, int rand_min, int rand_max, int seed);
 
     std::string getNowTimeString();
+
+    void writePPM(
+            std::string filename,
+            std::vector<Spectrum> s,
+            int width, int height,
+            Spectrum x, Spectrum y, Spectrum z);
 }
 #endif //PATHTRACING_COMMON_HPP

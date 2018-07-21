@@ -5,6 +5,7 @@
 #include <cmath>
 #include <random>
 #include <algorithm>
+#include <fstream>
 #include "Common.hpp"
 #include "Random.hpp"
 
@@ -75,5 +76,20 @@ namespace nagato {
         sprintf(buff, "%04d%02d%02d%02d%02d", pnow->tm_year + 1900, pnow->tm_mon + 1, pnow->tm_mday,
                 pnow->tm_hour, pnow->tm_min);
         return std::string(buff);
+    }
+
+    void writePPM(std::string filename, std::vector<Spectrum> s,
+                  int width, int height,
+                  Spectrum x, Spectrum y, Spectrum z)
+    {
+        std::ofstream ofs(filename);
+        ofs << "P3\n" << width << " " << height << "\n255\n";
+        for (const auto &i : s) {
+            ColorRGB pixelColor;
+            pixelColor.spectrum2rgb(i, x, y, z);
+            ofs << tonemap(pixelColor.r) << " "
+                << tonemap(pixelColor.g) << " "
+                << tonemap(pixelColor.b) << "\n";
+        }
     }
 }
