@@ -8,11 +8,11 @@
 
 int main()
 {
-    std::string filename = "../property/cie_1931_red.csv";
+    std::string filename = "../property/cie_sco_10degree_xbar.csv";
     std::vector<double> spectrum;
 
     io::CSVReader<2> in(filename);
-    in.read_header(io::ignore_extra_column, "Wavelength (nm)", "Intensity");
+    in.read_header(io::ignore_extra_column, "Wavelength", "Intensity");
     int wave;
     double intensity;
     std::vector<std::tuple<int, double>> spectrumData;
@@ -52,11 +52,11 @@ int main()
                 spectrum.push_back(std::get<1>(spectrumData[i + index]));
             }
 
-//            std::cout << "-------------" << std::endl;
-//            std::cout << "spectrum data size : " << spectrum.size() << std::endl;
-//            for (int i = 0; i < spectrum.size(); i++) {
-//                std::cout << i + 380 << " : " << spectrum[i] << std::endl;
-//            }
+            std::cout << "-------------" << std::endl;
+            std::cout << "spectrum data size : " << spectrum.size() << std::endl;
+            for (int i = 0; i < spectrum.size(); i++) {
+                std::cout << i + 380 << " : " << spectrum[i] << std::endl;
+            }
         } else if (diff == 5) {
             // 380nmのインデックスを調べる
             int index = 0;
@@ -85,11 +85,11 @@ int main()
 
             }
 
-//            std::cout << "-------------" << std::endl;
-//            std::cout << "spectrum data size : " << spectrum.size() << std::endl;
-//            for (int i = 0; i < spectrum.size(); i++) {
-//                printf("%d : %5f\n", i + 380, spectrum[i]);
-//            }
+            std::cout << "-------------" << std::endl;
+            std::cout << "spectrum data size : " << spectrum.size() << std::endl;
+            for (int i = 0; i < spectrum.size(); i++) {
+                printf("%d : %5f\n", i + 380, spectrum[i]);
+            }
         }
     } else {
         std::cerr << "スペクトルデータがありません : "

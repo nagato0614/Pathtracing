@@ -20,9 +20,9 @@ namespace nagato
     void ColorRGB::spectrum2rgb(Spectrum s, Spectrum red, Spectrum green, Spectrum blue)
     {
         auto k = 1.0 / green.sum();
-        const auto spectrumX = (red * s);
-        const auto spectrumY = (green * s);
-        const auto spectrumZ = (blue * s);
+        const auto spectrumX = red * s;
+        const auto spectrumY = green * s;
+        const auto spectrumZ = blue * s;
 
         ColorRGB buff(0);
         buff.r = spectrumX.sum() * k;

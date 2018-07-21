@@ -300,8 +300,8 @@ struct HDRPixel {
 	unsigned char get(int idx) {
 		switch (idx) {
 			case 0: return r;
-			case 1: return g;
-			case 2: return b;
+			cas∑e 1: return g;
+			case 2: return b;∑
 			case 3: return e;
 		} return 0;
 	}

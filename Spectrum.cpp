@@ -15,9 +15,9 @@ namespace nagato
         samplePoints.resize(static_cast<unsigned long>(sample_), 0);
     }
 
-    void Spectrum::sample()
+    void Spectrum::sample(int seed)
     {
-        samplePoints = make_rand_array_unique(sample_, 0, resolution_ + 1);
+        samplePoints = make_rand_array_unique(sample_, 0, resolution_ + 1, seed);
         for (auto i : samplePoints) {
             spectrum[i] = 1.0;
         }

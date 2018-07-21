@@ -31,7 +31,7 @@ namespace nagato
         explicit Spectrum(std::string filenam);
 
         // 設定したサンプル数だけランダムにサンプル点を決める
-        void sample();
+        void sample(int seed);
 
         friend inline Spectrum operator*(Spectrum a, Spectrum b)
         {

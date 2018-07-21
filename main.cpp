@@ -91,9 +91,9 @@ int main()
 //                                           Vector3(0.8, 0.3, 0.3)));
 
     // スペクトルからXYZに変換する等色関数
-    const Spectrum red("../property/cie_1931_red.csv");
-    const Spectrum blue("../property/cie_1931_blue.csv");
-    const Spectrum green("../property/cie_1931_green.csv");
+    const Spectrum red("../property/cie_sco_10degree_xbar.csv");
+    const Spectrum blue("../property/cie_sco_10degree_ybar.csv");
+    const Spectrum green("../property/cie_sco_10degree_zbar.csv");
 
     // レンダリングした画像を保存するディレクトリを作成
     bool isOutput = false;
@@ -146,7 +146,7 @@ int main()
 
             // 各パスごとにサンプルする波長を変化させる
             Spectrum sampledSpectrum(1.0);
-//            sampledSpectrum.sample();
+//            sampledSpectrum.sample(100 + i + pass);
 
             for (int depth = 0; depth < 10; depth++) {
                 // Intersection
