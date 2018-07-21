@@ -20,7 +20,7 @@ namespace nagato {
 
     int clamp(double v);
 
-    std::vector<int> make_rand_array_unique(size_t size, int rand_min, int rand_max);
+    std::vector<int> make_rand_array_unique(size_t size, int rand_min, int rand_max, int seed);
 
     std::string getNowTimeString();
 }

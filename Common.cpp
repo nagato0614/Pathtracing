@@ -29,7 +29,7 @@ namespace nagato {
       return std::min(std::max(0, int(v)), 255);
     }
 
-    std::vector<int> make_rand_array_unique(const size_t size, int rand_min, int rand_max)
+    std::vector<int> make_rand_array_unique(const size_t size, int rand_min, int rand_max, int seed)
     {
         if(rand_min > rand_max) std::swap(rand_min, rand_max);
         const auto max_min_diff = (rand_max - rand_min + 1);
@@ -44,8 +44,11 @@ namespace nagato {
         }
 
         std::vector<int> tmp;
-        std::mt19937 engine(static_cast<unsigned int>(time(NULL)));
+        std::mt19937 engine;
         std::uniform_int_distribution<int> distribution(rand_min, rand_max);
+
+        engine.seed(seed);
+        distribution.reset();
 
         const auto make_size = static_cast<size_t>(size*1.2);
 
