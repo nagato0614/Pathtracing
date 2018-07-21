@@ -115,6 +115,9 @@ namespace nagato
         // 寄与を更新する
         void addContribution(Spectrum weight, Spectrum emitter);
 
+        // [0,1]の範囲に正規化する
+        void normilize();
+
         size_t sample_ = SAMPLE;
         int resolution_ = RESOLUTION;
 

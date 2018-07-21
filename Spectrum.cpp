@@ -142,6 +142,17 @@ namespace nagato
         return sum;
     }
 
+    void Spectrum::normilize()
+    {
+        double sum = 0.0;
+        for (auto i : spectrum) {
+            sum += i;
+        }
+
+        for (auto &i : spectrum)
+            i /= sum;
+    }
+
     void printSpectrum(Spectrum s)
     {
         for (int i = 0; i < 401; i++) {
