@@ -15,6 +15,7 @@
 
 namespace nagato
 {
+    class Spectrum;
 
     std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n);
 

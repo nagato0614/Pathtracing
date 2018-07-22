@@ -9,33 +9,37 @@
 #include "Common.hpp"
 #include "Random.hpp"
 
-namespace nagato {
+namespace nagato
+{
 
-    std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n) {
-      const double s = std::copysign(1, n.z);
-      const double a = -1 / (s + n.z);
-      const double b = n.x * n.y * a;
-      return {
-              Vector3(1 + s * n.x * n.x * a, s * b, -s * n.x),
-              Vector3(b, s + n.y * n.y * a, -n.y)
-      };
+    std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n)
+    {
+        const double s = std::copysign(1, n.z);
+        const double a = -1 / (s + n.z);
+        const double b = n.x * n.y * a;
+        return {
+                Vector3(1 + s * n.x * n.x * a, s * b, -s * n.x),
+                Vector3(b, s + n.y * n.y * a, -n.y)
+        };
     }
 
-    int tonemap(double v) {
-      return std::min(
-              std::max(int(std::pow(v, 1 / 2.2) * 255), 0), 255);
+    int tonemap(double v)
+    {
+        return std::min(
+                std::max(int(std::pow(v, 1 / 2.2) * 255), 0), 255);
     }
 
-    int clamp(double v) {
-      return std::min(std::max(0, int(v)), 255);
+    int clamp(double v)
+    {
+        return std::min(std::max(0, int(v)), 255);
     }
 
     std::vector<int> make_rand_array_unique(const size_t size, int rand_min, int rand_max, int seed)
     {
-        if(rand_min > rand_max) std::swap(rand_min, rand_max);
+        if (rand_min > rand_max)
+            std::swap(rand_min, rand_max);
         const auto max_min_diff = (rand_max - rand_min + 1);
-        if(max_min_diff < size)
-        {
+        if (max_min_diff < size) {
             std::cout << "引数が異常です" << std::endl;
             std::cout << "size : " << size << std::endl;
             std::cout << "rand_min : " << rand_min << std::endl;
@@ -51,14 +55,15 @@ namespace nagato {
         engine.seed(seed);
         distribution.reset();
 
-        const auto make_size = static_cast<size_t>(size*1.2);
+        const auto make_size = static_cast<size_t>(size * 1.2);
 
-        while(tmp.size() < size){
-            while(tmp.size() < make_size) tmp.push_back(distribution(engine));
+        while (tmp.size() < size) {
+            while (tmp.size() < make_size)
+                tmp.push_back(distribution(engine));
             std::sort(tmp.begin(), tmp.end());
             auto unique_end = std::unique(tmp.begin(), tmp.end());
 
-            if(size < std::distance(tmp.begin(), unique_end)){
+            if (size < std::distance(tmp.begin(), unique_end)) {
                 unique_end = std::next(tmp.begin(), size);
             }
             tmp.erase(unique_end, tmp.end());
@@ -78,9 +83,10 @@ namespace nagato {
         return std::string(buff);
     }
 
-    void writePPM(std::string filename, std::vector<Spectrum> s,
-                  int width, int height,
-                  Spectrum x, Spectrum y, Spectrum z)
+    void writePPM(
+            std::string filename, std::vector<Spectrum> s,
+            int width, int height,
+            Spectrum x, Spectrum y, Spectrum z)
     {
         std::ofstream ofs(filename);
         ofs << "P3\n" << width << " " << height << "\n255\n";
@@ -90,6 +96,9 @@ namespace nagato {
             ofs << tonemap(pixelColor.r) << " "
                 << tonemap(pixelColor.g) << " "
                 << tonemap(pixelColor.b) << "\n";
+//            std::cout << (pixelColor.r) << " "
+//                      << (pixelColor.g) << " "
+//                      << (pixelColor.b) << "\n";
         }
     }
 }

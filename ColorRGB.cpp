@@ -17,12 +17,12 @@ namespace nagato
 
     }
 
-    void ColorRGB::spectrum2rgb(Spectrum s, Spectrum red, Spectrum green, Spectrum blue)
+    void ColorRGB::spectrum2rgb(Spectrum s, Spectrum x, Spectrum y, Spectrum z)
     {
-        auto k = 1.0 / green.sum();
-        const auto spectrumX = red * s;
-        const auto spectrumY = green * s;
-        const auto spectrumZ = blue * s;
+        auto k = 1.0 / y.sum();
+        const auto spectrumX = x * s;
+        const auto spectrumY = y * s;
+        const auto spectrumZ = z * s;
 
         ColorRGB XYZ(0);
         XYZ.r = spectrumX.sum() * k;
@@ -36,5 +36,13 @@ namespace nagato
         r = XYZ.r * torgb[0][0] + XYZ.g * torgb[0][1] + XYZ.b * torgb[0][2];
         g = XYZ.r * torgb[1][0] + XYZ.g * torgb[1][1] + XYZ.b * torgb[1][2];
         b = XYZ.r * torgb[2][0] + XYZ.g * torgb[2][1] + XYZ.b * torgb[2][2];
+    }
+
+    void ColorRGB::normilize()
+    {
+        double sum = r + g + b;
+        r /= sum;
+        g /= sum;
+        b /= sum;
     }
 }

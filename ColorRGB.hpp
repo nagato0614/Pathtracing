@@ -18,7 +18,9 @@ namespace nagato
 
         ColorRGB(double r, double g, double b);
 
-        void spectrum2rgb(Spectrum s, Spectrum red, Spectrum blue, Spectrum green);
+        void spectrum2rgb(Spectrum s, Spectrum x, Spectrum y, Spectrum z);
+
+        void normilize();
 
         double r;
         double g;

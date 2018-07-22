@@ -91,9 +91,9 @@ int main()
 //                                           Vector3(0.8, 0.3, 0.3)));
 
     // スペクトルからXYZに変換する等色関数
-    const Spectrum red("../property/cie_sco_10degree_xbar.csv");
-    const Spectrum blue("../property/cie_sco_10degree_ybar.csv");
-    const Spectrum green("../property/cie_sco_10degree_zbar.csv");
+    const Spectrum xbar("../property/cie_sco_10degree_xbar.csv");
+    const Spectrum ybar("../property/cie_sco_10degree_ybar.csv");
+    const Spectrum zbar("../property/cie_sco_10degree_zbar.csv");
 
     // レンダリングした画像を保存するディレクトリを作成
     bool isOutput = false;
@@ -237,7 +237,7 @@ int main()
             ofs << "P3\n" << width << " " << height << "\n255\n";
             for (const auto &i : S) {
                 ColorRGB pixelColor;
-                pixelColor.spectrum2rgb(i, red, green, blue);
+                pixelColor.spectrum2rgb(i, xbar, zbar, ybar);
                 ofs << tonemap(pixelColor.r) << " "
                     << tonemap(pixelColor.g) << " "
                     << tonemap(pixelColor.b) << "\n";
@@ -250,18 +250,7 @@ int main()
     std::cout << elapsed / 1000.0 << "[sec]" << std::endl;
 
     std::cout << "-- Output ppm File --" << std::endl;
-    std::ofstream ofs("result.ppm");
-    ofs << "P3\n" << width << " " << height << "\n255\n";
-    for (const auto &i : S) {
-        ColorRGB pixelColor;
-        pixelColor.spectrum2rgb(i, red, green, blue);
-        ofs << tonemap(pixelColor.r) << " "
-            << tonemap(pixelColor.g) << " "
-            << tonemap(pixelColor.b) << "\n";
-        std::cout << (pixelColor.r) << " "
-                  << (pixelColor.g) << " "
-                  << (pixelColor.b) << "\n";
-    }
+    writePPM("result.ppm", S, width, height, xbar, zbar, ybar);
 
     // 法線マップを出力
     // [-1,1] を [0,255]に変換している
