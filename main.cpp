@@ -1,5 +1,3 @@
-// オブジェクトローダーの読み込み関連
-#define TINYOBJLOADER_USE_DOUBLE
 
 #include <iostream>
 #include <omp.h>
@@ -11,7 +9,6 @@
 #include "Scene.hpp"
 #include "TriangleMesh.hpp"
 #include "Sphere.hpp"
-#include "Random.hpp"
 #include "Spectrum.hpp"
 
 using namespace nagato;
@@ -49,8 +46,8 @@ int main()
     const Vector3 center = eye + Vector3(0, 0, -1);
 
     const Vector3 up(0, 1, 0);
-    const double fov = 60 * M_PI / 180;
-    const double aspect = double(width) / height;
+    const float fov = 60 * M_PI / 180;
+    const float aspect = float (width) / height;
 
     // Basis vectors for camera coordinates
     const auto wE = normalize(eye - center);
@@ -133,9 +130,9 @@ int main()
             Ray ray;
             ray.origin = eye;
             ray.direction = [&]() {
-                const double tf = std::tan(fov * .5);
-                const double rpx = 2. * (x + rng.next()) / width - 1;
-                const double rpy = 2. * (y + rng.next()) / height - 1;
+                const float tf = std::tan(fov * .5);
+                const float rpx = 2. * (x + rng.next()) / width - 1;
+                const float rpy = 2. * (y + rng.next()) / height - 1;
                 const Vector3 ww = normalize(
                         Vector3(aspect * tf * rpx, tf * rpy, -1));
                 return uE * ww.x + vE * ww.y + wE * ww.z;
@@ -178,11 +175,11 @@ int main()
                                         ->normal;
                         const auto&[u, v] = tangentSpace(n);
                         const auto d = [&]() {
-                            const double r = sqrt(rng.next());
-                            const double t = 2 * M_PI * rng.next();
-                            const double x = r * cos(t);
-                            const double y = r * sin(t);
-                            return Vector3(x, y, std::sqrt(std::max(.0, 1 - x * x - y * y)));
+                            const auto r = sqrt(rng.next());
+                            const auto t = 2 * M_PI * rng.next();
+                            const auto x = r * cos(t);
+                            const auto y = r * sin(t);
+                            return Vector3((float) x, (float) y, std::sqrt(std::max(float(0.0), static_cast<const float &>(1.0 - x * x - y * y))));
                         }();
                         // Convert to world coordinates
                         return u * d.x + v * d.y + n * d.z;
@@ -245,7 +242,7 @@ int main()
         }
     }
     end = std::chrono::system_clock::now();  // 計測終了時間
-    double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); //処理に要した時間をミリ秒に変換
+    float elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); //処理に要した時間をミリ秒に変換
     std::cout << "\n-- Rendering Time --" << std::endl;
     std::cout << elapsed / 1000.0 << "[sec]" << std::endl;
 
@@ -264,7 +261,7 @@ int main()
 
 
     // デプスマップ用に正規化
-    double max = 0;
+    float max = 0;
     for (const auto &i : depth_buffer) {
         if (i.x > max) {
             max = i.x;

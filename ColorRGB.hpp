@@ -14,17 +14,17 @@ namespace nagato
     class ColorRGB
     {
      public:
-        explicit ColorRGB(double color = 0.0);
+        explicit ColorRGB(float color = 0.0);
 
-        ColorRGB(double r, double g, double b);
+        ColorRGB(float r, float g, float b);
 
         void spectrum2rgb(Spectrum s, Spectrum x, Spectrum y, Spectrum z);
 
         void normilize();
 
-        double r;
-        double g;
-        double b;
+        float r;
+        float g;
+        float b;
     };
 };
 

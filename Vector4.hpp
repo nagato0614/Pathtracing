@@ -11,16 +11,16 @@
 namespace nagato {
     class Vector4 {
     public:
-        double x;
-        double y;
-        double z;
-        double w;
+        float x;
+        float y;
+        float z;
+        float w;
 
-        explicit Vector4(double v = 0);
+        explicit Vector4(float v = 0);
 
-        Vector4(double x, double y, double z, double w);
+        Vector4(float x, float y, float z, float w);
 
-        double operator[](int i);
+        float operator[](int i);
 
         inline Vector4 operator+(Vector4 b) const {
           return Vector4(x + b.x, y + b.y, z + b.z, w + b.w);
@@ -34,7 +34,7 @@ namespace nagato {
           return Vector4(x * b.x, y * b.y, z * b.z, w * b.w);
         }
 
-        inline Vector4 operator*(double a) const {
+        inline Vector4 operator*(float a) const {
           return Vector4(x * a, y * a, z * a, w * a);
         }
 
@@ -65,7 +65,7 @@ namespace nagato {
           return Vector4(x / b.x, y / b.y, z / b.z, w / b.w);
         }
 
-        inline Vector4 operator/(double b) const {
+        inline Vector4 operator/(float b) const {
           return Vector4(x / b, y / b, z / b, w / b);
         }
 
@@ -75,7 +75,7 @@ namespace nagato {
 
     };
 
-    inline double dot(Vector4 a, Vector4 b) {
+    inline float dot(Vector4 a, Vector4 b) {
       return a.x * b.x + a.y * b.y + a.z * b.z + a.w * a.w;
     }
 

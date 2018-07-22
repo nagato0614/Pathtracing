@@ -9,7 +9,7 @@ namespace nagato {
 
 // http://cvrl.ioo.ucl.ac.uk/cmfs.htm CIE 1964 10-deg, XYZ CMFs より
 // 360nm - 830nm (5nm幅) で、波長->XYZ の関数
-constexpr double wavelength2xyz_table[] = {
+constexpr float wavelength2xyz_table[] = {
 		1.222E-07, 1.3398E-08, 5.35027E-07,
 		9.1927E-07, 1.0065E-07, 4.0283E-06,
 		5.9586E-06, 6.511E-07, 2.61437E-05,

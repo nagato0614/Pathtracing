@@ -6,13 +6,13 @@
 
 namespace nagato {
 
-    Matrix3::Matrix3(double a) {
+    Matrix3::Matrix3(float a) {
       for (auto &i : data)
-        for (double &j : i)
+        for (float &j : i)
           j = a;
     }
 
-    Matrix3::Matrix3(double (*a)[3]) {
+    Matrix3::Matrix3(float (*a)[3]) {
       for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
           data[i][j] = a[i][j];

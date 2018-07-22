@@ -17,7 +17,7 @@ namespace nagato {
 
         std::vector<Object *> spheres;
 
-        std::optional<Hit> intersect(Ray &ray, double tmin, double tmax);
+        std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
     };
 }
 

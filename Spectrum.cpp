@@ -23,7 +23,7 @@ namespace nagato
         }
     }
 
-    Spectrum::Spectrum(double init_num = 0.0)
+    Spectrum::Spectrum(float init_num = 0.0)
     {
         spectrum.resize(static_cast<unsigned long>(resolution_ + 1), init_num); // NOLINT
         samplePoints.resize(static_cast<unsigned long>(sample_), 0);
@@ -35,8 +35,8 @@ namespace nagato
         io::CSVReader<2> in(filename);
         in.read_header(io::ignore_extra_column, "Wavelength", "Intensity");
         int wave;
-        double intensity;
-        std::vector<std::tuple<int, double>> spectrumData;
+        float intensity;
+        std::vector<std::tuple<int, float>> spectrumData;
 
         // 波長データを取得
         while (in.read_row(wave, intensity)) {
@@ -90,7 +90,7 @@ namespace nagato
 
 //            std::cout << "index : " << index << std::endl;
                 for (int i = 0; i < 401; i++) {
-                    double rate = (380 + i) % 5;
+                    float rate = (380 + i) % 5;
                     if (rate == 0) {
                         spectrum.push_back(std::get<1>(spectrumData[(i / 5) + index]));
 //                    printf("%d : %f\n", 380 + i, std::get<1>(spectrumData[(i / 5) + index]));
@@ -98,7 +98,7 @@ namespace nagato
                         int nowSpec = i / 5;
                         auto a = std::get<1>(spectrumData[(nowSpec) + index]);
                         auto b = std::get<1>(spectrumData[(nowSpec + 1) + index]);
-                        double spec = (1.0 - rate / 5.0) * a + (rate / 5.0) * b;
+                        float spec = (1.0 - rate / 5.0) * a + (rate / 5.0) * b;
 //                    printf("%d : %f\t --- (%.5f, %.5f) \t --- rate : %3f\t --\n", 380 + i, spec, a, b, rate);
                         spectrum.push_back(spec);
                     }
@@ -118,9 +118,9 @@ namespace nagato
         }
     }
 
-    double Spectrum::findMaxSpectrum()
+    float Spectrum::findMaxSpectrum()
     {
-        double max = 0.0;
+        float max = 0.0;
         for (auto i : spectrum) {
             if (i > max)
                 max = i;
@@ -133,9 +133,9 @@ namespace nagato
 
     }
 
-    double Spectrum::sum() const
+    float Spectrum::sum() const
     {
-        double sum = 0.0;
+        float sum = 0.0;
         for (auto i : spectrum) {
             sum += i;
         }
@@ -144,7 +144,7 @@ namespace nagato
 
     void Spectrum::normilize()
     {
-        double sum = 0.0;
+        float sum = 0.0;
         for (auto i : spectrum) {
             sum += i;
         }

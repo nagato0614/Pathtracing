@@ -38,7 +38,7 @@ namespace nagato {
                 Spectrum color,
                 Spectrum em = Spectrum());
 
-        std::optional<Hit> intersect(Ray &ray, double tmin, double tmax) override;
+        std::optional<Hit> intersect(Ray &ray, float tmin, float tmax) override;
 
     private:
         tinyobj::attrib_t attrib{};

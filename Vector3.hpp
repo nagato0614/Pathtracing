@@ -11,21 +11,21 @@
 namespace nagato {
     class Vector3 {
     public:
-        double x;
-        double y;
-        double z;
+        float x;
+        float y;
+        float z;
 
-        explicit Vector3(double v = 0);
+        explicit Vector3(float v = 0);
 
-        Vector3(double x, double y, double z);
+        Vector3(float x, float y, float z);
 
-        double operator[](int i);
+        float operator[](int i);
 
         inline Vector3 operator+(Vector3 b) const {
           return Vector3(x + b.x, y + b.y, z + b.z);
         }
 
-        inline Vector3 operator+(double b) const {
+        inline Vector3 operator+(float b) const {
           return Vector3(x + b, y + b, z + b);
         }
 
@@ -38,7 +38,7 @@ namespace nagato {
           return Vector3(x * b.x, y * b.y, z * b.z);
         }
 
-        inline Vector3 operator*(double a) const {
+        inline Vector3 operator*(float a) const {
           return Vector3(x * a, y * a, z * a);
         }
 
@@ -47,7 +47,7 @@ namespace nagato {
           return Vector3(x / b.x, y / b.y, z / b.z);
         }
 
-        inline Vector3 operator/(double b) const {
+        inline Vector3 operator/(float b) const {
           return Vector3(x / b, y / b, z / b);
         }
 
@@ -63,12 +63,12 @@ namespace nagato {
           return a.x != b.x || a.y != b.y || a.z != b.z;
         }
 
-        inline double norm() {
+        inline float norm() {
           return x * x + y * y + z * z;
         }
     };
 
-    inline Vector4 toVec4(Vector3 v, double a = 1) {
+    inline Vector4 toVec4(Vector3 v, float a = 1) {
       return Vector4(v.x, v.y, v.z, a);
     }
 
@@ -77,7 +77,7 @@ namespace nagato {
       return Vector3(v.x / v.w, v.y / v.w, v.z / v.w);
     }
 
-    inline double dot(Vector3 a, Vector3 b) {
+    inline float dot(Vector3 a, Vector3 b) {
       return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 

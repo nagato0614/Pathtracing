@@ -9,7 +9,7 @@
 namespace nagato
 {
 
-    std::optional<Hit> Object::intersect(Ray &ray, double tmin, double tmax)
+    std::optional<Hit> Object::intersect(Ray &ray, float tmin, float tmax)
     {
         return {};
     }

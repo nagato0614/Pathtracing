@@ -14,14 +14,14 @@ namespace nagato
     class Matrix3
     {
      public:
-        double data[3][3] = {0};
+        float data[3][3] = {0};
 
         Matrix3()
         = default;
 
-        explicit Matrix3(double a);
+        explicit Matrix3(float a);
 
-        explicit Matrix3(double a[3][3]);
+        explicit Matrix3(float a[3][3]);
 
         Matrix3(Vector3 a, Vector3 b, Vector3 c);
 
@@ -82,9 +82,9 @@ namespace nagato
             return m;
         }
 
-        inline double det()
+        inline float det()
         {
-            double sum = 0;
+            float sum = 0;
             sum += data[0][0] * data[1][1] * data[2][2];
             sum += data[0][1] * data[1][2] * data[2][0];
             sum += data[0][2] * data[1][0] * data[2][1];

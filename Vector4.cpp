@@ -8,13 +8,13 @@
 
 namespace nagato {
 
-    Vector4::Vector4(double v)
+    Vector4::Vector4(float v)
             : Vector4(v, v, v, v) {}
 
-    Vector4::Vector4(double x, double y, double z, double w)
+    Vector4::Vector4(float x, float y, float z, float w)
             : x(x), y(y), z(z), w(w) {}
 
-    double Vector4::operator[](int i) {
+    float Vector4::operator[](int i) {
       return (&x)[i];
     }
 

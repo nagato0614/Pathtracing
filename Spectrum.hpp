@@ -7,9 +7,9 @@
 
 #include <vector>
 #include <iostream>
-#include "Random.hpp"
 #include "ColorRGB.hpp"
 #include "Common.hpp"
+#include "Random.hpp"
 
 namespace nagato
 {
@@ -25,7 +25,7 @@ namespace nagato
         Spectrum();
 
         // すべての波長をinit_numの値で初期化する
-        explicit Spectrum(double init_num);
+        explicit Spectrum(float init_num);
 
         // 波長に対する反射率を保存したcsvから読み込む1
         explicit Spectrum(std::string filenam);
@@ -77,7 +77,7 @@ namespace nagato
 
         }
 
-        friend inline Spectrum operator/(Spectrum a, double b)
+        friend inline Spectrum operator/(Spectrum a, float b)
         {
             Spectrum s;
 
@@ -88,7 +88,7 @@ namespace nagato
             return s;
         }
 
-        friend inline Spectrum operator*(Spectrum a, double b)
+        friend inline Spectrum operator*(Spectrum a, float b)
         {
             Spectrum s;
 
@@ -107,10 +107,10 @@ namespace nagato
         }
 
         // すべての波長要素を足し合わせる
-        double sum() const;
+        float sum() const;
 
         // 波長の最大値を見つけて返す
-        double findMaxSpectrum();
+        float findMaxSpectrum();
 
         // 寄与を更新する
         void addContribution(Spectrum weight, Spectrum emitter);
@@ -125,7 +125,7 @@ namespace nagato
         std::vector<int> samplePoints;
 
         // 実際の波長を保存する
-        std::vector<double> spectrum;
+        std::vector<float> spectrum;
     };
 
     void printSpectrum(Spectrum s);

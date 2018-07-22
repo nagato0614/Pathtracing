@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/18.
 //
 
-#ifndef PATHTRACING_RANDOM_HPP
+#ifndef PATHTRACING_RANDOM_HPPw
 #define PATHTRACING_RANDOM_HPP
 
 
@@ -12,13 +12,13 @@ namespace nagato {
     class Random {
     public:
         std::mt19937 engine;
-        std::uniform_real_distribution<double> dist;
+        std::uniform_real_distribution<float> dist;
 
         Random() {};
 
         Random(int seed);
 
-        double next();
+        float next();
 
         int next(int from, int to);
     };

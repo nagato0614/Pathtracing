@@ -8,13 +8,13 @@
 
 namespace nagato {
 
-    Matrix4::Matrix4(double a) {
+    Matrix4::Matrix4(float a) {
       for (auto &i : data)
-        for (double &j : i)
+        for (float &j : i)
           j = a;
     }
 
-    Matrix4::Matrix4(double (*a)[4]) {
+    Matrix4::Matrix4(float (*a)[4]) {
       for (int i = 0; i < 4; i++)
         for (int j = 0; j < 4; j++)
           data[i][j] = a[i][j];

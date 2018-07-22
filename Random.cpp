@@ -7,11 +7,11 @@
 namespace nagato {
 
     Random::Random(int seed) {
-      engine.seed(seed);
+      engine.seed(static_cast<unsigned int>(seed));
       dist.reset();
     }
 
-    double Random::next() { return dist(engine); }
+    float Random::next() { return dist(engine); }
 
     int Random::next(int from, int to)
     {

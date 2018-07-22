@@ -6,15 +6,15 @@
 
 namespace nagato {
 
-    std::optional <Hit> Sphere::intersect(Ray &ray, double tmin, double tmax) {
+    std::optional <Hit> Sphere::intersect(Ray &ray, float tmin, float tmax) {
       const Vector3 op = position - ray.origin;
-      const double b = dot(op, ray.direction);
-      const double det = b * b - dot(op, op) + radius * radius;
+      const float b = dot(op, ray.direction);
+      const float det = b * b - dot(op, op) + radius * radius;
 
       if (det < 0) {
         return {};
       }
-      const double t1 = b - sqrt(det);
+      const float t1 = static_cast<const float>(b - sqrt(det));
 
       if (tmin < t1 && t1 < tmax) {
         auto point = ray.origin + ray.direction * t1;
@@ -22,7 +22,7 @@ namespace nagato {
         return Hit{t1, point, normal, this};
       }
 
-      const double t2 = b + sqrt(det);
+      const float t2 = static_cast<const float>(b + sqrt(det));
       if (tmin < t2 && t2 < tmax) {
         auto point = ray.origin + ray.direction * t2;
         auto normal = (point - position) / radius;
@@ -31,7 +31,7 @@ namespace nagato {
       return {};
     }
 
-    Sphere::Sphere(Vector3 p, double r, SurfaceType t, Spectrum color, Spectrum em) : Object(p, t, color, em), radius(r)
+    Sphere::Sphere(Vector3 p, float r, SurfaceType t, Spectrum color, Spectrum em) : Object(p, t, color, em), radius(r)
     {
 
     }

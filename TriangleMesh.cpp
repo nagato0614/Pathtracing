@@ -64,7 +64,7 @@ namespace nagato
         }
     }
 
-    std::optional<Hit> TriangleMesh::intersect(Ray &ray, double tmin, double tmax)
+    std::optional<Hit> TriangleMesh::intersect(Ray &ray, float tmin, float tmax)
     {
 
         std::optional<Hit> min = {};
@@ -116,20 +116,20 @@ namespace nagato
                 const auto edge2 = points[2] - points[0];
 
                 const auto P = cross(ray.direction, edge2);
-                const double det = dot(P, edge1);
+                const float det = dot(P, edge1);
 
                 if (det > epsilon) {
                     Vector3 T = origin - points[0];
-                    double u = dot(P, T);
+                    float u = dot(P, T);
 
                     if (u >= 0.0 && u <= 1.0 * det) {
                         const auto Q = cross(T, edge1);
                         const auto v = dot(Q, ray.direction);
 
                         if (v >= 0.0 && (u + v) <= 1 * det) {
-                            double t = dot(Q, edge2) / det;
+                            float t = dot(Q, edge2) / det;
                             auto hitpoint = origin + ray.direction * t;
-                            auto distance = sqrt((hitpoint - origin).norm());
+                            float distance = sqrt((hitpoint - origin).norm());
                             if (mindis > distance && tmax > distance) {
                                 mindis = distance;
                                 return Hit{distance, hitpoint, normal, this};

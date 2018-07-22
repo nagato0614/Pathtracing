@@ -19,9 +19,9 @@ namespace nagato
 
     std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n);
 
-    int tonemap(double v);;
+    int tonemap(float v);;
 
-    int clamp(double v);
+    int clamp(float v);
 
     std::vector<int> make_rand_array_unique(size_t size, int rand_min, int rand_max, int seed);
 

@@ -17,14 +17,14 @@ namespace nagato {
 
     class Sphere : public Object {
     public:
-        double radius;
+        float radius;
 
-        Sphere(Vector3 p, double r, SurfaceType t, Spectrum color, Spectrum em = Spectrum());
+        Sphere(Vector3 p, float r, SurfaceType t, Spectrum color, Spectrum em = Spectrum());
 
         std::optional<Hit> intersect(
                 Ray &ray,
-                double tmin,
-                double tmax) override;
+                float tmin,
+                float tmax) override;
     };
 }
 #endif //PATHTRACING_SPHERE_HPP

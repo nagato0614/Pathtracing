@@ -7,29 +7,28 @@
 #include <algorithm>
 #include <fstream>
 #include "Common.hpp"
-#include "Random.hpp"
 
 namespace nagato
 {
 
     std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n)
     {
-        const double s = std::copysign(1, n.z);
-        const double a = -1 / (s + n.z);
-        const double b = n.x * n.y * a;
+        const float s = static_cast<const float>(std::copysign(1, n.z));
+        const float a = -1 / (s + n.z);
+        const float b = n.x * n.y * a;
         return {
                 Vector3(1 + s * n.x * n.x * a, s * b, -s * n.x),
                 Vector3(b, s + n.y * n.y * a, -n.y)
         };
     }
 
-    int tonemap(double v)
+    int tonemap(float v)
     {
         return std::min(
                 std::max(int(std::pow(v, 1 / 2.2) * 255), 0), 255);
     }
 
-    int clamp(double v)
+    int clamp(float v)
     {
         return std::min(std::max(0, int(v)), 255);
     }
