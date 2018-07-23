@@ -36,7 +36,7 @@ namespace nagato
         {
             Spectrum s;
 
-            for (int i = 0; i < a.resolution_; ++i) {
+            for (int i = 0; i < a.resolution_ + 1; ++i) {
                 s.spectrum[i] = a.spectrum[i] * b.spectrum[i];
             }
             return s;
@@ -47,7 +47,7 @@ namespace nagato
         {
             Spectrum s;
 
-            for (int i = 0; i < a.resolution_; ++i) {
+            for (int i = 0; i < a.resolution_ + 1; ++i) {
                 s.spectrum[i] = a.spectrum[i] + b.spectrum[i];
             }
             return s;
@@ -58,7 +58,7 @@ namespace nagato
         {
             Spectrum s;
 
-            for (int i = 0; i < a.resolution_; ++i) {
+            for (int i = 0; i < a.resolution_ + 1; ++i) {
                 s.spectrum[i] = a.spectrum[i] - b.spectrum[i];
             }
             return s;
@@ -69,7 +69,7 @@ namespace nagato
         {
             Spectrum s;
 
-            for (int i = 0; i < a.resolution_; ++i) {
+            for (int i = 0; i < a.resolution_ + 1; ++i) {
                 s.spectrum[i] = a.spectrum[i] / b.spectrum[i];
             }
             return s;
@@ -80,7 +80,7 @@ namespace nagato
         {
             Spectrum s;
 
-            for (int i = 0; i < a.resolution_; ++i) {
+            for (int i = 0; i < a.resolution_ + 1; ++i) {
                 s.spectrum[i] = a.spectrum[i] / b;
             }
 
@@ -91,7 +91,7 @@ namespace nagato
         {
             Spectrum s;
 
-            for (int i = 0; i < a.resolution_; ++i) {
+            for (int i = 0; i < a.resolution_ + 1; ++i) {
                 s.spectrum[i] = a.spectrum[i] * b;
             }
 
