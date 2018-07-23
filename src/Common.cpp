@@ -101,9 +101,6 @@ namespace nagato
             ofs << pixelColor.r255() << " "
                 << pixelColor.g255() << " "
                 << pixelColor.b255() << "\n";
-            std::cout << pixelColor.r255() << " "
-                      << pixelColor.g255() << " "
-                      << pixelColor.b255() << "\n";
         }
     }
 }
