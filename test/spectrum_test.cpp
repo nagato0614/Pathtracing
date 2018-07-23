@@ -4,8 +4,8 @@
 
 
 #include <fstream>
-#include "src/Spectrum.hpp"
-#include "src/ColorRGB.hpp"
+#include "../src/Spectrum.hpp"
+#include "../src/ColorRGB.hpp"
 
 using namespace nagato;
 
