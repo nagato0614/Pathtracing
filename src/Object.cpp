@@ -12,9 +12,9 @@ namespace nagato
         return {};
     }
 
-    Object::Object(Vector3 p, SurfaceType t, Spectrum color, Spectrum em) : position(p), type(t), color(color),
-                                                                            emittance(em)
+    Object::Object(Vector3 p, SurfaceType t, Spectrum color, Spectrum em) : position(p), type(t), color(color)
     {
-
+        this->emittance = em;
+//        this->emittance.normilize();
     }
 }

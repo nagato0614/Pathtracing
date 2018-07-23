@@ -19,9 +19,11 @@ namespace nagato
 
     std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n);
 
-    int tonemap(float v);;
+    int tonemap(float v);
 
     int clamp(float v);
+
+    float clamp(const float min, const float max, const float x);
 
     std::vector<int> make_rand_array_unique(size_t size, int rand_min, int rand_max, int seed);
 
@@ -31,6 +33,6 @@ namespace nagato
             std::string filename,
             std::vector<Spectrum> s,
             int width, int height,
-            Spectrum x, Spectrum y, Spectrum z);
+            Spectrum xbar, Spectrum ybar, Spectrum zbar);
 }
 #endif //PATHTRACING_COMMON_HPP

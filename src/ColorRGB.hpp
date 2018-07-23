@@ -18,9 +18,29 @@ namespace nagato
 
         ColorRGB(float r, float g, float b);
 
-        void spectrum2rgb(Spectrum s, Spectrum x, Spectrum y, Spectrum z);
+        void spectrum2rgb(Spectrum s, Spectrum xbar, Spectrum y, Spectrum z);
 
         void normilize();
+
+        // rgbの最大値が1.0になるように調整する
+        void scale();
+
+        // rgbの中で最大値を求める
+        float max();
+
+        // [0.0, 1.0]の範囲に収める
+        void clamp();
+
+        // ガンマ補間を行う
+        void gammaCorrection(float inverse_gamma);
+
+        // rgbの合計値
+        float sum();
+
+        // [0, 255]の各色を渡す
+        int r255();
+        int g255();
+        int b255();
 
         float r;
         float g;

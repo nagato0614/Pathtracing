@@ -68,8 +68,7 @@ int main()
                                              "../models/right.mtl",
                                              Vector3(),
                                              SurfaceType::Diffuse,
-                                             Spectrum("../property/macbeth_13_blue.csv"
-                                             )));
+                                             Spectrum("../property/macbeth_13_blue.csv")));
     scene.spheres.push_back(new TriangleMesh("../models/back_ceil_floor_plane.obj",
                                              "../models/back_ceil_floor_plane.mtl",
                                              Vector3(),
@@ -88,9 +87,9 @@ int main()
 //                                           Vector3(0.8, 0.3, 0.3)));
 
     // スペクトルからXYZに変換する等色関数
-    const Spectrum xbar("../property/cie_sco_10degree_xbar.csv");
-    const Spectrum ybar("../property/cie_sco_10degree_ybar.csv");
-    const Spectrum zbar("../property/cie_sco_10degree_zbar.csv");
+    const Spectrum xbar("../property/cie_sco_2degree_xbar.csv");
+    const Spectrum ybar("../property/cie_sco_2degree_ybar.csv");
+    const Spectrum zbar("../property/cie_sco_2degree_zbar.csv");
 
     // レンダリングした画像を保存するディレクトリを作成
     bool isOutput = false;
@@ -247,7 +246,7 @@ int main()
     std::cout << elapsed / 1000.0 << "[sec]" << std::endl;
 
     std::cout << "-- Output ppm File --" << std::endl;
-    writePPM("result.ppm", S, width, height, xbar, zbar, ybar);
+    writePPM("result.ppm", S, width, height, xbar, ybar, zbar);
 
     // 法線マップを出力
     // [-1,1] を [0,255]に変換している

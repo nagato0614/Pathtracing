@@ -26,12 +26,17 @@ namespace nagato
     int tonemap(float v)
     {
         return std::min(
-                std::max(int(std::pow(v, 1 / 2.2) * 255), 0), 255);
+                std::max(int(std::pow(v / (1.0 + v), 1 / 2.2) * 255), 0), 255);
     }
 
     int clamp(float v)
     {
         return std::min(std::max(0, int(v)), 255);
+    }
+
+    float clamp(const float min, const float max, const float x)
+    {
+        return ((x < min) ? min : (max < x) ? max : x);
     }
 
     std::vector<int> make_rand_array_unique(const size_t size, int rand_min, int rand_max, int seed)
@@ -86,19 +91,19 @@ namespace nagato
     void writePPM(
             std::string filename, std::vector<Spectrum> s,
             int width, int height,
-            Spectrum x, Spectrum y, Spectrum z)
+            Spectrum xbar, Spectrum ybar, Spectrum zbar)
     {
         std::ofstream ofs(filename);
         ofs << "P3\n" << width << " " << height << "\n255\n";
         for (const auto &i : s) {
             ColorRGB pixelColor;
-            pixelColor.spectrum2rgb(i, x, y, z);
-            ofs << tonemap(pixelColor.r) << " "
-                << tonemap(pixelColor.g) << " "
-                << tonemap(pixelColor.b) << "\n";
-//            std::cout << (pixelColor.r) << " "
-//                      << (pixelColor.g) << " "
-//                      << (pixelColor.b) << "\n";
+            pixelColor.spectrum2rgb(i, xbar, ybar, zbar);
+            ofs << pixelColor.r255() << " "
+                << pixelColor.g255() << " "
+                << pixelColor.b255() << "\n";
+            std::cout << pixelColor.r255() << " "
+                      << pixelColor.g255() << " "
+                      << pixelColor.b255() << "\n";
         }
     }
 }
