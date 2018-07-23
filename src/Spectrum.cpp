@@ -3,9 +3,7 @@
 //
 
 #include "Spectrum.hpp"
-#include "Common.hpp"
 #include "csv.h"
-#include "Matrix3.hpp"
 
 namespace nagato
 {

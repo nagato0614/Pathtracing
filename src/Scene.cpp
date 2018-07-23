@@ -4,6 +4,7 @@
 
 #include "Scene.hpp"
 #include "Object.hpp"
+#include "Hit.hpp"
 
 namespace nagato {
 

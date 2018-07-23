@@ -7,10 +7,7 @@
 
 
 #include <optional>
-#include "Common.hpp"
 #include "Object.hpp"
-#include "Hit.hpp"
-#include "Ray.hpp"
 
 namespace nagato {
     class Vector3;

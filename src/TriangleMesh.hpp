@@ -7,17 +7,13 @@
 
 
 #include "tiny_obj_loader.h"
-#include "Object.hpp"
-#include "Common.hpp"
+#include "SurfaceType.hpp"
+#include "Spectrum.hpp"
 #include "Ray.hpp"
-#include "Hit.hpp"
+#include "Object.hpp"
 
 namespace nagato {
 
-    class Object;
-    class Hit;
-
-    class Vector3;
     class TriangleMesh : public Object {
     public :
 
@@ -38,7 +34,7 @@ namespace nagato {
                 Spectrum color,
                 Spectrum em = Spectrum());
 
-        std::optional<Hit> intersect(Ray &ray, float tmin, float tmax) override;
+        std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
 
     private:
         tinyobj::attrib_t attrib{};

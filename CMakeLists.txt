@@ -3,20 +3,24 @@ project(pathtracing)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# ターゲットファイル
 file(GLOB src
-        ${PROJECT_SOURCE_DIR}/*.cc
-        ${PROJECT_SOURCE_DIR}/*.h
-        ${PROJECT_SOURCE_DIR}/*.cpp
-        ${PROJECT_SOURCE_DIR}/*.hpp)
+        ${PROJECT_SOURCE_DIR}/src/*.cc
+        ${PROJECT_SOURCE_DIR}/src/*.h
+        ${PROJECT_SOURCE_DIR}/src/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/*.hpp)
+
+# ライブラリ作成
+add_library(pathtracingLibrary STATIC ${src})
+
 #MESSAGE(STATUS "${src}")
 
-add_executable(pathtracing ${src})
-add_executable(wavept test/wave.cpp)
-add_executable(same_test test/same_test.cpp)
-add_executable(test_tinyexr test/test_tinyexr.cc tinyexr.h tinyexr.cc)
-add_executable(test_obj_loader test/loader_example.cc tiny_obj_loader.h tiny_obj_loader.cc)
+add_executable(pathtracing main.cpp)
+#add_executable(wavept test/wave.cpp)
+#add_executable(same_test test/same_test.cpp)
+#add_executable(test_tinyexr test/test_tinyexr.cc tinyexr.h tinyexr.cc)
+#add_executable(test_obj_loader test/loader_example.cc tiny_obj_loader.h tiny_obj_loader.cc)
 
+target_link_libraries(pathtracing pathtracingLibrary)
 
 # compile option
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")

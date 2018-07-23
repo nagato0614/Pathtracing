@@ -8,14 +8,13 @@
 
 #include <optional>
 #include "Ray.hpp"
-#include "SurfaceType.hpp"
-#include "Vector3.hpp"
 #include "Spectrum.hpp"
+#include "SurfaceType.hpp"
+#include "Hit.hpp"
 
 namespace nagato {
 
     class Hit;
-
     class Object {
     public:
         Vector3 position;

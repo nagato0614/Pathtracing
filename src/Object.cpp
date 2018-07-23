@@ -3,8 +3,6 @@
 //
 
 #include "Object.hpp"
-#include "Hit.hpp"
-#include "SurfaceType.hpp"
 
 namespace nagato
 {

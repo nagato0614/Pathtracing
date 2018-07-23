@@ -6,10 +6,10 @@
 #include <optional>
 #include <fstream>
 #include <chrono>
-#include "Scene.hpp"
-#include "TriangleMesh.hpp"
-#include "Sphere.hpp"
-#include "Spectrum.hpp"
+#include "src/Sphere.hpp"
+#include "src/TriangleMesh.hpp"
+#include "src/Scene.hpp"
+#include "src/ColorRGB.hpp"
 
 using namespace nagato;
 

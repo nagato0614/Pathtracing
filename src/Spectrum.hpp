@@ -7,9 +7,8 @@
 
 #include <vector>
 #include <iostream>
-#include "ColorRGB.hpp"
-#include "Common.hpp"
 #include "Random.hpp"
+#include "Common.hpp"
 
 namespace nagato
 {

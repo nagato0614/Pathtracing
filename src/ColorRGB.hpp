@@ -5,7 +5,7 @@
 #ifndef PATHTRACING_COLORRGB_HPP
 #define PATHTRACING_COLORRGB_HPP
 
-#include "Vector3.hpp"
+
 #include "Spectrum.hpp"
 
 namespace nagato

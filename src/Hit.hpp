@@ -6,7 +6,6 @@
 #define PATHTRACING_HIT_HPP
 
 #include "Object.hpp"
-#include "Vector3.hpp"
 
 namespace nagato {
     class Object;

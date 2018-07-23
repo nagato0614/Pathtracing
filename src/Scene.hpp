@@ -8,8 +8,7 @@
 
 #include <optional>
 #include <vector>
-#include "Hit.hpp"
-#include "Ray.hpp"
+#include "Object.hpp"
 
 namespace nagato {
     class Scene {

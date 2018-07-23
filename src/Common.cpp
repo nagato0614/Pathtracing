@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <fstream>
 #include "Common.hpp"
+#include "ColorRGB.hpp"
 
 namespace nagato
 {
