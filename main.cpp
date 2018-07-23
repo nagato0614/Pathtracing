@@ -39,7 +39,7 @@ int main()
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 10;
+    const int samples = 1;
 
     // Camera parameters
     const Vector3 eye(0, 5, 10);
@@ -61,22 +61,18 @@ int main()
 //    scene.spheres.push_back(new Sphere{Vector3(2, 1, 0), 1.1, SurfaceType::Fresnel, Spectrum(0.99)});
     scene.spheres.push_back(new TriangleMesh("../models/left.obj",
                                              "../models/left.mtl",
-                                             Vector3(),
                                              SurfaceType::Diffuse,
                                              Spectrum("../property/macbeth_15_red.csv")));
     scene.spheres.push_back(new TriangleMesh("../models/right.obj",
                                              "../models/right.mtl",
-                                             Vector3(),
                                              SurfaceType::Diffuse,
                                              Spectrum("../property/macbeth_13_blue.csv")));
     scene.spheres.push_back(new TriangleMesh("../models/back_ceil_floor_plane.obj",
                                              "../models/back_ceil_floor_plane.mtl",
-                                             Vector3(),
                                              SurfaceType::Diffuse,
                                              Spectrum("../property/macbeth_19_white.csv")));
     scene.spheres.push_back(new TriangleMesh("../models/light_plane.obj",
                                              "../models/light_plane.mtl",
-                                             Vector3(),
                                              SurfaceType::Diffuse,
                                              Spectrum(),
                                              Spectrum("../property/cie_si_d65.csv")));
@@ -142,7 +138,7 @@ int main()
 
             // 各パスごとにサンプルする波長を変化させる
             Spectrum sampledSpectrum(1.0);
-//            sampledSpectrum.sample(100 + i + pass);
+            sampledSpectrum.sample(100 + i + pass);
 
             for (int depth = 0; depth < 10; depth++) {
                 // Intersection
@@ -157,9 +153,6 @@ int main()
                     auto d = intersect->distance;
                     depth_buffer[i] = {d, d, d};
                 }
-
-                // Add contribution
-//                L = L + th * intersect->sphere->emittance;
 
                 // スペクトル寄与を追加する
                 spectrumL = spectrumL + sampledSpectrum * intersect->sphere->emittance;
@@ -186,12 +179,26 @@ int main()
                         const auto wi = -ray.direction;
                         return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
                     } else if (intersect->sphere->type == SurfaceType::Fresnel) {
-                        // #TODO : 波長を考慮した屈折の実装
+//
+//                        // サンプル点を１つにしてそれ以外の影響を0にする
+//                        int wavelength = sampledSpectrum.samplePoints[rng.next(0, SAMPLE) % SAMPLE];
+//                        sampledSpectrum.leaveOnePoint(wavelength);
+//                        wavelength += 380;
+//
+//                        // http://refractiveindex.info/?group=CDGM&material=H-ZF62
+//                        // CDGM社のH-ZF62という光学ガラス。屈折率の変化が大きい
+//                        const double nt =
+//                                sqrt(3.5139564 - 2.4812508E-2 * pow(wavelength, 2) +
+//                                     4.6252559E-2 * pow(wavelength, -2) +
+//                                     9.1313596E-3 * pow(wavelength, -4) -
+//                                     1.0777108E-3 * pow(wavelength, -6) +
+//                                     1.0819677E-4 * pow(wavelength, -8));
+//
 //                        const auto wi = -ray.direction;
 //                        const auto into = dot(wi, intersect->normal) > 0;
 //                        const auto n = into ? intersect->normal : -intersect->normal;
 //                        const auto ior = intersect->sphere->ior;
-//                        const auto eta = into ? 1 / ior : ior;
+//                        const auto eta = into ? 1 / nt : nt;
 //                        const auto wt = [&]() -> std::optional<Vector3> {
 //                            const auto t = dot(wi, n);
 //                            const auto t2 = 1 - eta * eta * (1 - t * t);

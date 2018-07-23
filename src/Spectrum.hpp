@@ -117,6 +117,9 @@ namespace nagato
         // [0,1]の範囲に正規化する
         void normilize();
 
+        // あるポイントだけを残して他の値を0にする
+        void leaveOnePoint(int index);
+
         size_t sample_ = SAMPLE;
         int resolution_ = RESOLUTION;
 
@@ -128,6 +131,8 @@ namespace nagato
     };
 
     void printSpectrum(Spectrum s);
+    
+    void printSample(Spectrum s);
 }
 
 #endif //PATHTRACING_SPECTRUM_HPP

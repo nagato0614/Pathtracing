@@ -15,6 +15,7 @@ namespace nagato {
     class Sphere : public Object {
     public:
         float radius;
+        Vector3 point;
 
         Sphere(Vector3 p, float r, SurfaceType t, Spectrum color, Spectrum em = Spectrum());
 

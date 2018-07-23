@@ -23,7 +23,7 @@ namespace nagato {
         Spectrum emittance;
         float ior = 1.5;
 
-        Object(Vector3 p, SurfaceType t, Spectrum color, Spectrum em = Spectrum());
+        Object(SurfaceType t, Spectrum color, Spectrum em = Spectrum());
 
         virtual std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
     };
