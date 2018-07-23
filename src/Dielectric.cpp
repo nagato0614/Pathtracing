@@ -3,3 +3,10 @@
 //
 
 #include "Dielectric.hpp"
+namespace nagato {
+
+    Dielectric::Dielectric(SurfaceType t, Spectrum c, Spectrum r) : Material(t, c), refractance(r)
+    {
+
+    }
+}

@@ -6,10 +6,18 @@
 #define PATHTRACING_DIELECTRIC_HPP
 
 
-class Dielectric
+#include "Material.hpp"
+
+namespace nagato
 {
+    class Dielectric : public Material
+    {
+     public:
+        Dielectric(SurfaceType t, Spectrum c, Spectrum r);
 
-};
-
+     private:
+        Spectrum refractance;
+    };
+}
 
 #endif //PATHTRACING_DIELECTRIC_HPP

@@ -5,11 +5,15 @@
 #ifndef PATHTRACING_SPECULAR_HPP
 #define PATHTRACING_SPECULAR_HPP
 
+#include "Material.hpp"
 
-class Specular
+namespace nagato
 {
-
-};
-
+    class Specular : public Material
+    {
+     public:
+        Specular(SurfaceType t, Spectrum c);
+    };
+}
 
 #endif //PATHTRACING_SPECULAR_HPP

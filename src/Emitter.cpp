@@ -3,3 +3,9 @@
 //
 
 #include "Emitter.hpp"
+namespace nagato {
+    Emitter::Emitter(SurfaceType t, Spectrum c, Spectrum e) : Material(t, c), emittence(e)
+    {
+
+    }
+}

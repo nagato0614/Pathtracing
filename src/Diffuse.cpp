@@ -3,3 +3,9 @@
 //
 
 #include "Diffuse.hpp"
+namespace nagato{
+    Diffuse::Diffuse(SurfaceType t, Spectrum c) : Material(t, c)
+    {
+
+    }
+}

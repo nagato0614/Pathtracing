@@ -5,11 +5,15 @@
 #ifndef PATHTRACING_DIFFUSE_HPP
 #define PATHTRACING_DIFFUSE_HPP
 
+#include "Material.hpp"
 
-class Diffuse
+namespace nagato
 {
-
-};
-
+    class Diffuse :public Material
+    {
+     public:
+        Diffuse(SurfaceType t, Spectrum c);
+    };
+}
 
 #endif //PATHTRACING_DIFFUSE_HPP

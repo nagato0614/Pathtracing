@@ -5,11 +5,22 @@
 #ifndef PATHTRACING_EMITTER_HPP
 #define PATHTRACING_EMITTER_HPP
 
+#include "Spectrum.hpp"
+#include "SurfaceType.hpp"
+#include "Material.hpp"
 
-class Emitter
+namespace nagato
 {
+    class Emitter : public Material
+    {
+     public:
 
-};
+        Spectrum emittence;
+
+        Emitter(SurfaceType t, Spectrum c, Spectrum e);
+
+    };
+}
 
 
 #endif //PATHTRACING_EMITTER_HPP

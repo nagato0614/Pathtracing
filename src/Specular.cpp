@@ -3,3 +3,9 @@
 //
 
 #include "Specular.hpp"
+namespace nagato{
+    Specular::Specular(SurfaceType t, Spectrum c) : Material(t, c)
+    {
+
+    }
+}
