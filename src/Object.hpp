@@ -17,7 +17,6 @@ namespace nagato {
     class Hit;
     class Object {
     public:
-        Vector3 position;
         SurfaceType type;
         Spectrum color;
         Spectrum emittance;

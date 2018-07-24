@@ -31,8 +31,9 @@ namespace nagato {
     }
 
     Sphere::Sphere(Vector3 p, float r, SurfaceType t, Spectrum color, Spectrum em) : Object(t, color, em),
-                                                                                     point(p), radius(r)
+                                                                                     position(p), radius(r)
     {
 
     }
 }
+ 

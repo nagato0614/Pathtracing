@@ -34,20 +34,21 @@ int main()
     std::cout << "OpenMP : OFF" << std::endl;
     #endif
 
+    // #TODO カメラクラスの作成
     // Image size
     const int width = 480;
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 1;
+    const int samples = 3000;
 
     // Camera parameters
-    const Vector3 eye(0, 5, 10);
-    const Vector3 center = eye + Vector3(0, 0, -1);
+    const Vector3 eye(0, 5, 6);
+    const Vector3 center = eye + Vector3(0, -0.5, -1);
 
     const Vector3 up(0, 1, 0);
-    const float fov = 60 * M_PI / 180;
-    const float aspect = float (width) / height;
+    const float fov = 55 * M_PI / 180;
+    const float aspect = float(width) / height;
 
     // Basis vectors for camera coordinates
     const auto wE = normalize(eye - center);
@@ -55,10 +56,12 @@ int main()
     const auto vE = cross(wE, uE);
 
     std::cout << "-- Load Scene -- " << std::endl;
+
+    // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     Scene scene;
     scene.spheres.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, SurfaceType::Mirror, Spectrum(0.99)});
-//    scene.spheres.push_back(new Sphere{Vector3(2, 1, 0), 1.1, SurfaceType::Fresnel, Spectrum(0.99)});
+    scene.spheres.push_back(new Sphere{Vector3(2, 1, 0), 1.1, SurfaceType::Fresnel, Spectrum(0.99)});
     scene.spheres.push_back(new TriangleMesh("../models/left.obj",
                                              "../models/left.mtl",
                                              SurfaceType::Diffuse,
@@ -87,9 +90,13 @@ int main()
     const Spectrum ybar("../property/cie_sco_2degree_ybar.csv");
     const Spectrum zbar("../property/cie_sco_2degree_zbar.csv");
 
+    // #TODO 屈折率と反射率で異なるスペクトルクラスの実装
+    // 屈折率
+    Spectrum refraction("../property/SiO2.csv");
+
     // レンダリングした画像を保存するディレクトリを作成
-    bool isOutput = false;
-    auto saveDirName = getNowTimeString() + "_results";
+    bool isOutput = true;
+    auto saveDirName = "results_" + getNowTimeString();
     auto command = "mkdir -p " + saveDirName;
     if (isOutput) {
         system(command.c_str());
@@ -107,6 +114,8 @@ int main()
 
     std::chrono::system_clock::time_point start, end;
     start = std::chrono::system_clock::now(); // 計測開始時間
+
+    // #TODO　pathtracingクラスの作成
     for (int pass = 0; pass < samples; pass++) {
         std::cout << "\rpath : " << (pass + 1) << " / " << samples;
         fflush(stdout);
@@ -137,10 +146,12 @@ int main()
             Spectrum spectrumL(0.0);
 
             // 各パスごとにサンプルする波長を変化させる
-            Spectrum sampledSpectrum(1.0);
+            Spectrum sampledSpectrum(0.0);
             sampledSpectrum.sample(100 + i + pass);
 
             for (int depth = 0; depth < 10; depth++) {
+
+                // #TODO BVHの実装
                 // Intersection
                 const auto intersect = scene.intersect(
                         ray, 1e-4, 1e+100);
@@ -154,8 +165,10 @@ int main()
                     depth_buffer[i] = {d, d, d};
                 }
 
-                // スペクトル寄与を追加する
-                spectrumL = spectrumL + sampledSpectrum * intersect->sphere->emittance;
+                if (dot(-ray.direction, intersect->normal) > 0.0) {
+                    // スペクトル寄与を追加する
+                    spectrumL = spectrumL + sampledSpectrum * intersect->sphere->emittance;
+                }
 
                 // Update next direction
                 ray.origin = intersect->point;
@@ -171,7 +184,8 @@ int main()
                             const auto t = 2 * M_PI * rng.next();
                             const auto x = r * cos(t);
                             const auto y = r * sin(t);
-                            return Vector3((float) x, (float) y, std::sqrt(std::max(float(0.0), static_cast<const float &>(1.0 - x * x - y * y))));
+                            return Vector3((float) x, (float) y, std::sqrt(std::max(float(0.0), static_cast<const float &>(
+                                    1.0 - x * x - y * y))));
                         }();
                         // Convert to world coordinates
                         return u * d.x + v * d.y + n * d.z;
@@ -179,46 +193,45 @@ int main()
                         const auto wi = -ray.direction;
                         return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
                     } else if (intersect->sphere->type == SurfaceType::Fresnel) {
-//
-//                        // サンプル点を１つにしてそれ以外の影響を0にする
-//                        int wavelength = sampledSpectrum.samplePoints[rng.next(0, SAMPLE) % SAMPLE];
-//                        sampledSpectrum.leaveOnePoint(wavelength);
-//                        wavelength += 380;
-//
-//                        // http://refractiveindex.info/?group=CDGM&material=H-ZF62
-//                        // CDGM社のH-ZF62という光学ガラス。屈折率の変化が大きい
-//                        const double nt =
-//                                sqrt(3.5139564 - 2.4812508E-2 * pow(wavelength, 2) +
-//                                     4.6252559E-2 * pow(wavelength, -2) +
-//                                     9.1313596E-3 * pow(wavelength, -4) -
-//                                     1.0777108E-3 * pow(wavelength, -6) +
-//                                     1.0819677E-4 * pow(wavelength, -8));
-//
-//                        const auto wi = -ray.direction;
-//                        const auto into = dot(wi, intersect->normal) > 0;
-//                        const auto n = into ? intersect->normal : -intersect->normal;
+
+                        int wavelength = 0;
+
+                        // サンプル点を１つにしてそれ以外の影響を0にする
+                        if (sampledSpectrum.samplePoints.size() > 1) {
+                            wavelength = sampledSpectrum.samplePoints[rng.next(0, SAMPLE - 1)];
+                            sampledSpectrum.leaveOnePoint(wavelength);
+                            spectrumL.leaveOnePoint(wavelength);
+                        }
+
+                        // 屈折率を取得
+                        const float ior = refraction.spectrum[wavelength];
+//                        const float ior = 1.5;
+
+                        const auto wi = -ray.direction;
+                        const auto into = dot(wi, intersect->normal) > 0;
+                        const auto n = into ? intersect->normal : -intersect->normal;
 //                        const auto ior = intersect->sphere->ior;
-//                        const auto eta = into ? 1 / nt : nt;
-//                        const auto wt = [&]() -> std::optional<Vector3> {
-//                            const auto t = dot(wi, n);
-//                            const auto t2 = 1 - eta * eta * (1 - t * t);
-//                            if (t2 < 0) {
-//                                return {};
-//                            };
-//                            return (n * t - wi) * eta - n * sqrt(t2);
-//                        }();
-//                        if (!wt) {
-//                            return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
-//                        }
-//                        const auto Fr = [&]() {
-//                            const auto cos = into ? dot(wi, intersect->normal) : dot(*wt, intersect->normal);
-//                            const auto r = (1 - ior) / (1 + ior);
-//                            return r * r + (1 - r * r) * pow(1 - cos, 5);
-//                        }();
-//
-//                        return rng.next() < Fr ?
-//                               intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi
-//                                               : *wt;
+                        const auto eta = into ? 1 / ior : ior;
+                        const auto wt = [&]() -> std::optional<Vector3> {
+                            const auto t = dot(wi, n);
+                            const auto t2 = 1 - eta * eta * (1 - t * t);
+                            if (t2 < 0) {
+                                return {};
+                            };
+                            return (n * t - wi) * eta - n * sqrt(t2);
+                        }();
+                        if (!wt) {
+                            return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
+                        }
+                        const auto Fr = [&]() {
+                            const auto cos = into ? dot(wi, intersect->normal) : dot(*wt, intersect->normal);
+                            const auto r = (1 - ior) / (1 + ior);
+                            return r * r + (1 - r * r) * pow(1 - cos, 5);
+                        }();
+
+                        return rng.next() < Fr ?
+                               intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi
+                                               : *wt;
                     } else {
                         return Vector3();
                     }
@@ -230,21 +243,13 @@ int main()
                     break;
                 }
             }
-            // 各波長の重みを更新
-            S[i] = S[i] + spectrumL / samples;
+            // 各波長の重みを更新(サンプリング数に応じて重みをかける)
+            S[i] = S[i] + (spectrumL / samples) * (RESOLUTION / sampledSpectrum.samplePoints.size());
         }
 
-        if ((pass + 1) % 5 == 0 && isOutput) {
+        if ((pass) % 5 == 0 && isOutput) {
             std::string outputfile = "./" + saveDirName + "/result_" + std::to_string(pass) + ".ppm";
-            std::ofstream ofs(outputfile);
-            ofs << "P3\n" << width << " " << height << "\n255\n";
-            for (const auto &i : S) {
-                ColorRGB pixelColor;
-                pixelColor.spectrum2rgb(i, xbar, zbar, ybar);
-                ofs << tonemap(pixelColor.r) << " "
-                    << tonemap(pixelColor.g) << " "
-                    << tonemap(pixelColor.b) << "\n";
-            }
+            writePPM(outputfile, S, width, height, xbar, ybar, zbar);
         }
     }
     end = std::chrono::system_clock::now();  // 計測終了時間
@@ -255,6 +260,7 @@ int main()
     std::cout << "-- Output ppm File --" << std::endl;
     writePPM("result.ppm", S, width, height, xbar, ybar, zbar);
 
+    // #TODO 法線マップとデプスマップを出力するモジュールの実装または外部ライブラリの実装
     // 法線マップを出力
     // [-1,1] を [0,255]に変換している
     std::ofstream output_normal("normal.ppm");

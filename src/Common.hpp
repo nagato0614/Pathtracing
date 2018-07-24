@@ -6,7 +6,7 @@
 #define PATHTRACING_COMMON_HPP
 
 #define RESOLUTION 400
-#define SAMPLE 32
+#define SAMPLE 1
 
 #include <tuple>
 #include <vector>

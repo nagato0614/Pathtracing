@@ -14,7 +14,7 @@ namespace nagato
 
     Object::Object(SurfaceType t, Spectrum color, Spectrum em) :type(t), color(color)
     {
-        this->emittance = em;
+        this->emittance = em * 3;
 //        this->emittance.normilize();
     }
 }

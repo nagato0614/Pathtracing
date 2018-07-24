@@ -8,7 +8,7 @@
 
 int main()
 {
-    std::string filename = "../property/cie_sco_10degree_xbar.csv";
+    std::string filename = "../property/SiO2.csv";
     std::vector<double> spectrum;
 
     io::CSVReader<2> in(filename);
