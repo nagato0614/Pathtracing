@@ -11,18 +11,17 @@
 #include "Spectrum.hpp"
 #include "SurfaceType.hpp"
 #include "Hit.hpp"
+#include "Material.hpp"
 
 namespace nagato {
 
     class Hit;
     class Object {
     public:
-        SurfaceType type;
-        Spectrum color;
-        Spectrum emittance;
+        Material *material;
         float ior = 1.5;
 
-        Object(SurfaceType t, Spectrum color, Spectrum em = Spectrum());
+        Object(Material *m);
 
         virtual std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
     };

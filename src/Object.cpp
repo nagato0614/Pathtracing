@@ -12,9 +12,8 @@ namespace nagato
         return {};
     }
 
-    Object::Object(SurfaceType t, Spectrum color, Spectrum em) :type(t), color(color)
+    Object::Object( Material *m) : material(m)
     {
-        this->emittance = em * 3;
-//        this->emittance.normilize();
+
     }
 }

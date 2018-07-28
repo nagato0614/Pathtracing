@@ -12,9 +12,8 @@ namespace nagato
 {
 
     TriangleMesh::TriangleMesh(
-            const std::string &objfilename, const std::string &mtlfilename, SurfaceType t,
-            Spectrum color, Spectrum em)
-            : Object(t, color, em)
+            const std::string &objfilename, const std::string &mtlfilename, Material *m)
+            : Object(m)
     {
         // オブジェクトファイルを読み込み
         std::ifstream cornellbox(objfilename);
@@ -148,8 +147,8 @@ namespace nagato
 
     TriangleMesh::TriangleMesh(
             tinyobj::attrib_t &attrib, std::vector<tinyobj::shape_t> &shapes,
-            std::vector<tinyobj::material_t> &materials,  SurfaceType t, Spectrum color, Spectrum em) :
-            Object(t, color, em), attrib(attrib), shapes(shapes), materials(materials)
+            std::vector<tinyobj::material_t> &materials,  Material *m) :
+            Object(m), attrib(attrib), shapes(shapes), materials(materials)
     {
 
     }

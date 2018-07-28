@@ -17,7 +17,7 @@ namespace nagato {
         float radius;
         Vector3 position;
 
-        Sphere(Vector3 p, float r, SurfaceType t, Spectrum color, Spectrum em = Spectrum());
+        Sphere(Vector3 p, float r, Material *m);
 
         std::optional<Hit> intersect(
                 Ray &ray,

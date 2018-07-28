@@ -16,7 +16,7 @@ namespace nagato
         Spectrum color;
         Spectrum emitter;
 
-        Material(SurfaceType t, Spectrum c, Spectrum e);
+        Material(SurfaceType t, Spectrum c, Spectrum e = Spectrum());
 
         SurfaceType type();
 

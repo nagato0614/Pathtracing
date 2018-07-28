@@ -10,6 +10,7 @@
 #include "src/TriangleMesh.hpp"
 #include "src/Scene.hpp"
 #include "src/ColorRGB.hpp"
+#include "src/Material.hpp"
 
 using namespace nagato;
 
@@ -40,7 +41,7 @@ int main()
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 3000;
+    const int samples = 10;
 
     // Camera parameters
     const Vector3 eye(0, 5, 6);
@@ -57,28 +58,27 @@ int main()
 
     std::cout << "-- Load Scene -- " << std::endl;
 
+    // マテリアルの読み込み
+    auto redMaterial = new Material(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
+    auto blueMateral = new Material(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
+    auto whiteMaterial = new Material(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
+    auto d65 = new Material(SurfaceType::Diffuse, Spectrum(), Spectrum("../property/cie_si_d65.csv"));
+    auto mirror = new Material(SurfaceType::Mirror, Spectrum(0.99));
+    auto Fresnel = new Material(SurfaceType::Fresnel, Spectrum(0.99));
+
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     Scene scene;
-    scene.spheres.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, SurfaceType::Mirror, Spectrum(0.99)});
-    scene.spheres.push_back(new Sphere{Vector3(2, 1, 0), 1.1, SurfaceType::Fresnel, Spectrum(0.99)});
+    scene.spheres.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, mirror});
+    scene.spheres.push_back(new Sphere{Vector3(2, 1, 0), 1.1, Fresnel});
     scene.spheres.push_back(new TriangleMesh("../models/left.obj",
-                                             "../models/left.mtl",
-                                             SurfaceType::Diffuse,
-                                             Spectrum("../property/macbeth_15_red.csv")));
+                                             "../models/left.mtl", redMaterial));
     scene.spheres.push_back(new TriangleMesh("../models/right.obj",
-                                             "../models/right.mtl",
-                                             SurfaceType::Diffuse,
-                                             Spectrum("../property/macbeth_13_blue.csv")));
+                                             "../models/right.mtl",blueMateral));
     scene.spheres.push_back(new TriangleMesh("../models/back_ceil_floor_plane.obj",
-                                             "../models/back_ceil_floor_plane.mtl",
-                                             SurfaceType::Diffuse,
-                                             Spectrum("../property/macbeth_19_white.csv")));
+                                             "../models/back_ceil_floor_plane.mtl",whiteMaterial));
     scene.spheres.push_back(new TriangleMesh("../models/light_plane.obj",
-                                             "../models/light_plane.mtl",
-                                             SurfaceType::Diffuse,
-                                             Spectrum(),
-                                             Spectrum("../property/cie_si_d65.csv")));
+                                             "../models/light_plane.mtl", d65));
 //  scene.spheres.push_back(new TriangleMesh("../models/suzanne.obj",
 //                                           "../models/suzanne.mtl",
 //                                           Vector3(),
@@ -95,7 +95,7 @@ int main()
     Spectrum refraction("../property/SiO2.csv");
 
     // レンダリングした画像を保存するディレクトリを作成
-    bool isOutput = true;
+    bool isOutput = false;
     auto saveDirName = "results_" + getNowTimeString();
     auto command = "mkdir -p " + saveDirName;
     if (isOutput) {
@@ -146,8 +146,8 @@ int main()
             Spectrum spectrumL(0.0);
 
             // 各パスごとにサンプルする波長を変化させる
-            Spectrum sampledSpectrum(0.0);
-            sampledSpectrum.sample(100 + i + pass);
+            Spectrum sampledSpectrum(1.0);
+//            sampledSpectrum.sample(100 + i + pass);
 
             for (int depth = 0; depth < 10; depth++) {
 
@@ -167,13 +167,13 @@ int main()
 
                 if (dot(-ray.direction, intersect->normal) > 0.0) {
                     // スペクトル寄与を追加する
-                    spectrumL = spectrumL + sampledSpectrum * intersect->sphere->emittance;
+                    spectrumL = spectrumL + sampledSpectrum * intersect->sphere->material->emitter;
                 }
 
                 // Update next direction
                 ray.origin = intersect->point;
                 ray.direction = [&]() {
-                    if (intersect->sphere->type == SurfaceType::Diffuse) {
+                    if (intersect->sphere->material->type() == SurfaceType::Diffuse) {
                         // Sample direction in local coordinates
                         const auto n =
                                 dot(intersect->normal, -ray.direction) > 0 ? intersect->normal : -intersect
@@ -189,10 +189,10 @@ int main()
                         }();
                         // Convert to world coordinates
                         return u * d.x + v * d.y + n * d.z;
-                    } else if (intersect->sphere->type == SurfaceType::Mirror) {
+                    } else if (intersect->sphere->material->type() == SurfaceType::Mirror) {
                         const auto wi = -ray.direction;
                         return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
-                    } else if (intersect->sphere->type == SurfaceType::Fresnel) {
+                    } else if (intersect->sphere->material->type() == SurfaceType::Fresnel) {
 
                         int wavelength = 0;
 //
@@ -238,7 +238,7 @@ int main()
                 }();
 
                 // Update throughput
-                sampledSpectrum = sampledSpectrum * intersect->sphere->color;
+                sampledSpectrum = sampledSpectrum * intersect->sphere->material->color;
                 if (sampledSpectrum.findMaxSpectrum() == 0) {
                     break;
                 }
