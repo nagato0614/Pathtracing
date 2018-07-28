@@ -14,8 +14,9 @@ namespace nagato
     {
      public:
         Spectrum color;
+        Spectrum emitter;
 
-        Material(SurfaceType t, Spectrum c);
+        Material(SurfaceType t, Spectrum c, Spectrum e);
 
         SurfaceType type();
 

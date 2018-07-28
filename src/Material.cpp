@@ -6,13 +6,15 @@
 
 namespace nagato
 {
-    Material::Material(SurfaceType t, Spectrum c) : surfaceType(t), color(c)
-    {
 
-    }
 
     SurfaceType Material::type()
     {
         return surfaceType;
+    }
+
+    Material::Material(SurfaceType t, Spectrum c, Spectrum e) : surfaceType(t), color(c), emitter(e)
+    {
+
     }
 }
