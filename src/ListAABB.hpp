@@ -6,10 +6,20 @@
 #define PATHTRACING_LISTAABB_HPP
 
 
-class ListAABB
+#include "Scene.hpp"
+
+namespace nagato
 {
+    class ListAABB
+    {
+     public:
+        ListAABB(Scene *s);
 
-};
+        void makeAABB();
 
+     private:
+        Scene *scene;
+    };
+}
 
 #endif //PATHTRACING_LISTAABB_HPP

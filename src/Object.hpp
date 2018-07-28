@@ -21,7 +21,7 @@ namespace nagato {
         Material *material;
         float ior = 1.5;
 
-        Object(Material *m);
+        explicit Object(Material *m);
 
         virtual std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
     };

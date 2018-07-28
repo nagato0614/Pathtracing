@@ -12,7 +12,7 @@ namespace nagato
         return {};
     }
 
-    Object::Object( Material *m) : material(m)
+    Object::Object(Material *m) : material(m)
     {
 
     }

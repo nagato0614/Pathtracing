@@ -3,3 +3,13 @@
 //
 
 #include "ListAABB.hpp"
+namespace nagato{
+    ListAABB::ListAABB(Scene *s) : scene(s)
+    {
+
+    }
+
+    void ListAABB::makeAABB()
+    {
+    }
+}

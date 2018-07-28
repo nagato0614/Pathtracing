@@ -17,6 +17,10 @@ namespace nagato {
         std::vector<Object *> objects;
 
         std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
+
+        void loadObject(const std::string &objfilename,
+                        const std::string &mtlfilename,
+                        Material *m);
     };
 }
 

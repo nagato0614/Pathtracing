@@ -5,11 +5,17 @@
 #ifndef PATHTRACING_AABB_HPP
 #define PATHTRACING_AABB_HPP
 
+#include "Vector3.hpp"
 
-class Aabb
+namespace nagato
 {
+    class Aabb
+    {
+     public:
+        Vector3 min;
+        Vector3 max;
 
-};
-
+    };
+}
 
 #endif //PATHTRACING_AABB_HPP

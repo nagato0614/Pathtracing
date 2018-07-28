@@ -3,3 +3,4 @@
 //
 
 #include "Aabb.hpp"
+namespace nagato{}

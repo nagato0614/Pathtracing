@@ -7,7 +7,6 @@
 #include <fstream>
 #include <chrono>
 #include "src/Sphere.hpp"
-#include "src/TriangleMesh.hpp"
 #include "src/Scene.hpp"
 #include "src/ColorRGB.hpp"
 #include "src/Material.hpp"
@@ -59,26 +58,26 @@ int main()
     std::cout << "-- Load Scene -- " << std::endl;
 
     // マテリアルの読み込み
-    auto redMaterial = new Material(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
-    auto blueMateral = new Material(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
-    auto whiteMaterial = new Material(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
-    auto d65 = new Material(SurfaceType::Diffuse, Spectrum(), Spectrum("../property/cie_si_d65.csv"));
-    auto mirror = new Material(SurfaceType::Mirror, Spectrum(0.99));
-    auto Fresnel = new Material(SurfaceType::Fresnel, Spectrum(0.99));
+    Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
+    Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
+    Material whiteMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
+    Material d65(SurfaceType::Diffuse, Spectrum(), Spectrum("../property/cie_si_d65.csv"));
+    Material mirror(SurfaceType::Mirror, Spectrum(0.99));
+    Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     Scene scene;
-    scene.objects.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, mirror});
-    scene.objects.push_back(new Sphere{Vector3(2, 1, 0), 1.1, Fresnel});
-    scene.objects.push_back(new TriangleMesh("../models/left.obj",
-                                             "../models/left.mtl", redMaterial));
-    scene.objects.push_back(new TriangleMesh("../models/right.obj",
-                                             "../models/right.mtl",blueMateral));
-    scene.objects.push_back(new TriangleMesh("../models/back_ceil_floor_plane.obj",
-                                             "../models/back_ceil_floor_plane.mtl",whiteMaterial));
-    scene.objects.push_back(new TriangleMesh("../models/light_plane.obj",
-                                             "../models/light_plane.mtl", d65));
+    scene.objects.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
+    scene.objects.push_back(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
+    scene.loadObject("../models/left.obj",
+                     "../models/left.mtl", &redMaterial);
+    scene.loadObject("../models/right.obj",
+                     "../models/right.mtl", &blueMateral);
+    scene.loadObject("../models/back_ceil_floor_plane.obj",
+                     "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
+    scene.loadObject("../models/light_plane.obj",
+                     "../models/light_plane.mtl", &d65);
 //  scene.objects.push_back(new TriangleMesh("../models/suzanne.obj",
 //                                           "../models/suzanne.mtl",
 //                                           Vector3(),
