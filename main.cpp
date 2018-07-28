@@ -78,11 +78,6 @@ int main()
                      "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
     scene.loadObject("../models/light_plane.obj",
                      "../models/light_plane.mtl", &d65);
-//  scene.objects.push_back(new TriangleMesh("../models/suzanne.obj",
-//                                           "../models/suzanne.mtl",
-//                                           Vector3(),
-//                                           SurfaceType::Diffuse,
-//                                           Vector3(0.8, 0.3, 0.3)));
 
     // スペクトルからXYZに変換する等色関数
     const Spectrum xbar("../property/cie_sco_2degree_xbar.csv");
@@ -107,8 +102,10 @@ int main()
     std::vector<Vector3> nom(width * height);
     std::vector<Vector3> depth_buffer(width * height);
 
-    std::cout << "-- Image Size --" << std::endl;
+    std::cout << "-- Out Put Image Size --" << std::endl;
     std::cout << "width : height = " << width << " : " << height << std::endl;
+    std::cout << "-- Number of Object --" << std::endl;
+    std::cout << "objects : " << scene.objects.size() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
     std::chrono::system_clock::time_point start, end;
