@@ -8,6 +8,7 @@ using namespace nagato;
 
 int main()
 {
+    std::cout << -MAXFLOAT << std::endl;
     Spectrum sampledSpectrum(0.0);
     sampledSpectrum.sample(1999);
 

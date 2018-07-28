@@ -13,7 +13,7 @@ namespace nagato
     // BVHを構築するノード
     struct BVHNode {
         Aabb bbox;
-        int children[2]{};
+        int children[2];
         Object *object{};
     };
 
@@ -21,10 +21,19 @@ namespace nagato
     class BVH
     {
      public:
-        BVH(std::vector<Object *> *o);
+        explicit BVH(std::vector<Object *> *o);
+
+        void constructBVH();
 
      private:
+
+        void constructBVH_internal();
+        float surfaceArea(Aabb bbox);
+
+        Aabb mergeAABB(Aabb a, Aabb b);
+
         BVHNode root;
+        std::vector<Aabb> aabbList;
         std::vector<Object *> *objects;
     };
 }

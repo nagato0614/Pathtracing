@@ -13,10 +13,12 @@ namespace nagato
     class Aabb
     {
      public:
+        Aabb();
+
         Aabb(Vector3 min, Vector3 max);
 
         bool intersect(Ray &ray, float tmin, float tmax);
-     private:
+
         Vector3 min;
         Vector3 max;
     };
