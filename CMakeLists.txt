@@ -15,12 +15,10 @@ add_library(pathtracingLibrary STATIC ${src})
 #MESSAGE(STATUS "${src}")
 
 add_executable(pathtracing main.cpp)
-add_executable(spectrum test/spectrum_test.cpp)
 add_executable(wavept test/wave.cpp)
 add_executable(csv_test test/csv_test.cpp)
 add_executable(spectral_class_test test/spectral_class_test.cpp)
 
-target_link_libraries(spectrum pathtracingLibrary)
 target_link_libraries(pathtracing pathtracingLibrary)
 target_link_libraries(csv_test pathtracingLibrary)
 target_link_libraries(spectral_class_test pathtracingLibrary)

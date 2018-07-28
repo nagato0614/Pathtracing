@@ -195,17 +195,17 @@ int main()
                     } else if (intersect->sphere->type == SurfaceType::Fresnel) {
 
                         int wavelength = 0;
-
-                        // サンプル点を１つにしてそれ以外の影響を0にする
-                        if (sampledSpectrum.samplePoints.size() > 1) {
-                            wavelength = sampledSpectrum.samplePoints[rng.next(0, SAMPLE - 1)];
-                            sampledSpectrum.leaveOnePoint(wavelength);
-                            spectrumL.leaveOnePoint(wavelength);
-                        }
-
-                        // 屈折率を取得
-                        const float ior = refraction.spectrum[wavelength];
-//                        const float ior = 1.5;
+//
+//                        // サンプル点を１つにしてそれ以外の影響を0にする
+//                        if (sampledSpectrum.samplePoints.size() > 1) {
+//                            wavelength = sampledSpectrum.samplePoints[rng.next(0, SAMPLE - 1)];
+//                            sampledSpectrum.leaveOnePoint(wavelength);
+//                            spectrumL.leaveOnePoint(wavelength);
+//                        }
+//
+//                        // 屈折率を取得
+//                        const float ior = refraction.spectrum[wavelength];
+                        const float ior = 1.5;
 
                         const auto wi = -ray.direction;
                         const auto into = dot(wi, intersect->normal) > 0;
