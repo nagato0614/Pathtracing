@@ -14,7 +14,7 @@ namespace nagato {
     class Scene {
     public:
 
-        std::vector<Object *> spheres;
+        std::vector<Object *> objects;
 
         std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
     };

@@ -69,17 +69,17 @@ int main()
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     Scene scene;
-    scene.spheres.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, mirror});
-    scene.spheres.push_back(new Sphere{Vector3(2, 1, 0), 1.1, Fresnel});
-    scene.spheres.push_back(new TriangleMesh("../models/left.obj",
+    scene.objects.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, mirror});
+    scene.objects.push_back(new Sphere{Vector3(2, 1, 0), 1.1, Fresnel});
+    scene.objects.push_back(new TriangleMesh("../models/left.obj",
                                              "../models/left.mtl", redMaterial));
-    scene.spheres.push_back(new TriangleMesh("../models/right.obj",
+    scene.objects.push_back(new TriangleMesh("../models/right.obj",
                                              "../models/right.mtl",blueMateral));
-    scene.spheres.push_back(new TriangleMesh("../models/back_ceil_floor_plane.obj",
+    scene.objects.push_back(new TriangleMesh("../models/back_ceil_floor_plane.obj",
                                              "../models/back_ceil_floor_plane.mtl",whiteMaterial));
-    scene.spheres.push_back(new TriangleMesh("../models/light_plane.obj",
+    scene.objects.push_back(new TriangleMesh("../models/light_plane.obj",
                                              "../models/light_plane.mtl", d65));
-//  scene.spheres.push_back(new TriangleMesh("../models/suzanne.obj",
+//  scene.objects.push_back(new TriangleMesh("../models/suzanne.obj",
 //                                           "../models/suzanne.mtl",
 //                                           Vector3(),
 //                                           SurfaceType::Diffuse,
