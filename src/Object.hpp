@@ -12,6 +12,7 @@
 #include "SurfaceType.hpp"
 #include "Hit.hpp"
 #include "Material.hpp"
+#include "Aabb.hpp"
 
 namespace nagato {
 
@@ -24,6 +25,8 @@ namespace nagato {
         explicit Object(Material *m);
 
         virtual std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
+
+        virtual Aabb getAABB();
     };
 }
 

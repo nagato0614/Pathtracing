@@ -23,6 +23,8 @@ namespace nagato {
                 Ray &ray,
                 float tmin,
                 float tmax) override;
+
+        Aabb getAABB() override ;
     };
 }
 #endif //PATHTRACING_SPHERE_HPP

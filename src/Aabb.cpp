@@ -3,4 +3,14 @@
 //
 
 #include "Aabb.hpp"
-namespace nagato{}
+namespace nagato{
+    Aabb::Aabb(Vector3 m1, Vector3 m2) : min(m1), min(m2)
+    {
+
+    }
+
+    bool Aabb::intersect(Ray &ray, float tmin, float tmax)
+    {
+        return false;
+    }
+}

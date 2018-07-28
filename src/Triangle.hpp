@@ -17,6 +17,8 @@ namespace nagato
 
         std::optional<Hit> intersect(Ray &ray, float tmin, float tmax) override;
 
+        Aabb getAABB() override ;
+
      private:
         std::vector<Vector3> points;
     };

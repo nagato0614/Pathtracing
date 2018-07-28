@@ -43,4 +43,34 @@ namespace nagato{
             }
         }
     }
+
+    Aabb Triangle::getAABB()
+    {
+        Vector3 min(MAXFLOAT);
+        Vector3 max(-MAXFLOAT);
+
+        for (int i = 0; i < 3; i++) {
+            if (min.x > points[i].x) {
+                min.x = points[i].x;
+            }
+            if (min.y > points[i].y) {
+                min.y = points[i].y;
+            }
+            if (min.z > points[i].z) {
+                min.z = points[i].z;
+            }
+
+            if (max.x < points[i].x) {
+                max.x = points[i].x;
+            }
+            if (max.y < points[i].y) {
+                max.y = points[i].y;
+            }
+            if (max.z < points[i].z) {
+                max.z = points[i].z;
+            }
+        }
+
+        return Aabb(min, max);
+    }
 }

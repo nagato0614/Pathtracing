@@ -6,15 +6,19 @@
 #define PATHTRACING_AABB_HPP
 
 #include "Vector3.hpp"
+#include "Ray.hpp"
 
 namespace nagato
 {
     class Aabb
     {
      public:
+        Aabb(Vector3 min, Vector3 max);
+
+        bool intersect(Ray &ray, float tmin, float tmax);
+     private:
         Vector3 min;
         Vector3 max;
-
     };
 }
 
