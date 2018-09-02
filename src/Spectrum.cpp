@@ -10,21 +10,12 @@ namespace nagato
     Spectrum::Spectrum()
     {
         spectrum.resize(static_cast<unsigned long>(resolution_ + 1), 0.0); // NOLINT
-        samplePoints.resize(static_cast<unsigned long>(sample_), 0);
     }
 
-    void Spectrum::sample(int seed)
-    {
-        samplePoints = make_rand_array_unique(sample_, 0, resolution_, seed);
-        for (auto i : samplePoints) {
-            spectrum[i] = 1.0;
-        }
-    }
 
     Spectrum::Spectrum(float init_num = 0.0)
     {
         spectrum.resize(static_cast<unsigned long>(resolution_ + 1), init_num); // NOLINT
-        samplePoints.resize(static_cast<unsigned long>(sample_), 0);
     }
 
     Spectrum::Spectrum(std::string filename)
@@ -153,11 +144,11 @@ namespace nagato
 
     void Spectrum::leaveOnePoint(int index)
     {
-        samplePoints.clear();
-        samplePoints.push_back(index);
         for (int i = 0; i < resolution_ + 1; ++i) {
             if (index != i)
                 spectrum[i] = 0.0;
+            else
+                spectrum[i] *= RESOLUTION;
         }
     }
 
@@ -165,13 +156,6 @@ namespace nagato
     {
         for (int i = 0; i < 401; i++) {
             printf("%3d \t : %10.5f\n", 380 + i, s.spectrum[i]);
-        }
-    }
-
-    void printSample(Spectrum s)
-    {
-        for (int i = 0; i < s.samplePoints.size(); i++) {
-            printf("%d : %d[nm]\n", i, s.samplePoints[i] + 380);
         }
     }
 

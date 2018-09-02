@@ -61,7 +61,7 @@ int main()
     Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
     Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
     Material whiteMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
-    Material d65(SurfaceType::Diffuse, Spectrum(), Spectrum("../property/cie_si_d65.csv"));
+    Material d65(SurfaceType::Diffuse, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.5);
     Material mirror(SurfaceType::Mirror, Spectrum(0.99));
     Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
 
@@ -139,11 +139,15 @@ int main()
             }();
 
             // スペクトルの最終的な寄与
-            Spectrum spectrumL(0.0);
+            Spectrum L(0.0);
 
-            // 各パスごとにサンプルする波長を変化させる
-            Spectrum sampledSpectrum(1.0);
-//            sampledSpectrum.sample(100 + i + pass);
+            // 各パスにおけるウェイト
+            Spectrum weight(1.0);
+
+            // 波長ごとの追跡を行う場合における追跡している波長
+            int wavelength = -1;
+
+            bool isSlected = false;
 
             for (int depth = 0; depth < 10; depth++) {
 
@@ -163,7 +167,7 @@ int main()
 
                 if (dot(-ray.direction, intersect->normal) > 0.0) {
                     // スペクトル寄与を追加する
-                    spectrumL = spectrumL + sampledSpectrum * intersect->sphere->material->emitter;
+                    L = L + weight * intersect->sphere->material->emitter;
                 }
 
                 // Update next direction
@@ -190,18 +194,16 @@ int main()
                         return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
                     } else if (intersect->sphere->material->type() == SurfaceType::Fresnel) {
 
-                        int wavelength = 0;
-//
-//                        // サンプル点を１つにしてそれ以外の影響を0にする
-//                        if (sampledSpectrum.samplePoints.size() > 1) {
-//                            wavelength = sampledSpectrum.samplePoints[rng.next(0, SAMPLE - 1)];
-//                            sampledSpectrum.leaveOnePoint(wavelength);
-//                            spectrumL.leaveOnePoint(wavelength);
-//                        }
-//
-//                        // 屈折率を取得
-//                        const float ior = refraction.spectrum[wavelength];
-                        const float ior = 1.5;
+                        // サンプル点を１つにしてそれ以外の影響を0にする
+                        if (wavelength == -1 && !isSlected) {
+                            wavelength = rng.next(0, RESOLUTION - 1);
+                            weight.leaveOnePoint(wavelength);
+                            L.leaveOnePoint(wavelength);
+                            isSlected = true;
+                        }
+
+                        // 屈折率を取得
+                        const float ior = refraction.spectrum[wavelength];
 
                         const auto wi = -ray.direction;
                         const auto into = dot(wi, intersect->normal) > 0;
@@ -234,13 +236,13 @@ int main()
                 }();
 
                 // Update throughput
-                sampledSpectrum = sampledSpectrum * intersect->sphere->material->color;
-                if (sampledSpectrum.findMaxSpectrum() == 0) {
+                weight = weight * intersect->sphere->material->color;
+                if (weight.findMaxSpectrum() == 0) {
                     break;
                 }
             }
             // 各波長の重みを更新(サンプリング数に応じて重みをかける)
-            S[i] = S[i] + (spectrumL / samples) * (RESOLUTION / sampledSpectrum.samplePoints.size());
+                S[i] = S[i] + (L / samples);
         }
 
         if ((pass) % 5 == 0 && isOutput) {

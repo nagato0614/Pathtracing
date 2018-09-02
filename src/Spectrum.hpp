@@ -29,9 +29,6 @@ namespace nagato
         // 波長に対する反射率を保存したcsvから読み込む1
         explicit Spectrum(std::string filenam);
 
-        // 設定したサンプル数だけランダムにサンプル点を決める
-        void sample(int seed);
-
         friend inline Spectrum operator*(Spectrum a, Spectrum b)
         {
             Spectrum s;
@@ -122,9 +119,6 @@ namespace nagato
 
         size_t sample_ = SAMPLE;
         int resolution_ = RESOLUTION;
-
-        // サンプルした波長
-        std::vector<int> samplePoints;
 
         // 実際の波長を保存する
         std::vector<float> spectrum;
