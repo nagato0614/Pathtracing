@@ -6,7 +6,7 @@
 #define PATHTRACING_BVH_HPP
 
 #include "Aabb.hpp"
-#include "Triangle.hpp"
+#include "../object/Triangle.hpp"
 
 namespace nagato
 {

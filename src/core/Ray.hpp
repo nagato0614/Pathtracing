@@ -6,7 +6,7 @@
 #define PATHTRACING_RAY_HPP
 
 
-#include "Vector3.hpp"
+#include "../linearAlgebra/Vector3.hpp"
 
 namespace nagato {
     class Ray {

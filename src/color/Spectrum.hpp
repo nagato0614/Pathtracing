@@ -7,8 +7,8 @@
 
 #include <vector>
 #include <iostream>
-#include "Random.hpp"
-#include "Common.hpp"
+#include "../core/Random.hpp"
+#include "../core/Common.hpp"
 
 namespace nagato
 {

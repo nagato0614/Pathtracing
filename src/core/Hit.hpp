@@ -5,7 +5,7 @@
 #ifndef PATHTRACING_HIT_HPP
 #define PATHTRACING_HIT_HPP
 
-#include "Object.hpp"
+#include "../object/Object.hpp"
 
 namespace nagato {
     class Object;

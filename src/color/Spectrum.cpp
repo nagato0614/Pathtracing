@@ -3,7 +3,7 @@
 //
 
 #include "Spectrum.hpp"
-#include "csv.h"
+#include "../core/csv.h"
 
 namespace nagato
 {

@@ -5,8 +5,8 @@
 #ifndef PATHTRACING_AABB_HPP
 #define PATHTRACING_AABB_HPP
 
-#include "Vector3.hpp"
-#include "Ray.hpp"
+#include "../linearAlgebra/Vector3.hpp"
+#include "../core/Ray.hpp"
 
 namespace nagato
 {

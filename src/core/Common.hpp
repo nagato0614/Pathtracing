@@ -10,8 +10,7 @@
 
 #include <tuple>
 #include <vector>
-#include "Vector3.hpp"
-#include "Spectrum.hpp"
+#include "../linearAlgebra/Vector3.hpp"
 
 namespace nagato
 {

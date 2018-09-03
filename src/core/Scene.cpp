@@ -3,11 +3,12 @@
 //
 
 #include <fstream>
-#include "Scene.hpp"
-#include "Object.hpp"
 #include "Hit.hpp"
+#include "Ray.hpp"
+#include "Scene.hpp"
 #include "tiny_obj_loader.h"
-#include "Triangle.hpp"
+#include "../object/Triangle.hpp"
+
 
 namespace nagato {
 

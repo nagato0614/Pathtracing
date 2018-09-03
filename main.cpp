@@ -6,10 +6,10 @@
 #include <optional>
 #include <fstream>
 #include <chrono>
-#include "src/Sphere.hpp"
-#include "src/Scene.hpp"
-#include "src/ColorRGB.hpp"
-#include "src/Material.hpp"
+#include "src/linearAlgebra/Vector3.hpp"
+#include "src/material/Material.hpp"
+#include "src/core/Scene.hpp"
+#include "src/object/Sphere.hpp"
 
 using namespace nagato;
 
@@ -40,7 +40,7 @@ int main()
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 10;
+    const int samples = 100;
 
     // Camera parameters
     const Vector3 eye(0, 5, 6);

@@ -5,8 +5,8 @@
 #ifndef PATHTRACING_MATERIAL_HPP
 #define PATHTRACING_MATERIAL_HPP
 
-#include "SurfaceType.hpp"
-#include "Spectrum.hpp"
+#include "../core/SurfaceType.hpp"
+#include "../color/Spectrum.hpp"
 
 namespace nagato
 {

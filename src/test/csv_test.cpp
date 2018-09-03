@@ -4,7 +4,7 @@
 
 
 #include <iostream>
-#include "../src/csv.h"
+#include "../core/csv.h"
 
 int main()
 {

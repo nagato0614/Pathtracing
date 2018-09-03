@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/23.
 //
 
-#include "../src/Spectrum.hpp"
+#include "../color/Spectrum.hpp"
 
 using namespace nagato;
 

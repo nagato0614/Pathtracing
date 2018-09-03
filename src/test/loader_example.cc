@@ -23,7 +23,7 @@ extern "C" {
 #else
 #if defined(__unix__) || defined(__APPLE__)
 #include <sys/time.h>
-#include "../tiny_obj_loader.h"
+#include "../core/tiny_obj_loader.h"
 #else
 #include <ctime>
 #endif

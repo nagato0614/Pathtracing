@@ -7,12 +7,12 @@
 
 
 #include <optional>
-#include "Ray.hpp"
-#include "Spectrum.hpp"
-#include "SurfaceType.hpp"
-#include "Hit.hpp"
-#include "Material.hpp"
-#include "Aabb.hpp"
+#include "../core/Ray.hpp"
+#include "../color/Spectrum.hpp"
+#include "../core/SurfaceType.hpp"
+#include "../core/Hit.hpp"
+#include "../material/Material.hpp"
+#include "../structure/Aabb.hpp"
 
 namespace nagato {
 
