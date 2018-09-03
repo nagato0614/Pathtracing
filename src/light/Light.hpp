@@ -11,18 +11,26 @@
 
 namespace nagato
 {
-    enum LightType {
+    enum LightType
+    {
         Point,
         SpotLight,
         DiffuseLight
     };
+
     class Light
     {
      public:
-        LightType type() { return lightType; }
-        virtual Spectrum SmplePoint(Hit hit, Vector3 *sampledPoint);
+        Light(Spectrum I, LightType type) : I(I), lightType(type) {}
 
-     private:
+        LightType type()
+        {
+            return lightType;
+        }
+
+        virtual Spectrum samplePoint(Hit hit, Vector3 *sampledPoint, float *pdf)= 0;
+
+     protected:
         Spectrum I;
         LightType lightType;
     };
