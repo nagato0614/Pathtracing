@@ -120,19 +120,14 @@ int main()
             #pragma omp parallel for schedule(dynamic, 1)
         #endif
         for (int i = 0; i < width * height; i++) {
-            #ifdef _OPENMP
-            thread_local Random rng(42 + omp_get_thread_num() + pass);
-            #else
-            Random rng(42 + pass + i);
-            #endif
             const int x = i % width;
             const int y = height - i / width;
             Ray ray;
             ray.origin = eye;
             ray.direction = [&]() {
                 const float tf = std::tan(fov * .5);
-                const float rpx = 2. * (x + rng.next()) / width - 1;
-                const float rpy = 2. * (y + rng.next()) / height - 1;
+                const float rpx = 2. * (x + Random::Instance().next()) / width - 1;
+                const float rpy = 2. * (y + Random::Instance().next()) / height - 1;
                 const Vector3 ww = normalize(
                         Vector3(aspect * tf * rpx, tf * rpy, -1));
                 return uE * ww.x + vE * ww.y + wE * ww.z;
@@ -180,8 +175,8 @@ int main()
                                         ->normal;
                         const auto&[u, v] = tangentSpace(n);
                         const auto d = [&]() {
-                            const auto r = sqrt(rng.next());
-                            const auto t = 2 * M_PI * rng.next();
+                            const auto r = sqrt(Random::Instance().next());
+                            const auto t = 2 * M_PI * Random::Instance().next();
                             const auto x = r * cos(t);
                             const auto y = r * sin(t);
                             return Vector3((float) x, (float) y, std::sqrt(std::max(float(0.0), static_cast<const float &>(
@@ -196,7 +191,7 @@ int main()
 
                         // サンプル点を１つにしてそれ以外の影響を0にする
                         if (wavelength == -1 && !isSlected) {
-                            wavelength = rng.next(0, RESOLUTION - 1);
+                            wavelength = Random::Instance().next(0, RESOLUTION - 1);
                             weight.leaveOnePoint(wavelength);
                             L.leaveOnePoint(wavelength);
                             isSlected = true;
@@ -227,7 +222,7 @@ int main()
                             return r * r + (1 - r * r) * pow(1 - cos, 5);
                         }();
 
-                        return rng.next() < Fr ?
+                        return Random::Instance().next() < Fr ?
                                intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi
                                                : *wt;
                     } else {

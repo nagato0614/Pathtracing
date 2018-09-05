@@ -11,16 +11,20 @@
 namespace nagato {
     class Random {
     public:
-        std::mt19937 engine;
-        std::uniform_real_distribution<float> dist;
-
-        Random() {};
-
-        Random(int seed);
-
         float next();
 
         int next(int from, int to);
+
+        static Random& Instance();
+     private:
+        Random(const Random&) = delete;
+        Random& operator=(const Random&) = delete;
+        Random(Random&&) = delete;
+        Random& operator=(Random&&) = delete;
+        Random();
+
+        std::mt19937 engine;
+        std::uniform_real_distribution<float> dist;
     };
 }
 
