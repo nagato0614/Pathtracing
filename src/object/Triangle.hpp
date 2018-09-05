@@ -19,6 +19,9 @@ namespace nagato
 
         Aabb getAABB() override ;
 
+        Hit pointSampling(Hit surfaceInfo) override ;
+
+
      private:
         std::vector<Vector3> points;
     };

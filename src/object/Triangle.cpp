@@ -73,4 +73,24 @@ namespace nagato{
 
         return Aabb(min, max);
     }
+
+    Hit Triangle::pointSampling(Hit surfaceInfo)
+    {
+        float xi1 = Random::Instance().next();
+        float xi2 = Random::Instance().next();
+
+        float u = 1 - std::sqrt(xi1);
+        float v = xi2 * std::sqrt(xi1);
+
+        // サンプリングされた座標
+        auto sampledPoint = points[0] * u + points[1] * v + points[2] * (1 - u - v);
+
+        // サンプリングされた座標と
+        auto distance = (sampledPoint - surfaceInfo.point).norm();
+
+        // サンプリング地点の法線ベクトル
+        auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
+
+        return Hit{distance, sampledPoint, normal, this};
+    }
 }
