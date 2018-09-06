@@ -15,7 +15,7 @@ namespace nagato {
     Vector3::Vector3(float x, float y, float z)
             : x(x), y(y), z(z) {}
 
-    float Vector3::operator[](int i) {
+    float Vector3::operator[](int i) const {
         if (i == 0)
             return x;
         else if (i == 1)

@@ -19,7 +19,7 @@ namespace nagato {
 
         Vector3(float x, float y, float z);
 
-        float operator[](int i);
+        float operator[](int i) const;
 
         inline Vector3 operator+(Vector3 b) const {
           return Vector3(x + b.x, y + b.y, z + b.z);
