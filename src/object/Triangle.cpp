@@ -44,7 +44,7 @@ namespace nagato{
         }
     }
 
-    Aabb Triangle::getAABB()
+    Aabb Triangle::getAABB() const
     {
         Vector3 min(MAXFLOAT);
         Vector3 max(-MAXFLOAT);

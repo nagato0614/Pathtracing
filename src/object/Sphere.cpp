@@ -37,7 +37,7 @@ namespace nagato
 
     }
 
-    Aabb Sphere::getAABB()
+    Aabb Sphere::getAABB() const
     {
         Vector3 min(position.x - radius, position.y - radius, position.z - radius);
         Vector3 max(position.x + radius, position.y - radius, position.z - radius);

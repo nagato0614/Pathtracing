@@ -17,7 +17,7 @@ namespace nagato
 
     }
 
-    Aabb Object::getAABB()
+    Aabb Object::getAABB() const
     {
         return Aabb(nagato::Vector3(), nagato::Vector3());
     }

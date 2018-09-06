@@ -17,7 +17,7 @@ namespace nagato
 
         std::optional<Hit> intersect(Ray &ray, float tmin, float tmax) override;
 
-        Aabb getAABB() override ;
+        Aabb getAABB() const override ;
 
         Hit pointSampling(Hit surfaceInfo) override ;
 

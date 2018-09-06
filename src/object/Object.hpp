@@ -26,7 +26,7 @@ namespace nagato {
 
         virtual std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
 
-        virtual Aabb getAABB();
+        virtual Aabb getAABB() const;
 
         virtual Hit pointSampling(Hit surfaceInfo)= 0;
     };
