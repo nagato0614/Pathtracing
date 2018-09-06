@@ -25,6 +25,8 @@ namespace nagato {
                 float tmax) override;
 
         Aabb getAABB() const override ;
+
+        Hit pointSampling(Hit surfaceInfo);
     };
 }
 #endif //PATHTRACING_SPHERE_HPP

@@ -31,8 +31,11 @@ add_library(pathtracingLibrary STATIC ${src})
 #MESSAGE(STATUS "${src}")
 
 add_executable(pathtracing main.cpp)
+add_executable(bvh_test src/test/bvh_test.cpp)
 
 target_link_libraries(pathtracing pathtracingLibrary)
+target_link_libraries(bvh_test pathtracingLibrary)
+
 
 # compile option
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")

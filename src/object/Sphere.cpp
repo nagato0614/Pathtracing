@@ -43,5 +43,10 @@ namespace nagato
         Vector3 max(position.x + radius, position.y - radius, position.z - radius);
         return Aabb(min, max);
     }
+
+    Hit Sphere::pointSampling(Hit surfaceInfo)
+    {
+        return Hit(0, nagato::Vector3(), nagato::Vector3(), nullptr);
+    }
 }
  
