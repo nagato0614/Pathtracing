@@ -17,7 +17,7 @@ namespace nagato
 
         Aabb(Vector3 min, Vector3 max);
 
-        bool intersect(Ray &ray, float tmin, float tmax);
+        bool intersect(Ray &ray);
 
         Vector3 getCenter();
 
