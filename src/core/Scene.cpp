@@ -105,4 +105,11 @@ namespace nagato {
             }
         }
     }
+
+    void Scene::freeObject()
+    {
+        for (auto i : objects) {
+            delete i;
+        }
+    }
 }

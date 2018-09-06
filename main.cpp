@@ -286,6 +286,10 @@ int main()
                      << tonemap(i.z) << "\n";
     }
 
+    std::cout << "-- Memory release -- " << std::endl;
+
+    scene.freeObject();
+
     std::cout << "-- FINISH --" << std::endl;
 
     return 0;
