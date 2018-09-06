@@ -19,6 +19,8 @@ namespace nagato
 
         bool intersect(Ray &ray, float tmin, float tmax);
 
+        Vector3 getCenter();
+
         Vector3 min;
         Vector3 max;
     };
