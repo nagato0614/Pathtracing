@@ -20,6 +20,8 @@ namespace nagato
 
         SurfaceType type();
 
+        std::string typeName();
+
      private:
         SurfaceType surfaceType;
     };
