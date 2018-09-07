@@ -68,9 +68,7 @@ namespace nagato {
         }
 
         inline std::string toString() const {
-            char *str = nullptr;
-            sprintf(str, "(%f, %f, %f)", x, y, z);
-            return std::string(str);
+            return "(" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")";
         }
     };
 
