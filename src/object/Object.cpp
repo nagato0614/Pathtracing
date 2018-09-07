@@ -21,4 +21,9 @@ namespace nagato
     {
         return Aabb(nagato::Vector3(), nagato::Vector3());
     }
+
+    std::string Object::toString() const
+    {
+        return "Object : " + material->typeName();
+    }
 }

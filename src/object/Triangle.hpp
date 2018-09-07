@@ -21,6 +21,7 @@ namespace nagato
 
         Hit pointSampling(Hit surfaceInfo) override ;
 
+        std::string toString() const override ;
 
      private:
         std::vector<Vector3> points;

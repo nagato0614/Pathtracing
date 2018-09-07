@@ -93,4 +93,9 @@ namespace nagato{
 
         return Hit{distance, sampledPoint, normal, this};
     }
+
+    std::string Triangle::toString() const
+    {
+        return "[Triangle]material : " + material->typeName();
+    }
 }

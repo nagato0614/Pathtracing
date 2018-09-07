@@ -49,5 +49,12 @@ namespace nagato
     {
         return Hit(0, nagato::Vector3(), nagato::Vector3(), nullptr);
     }
+
+    std::string Sphere::toString() const
+    {
+        return "[Shpere]material : " + material->typeName() +
+               ", radius : " + std::to_string(radius) +
+               ", point : " + position.toString();
+    }
 }
  

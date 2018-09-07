@@ -29,6 +29,8 @@ namespace nagato {
         virtual Aabb getAABB() const;
 
         virtual Hit pointSampling(Hit surfaceInfo)= 0;
+
+        virtual std::string toString() const;
     };
 }
 
