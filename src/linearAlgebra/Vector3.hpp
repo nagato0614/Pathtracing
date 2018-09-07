@@ -66,6 +66,12 @@ namespace nagato {
         inline float norm() {
           return x * x + y * y + z * z;
         }
+
+        inline std::string toString() {
+            char *str = nullptr;
+            sprintf(str, "(%f, %f, %f)", x, y, z);
+            return std::string(str);
+        }
     };
 
     inline Vector4 toVec4(Vector3 v, float a = 1) {
