@@ -112,4 +112,9 @@ namespace nagato {
             delete i;
         }
     }
+
+    Scene::Scene()
+    {
+        objects.clear();
+    }
 }

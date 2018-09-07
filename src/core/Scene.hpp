@@ -13,6 +13,7 @@
 namespace nagato {
     class Scene {
     public:
+        Scene();
 
         std::vector<Object *> objects;
 
