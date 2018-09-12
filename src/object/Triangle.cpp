@@ -42,6 +42,8 @@ namespace nagato{
                 }
             }
         }
+
+        return std::nullopt;g
     }
 
     Aabb Triangle::getAABB() const

@@ -14,7 +14,7 @@ namespace nagato
         const float det = b * b - dot(op, op) + radius * radius;
 
         if (det < 0) {
-            return {};
+            return std::nullopt;
         }
         const auto t1 = (b - std::sqrt(det));
 
@@ -30,7 +30,7 @@ namespace nagato
             auto normal = (point - position) / radius;
             return Hit{t2, point, normal, this};
         }
-        return {};
+        return std::nullopt;
     }
 
     Sphere::Sphere(Vector3 p, float r, Material *m) : Object(m), position(p), radius(r)
