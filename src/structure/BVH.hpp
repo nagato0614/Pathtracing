@@ -14,15 +14,15 @@ namespace nagato
     struct BVHNode {
         Aabb bbox;
         Object *object = nullptr;
-        BVHNode *right = nullptr;
-        BVHNode *left = nullptr;
+        int left = -1;
+        int right = -1;
     };
 
     // BVHを扱うクラス
     class BVH
     {
      public:
-        explicit BVH(std::vector<Object *> &o);
+        explicit BVH(std::vector<Object *> objects);
 
         // BVHの構築を始める
         void constructBVH();
@@ -30,28 +30,30 @@ namespace nagato
         // BVHとレイの交差判定
         std::optional<Hit> intersect(Ray &ray, float min, float max);
 
-        // 不要になったBVHを開放する
-        void clearBVH();
+        // BVHのノード数を返す
+        int getNodeCount();
+
+        // BVHで使用しているメモリサイズを返す[MB]
+        size_t getMemorySize();
 
         // デバッグ用
         void showBVH();
      private:
 
         // BVH構築を再帰的に行う
-        BVHNode *constructBVH_internal(std::vector<Object *> &objects, int splitAxis);
-
-        // BVHのメモリ解放を再帰的に行う
-        void clearBVH_internal(BVHNode *node);
+        void constructBVH_internal(std::vector<Object *> objects, int splitAxis, int nodeIndex);
 
         // BVHとレイの交差判定を再帰的に行う
-        std::optional<Hit> intersect_internal(Ray &ray, float min, float max, BVHNode *node);
+        std::optional<Hit> intersect_internal(Ray &ray, float min, float max, int nodeIndex);
 
         float surfaceArea(Aabb bbox);
 
         Aabb mergeAABB(Aabb a, Aabb b);
 
         BVHNode *root = nullptr;
-        std::vector<Object *> &objects;
+        std::vector<Object *> objects;
+        int nodeCount = 0;
+        BVHNode nodes[BVH_NODE];
     };
 }
 

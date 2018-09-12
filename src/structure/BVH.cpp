@@ -9,8 +9,12 @@
 namespace nagato
 {
 
-    BVH::BVH(std::vector<Object *> &o) : objects(o)
+    BVH::BVH(std::vector<Object *> objects)
     {
+        this->objects.clear();
+        for (Object *o : objects) {
+            this->objects.push_back(o);
+        }
     }
 
     float BVH::surfaceArea(const Aabb bbox)
@@ -34,21 +38,27 @@ namespace nagato
 
     void BVH::constructBVH()
     {
-        root = constructBVH_internal(objects, 0);
+        constructBVH_internal(objects, 0, 0);
     }
 
-    BVHNode *BVH::constructBVH_internal(std::vector<Object *> &objects, int splitAxis)
+    void BVH::constructBVH_internal(std::vector<Object *> objects, int splitAxis, int nodeIndex)
     {
+//        std::cout << "NodeIndex  : " << nodeIndex << std::endl;
+//        std::cout << "Object num : " << objects.size() << "\n\n";
+
+        // オブジェクトが１つだけの場合それを葉する
         if (objects.size() == 1) {
-            auto *node = new BVHNode;
-            node->object = objects[0];
-            return node;
+            nodes[nodeIndex].object = objects.front();
+            nodes[nodeIndex].left = -1;
+            nodes[nodeIndex].right = -1;
+//            std::cout << nodes[nodeIndex].object->toString() << std::endl;
+            return;
         } else if (objects.empty()) {
-            std::cout << "empty" << std::endl;
-            return nullptr;
+            std::cerr << "empty" << std::endl;
+            exit(EMPTY_OBJECT);
         }
 
-        auto *node = new BVHNode;
+        auto *node = &nodes[nodeIndex];
 
         // 大きなAABBの構築
         for (auto i : objects) {
@@ -58,12 +68,14 @@ namespace nagato
         std::vector<Object *> left(0);
         std::vector<Object *> right(0);
 
+        // オブジェクトをsplitAxisで指定する軸についてソートする
         std::sort(objects.begin(), objects.end(), [splitAxis](const Object *a, const Object *b) {
             auto aCenter = a->getAABB().getCenter();
             auto bCenter = b->getAABB().getCenter();
             return aCenter[splitAxis] < bCenter[splitAxis];
         });
 
+        // オブジェクトの分割
         for (int i = 0; i < objects.size(); i++) {
             if (i < objects.size() / 2)
                 left.push_back(objects[i]);
@@ -71,121 +83,86 @@ namespace nagato
                 right.push_back(objects[i]);
         }
 
-        node->left = constructBVH_internal(left, (splitAxis + 1) % 3);
-        node->right = constructBVH_internal(right, (splitAxis + 1) % 3);
+        // 子を作成
+        node->left = nodeCount++;
+        node->right = nodeCount++;
 
-        return node;
-    }
-
-    void BVH::clearBVH()
-    {
-        if (root == nullptr)
-            return;
-
-        clearBVH_internal(root);
-    }
-
-    void BVH::clearBVH_internal(BVHNode *node)
-    {
-        if (node->right != nullptr)
-            clearBVH_internal(node->right);
-        else if (node->left != nullptr)
-            clearBVH_internal(node->left);
-
-        delete node;
+        constructBVH_internal(left, (splitAxis + 1) % 3, node->left);
+        constructBVH_internal(right, (splitAxis + 1) % 3, node->right);
     }
 
     void BVH::showBVH()
     {
-        if (root == nullptr)
+        if (nodeCount == 0) {
+            printf("empty");
             return;
-
-        std::queue<BVHNode *> nodes;
-        nodes.push(root);
-
-        for (int i = 0; !nodes.empty(); i++) {
-            auto *node = nodes.front();
-
-            printf("[%03d]", i);
-            if (!node->object) {
-                printf("leaf");
+        }
+        for (int i = 0; i < nodeCount; i++) {
+            printf("%03d : ", i);
+            if (nodes[i].object != nullptr) {
+                std::cout << nodes[i].object->toString() << std::endl;
             } else {
-                printf("%s\n", typeid(node->object).name());
-                std::cout << node->object->toString();
+                printf("[node]\n");
             }
-
-            if (node->right)
-                nodes.push(node->right);
-            if (node->left)
-                nodes.push(node->left);
-
-            printf("\n");
-            nodes.pop();
         }
     }
 
     std::optional<Hit> BVH::intersect(Ray &ray, float min, float max)
     {
-        if (root == nullptr) {
+        if (nodeCount == 0) {
             fprintf(stderr, "ERROR : [BVH] BVHを構築していないかオブジェクトがありません");
             exit(-1);
         }
 
-        std::optional<Hit> minh;
-        std::queue<BVHNode *> nodes;
-        nodes.push(root);
-
-        do {
-            auto node = nodes.front();
-            if (node->bbox.intersect(ray)) {
-                if (node->object == nullptr) {
-                    if (node->left != nullptr)
-                        nodes.push(node->left);
-                    if (node->right != nullptr)
-                        nodes.push(node->right);
-                } else {
-                    auto h = node->object->intersect(ray, min, max);
-                    if (h) {
-                        minh = h;
-                        max = minh->distance;
-                    }
-                }
-            }
-            nodes.pop();
-        } while (!nodes.empty());
-
-        return minh;
-//        return intersect_internal(ray, min, max, root);
+        return intersect_internal(ray, min, max, 0);
     }
 
-    std::optional<Hit> BVH::intersect_internal(Ray &ray, float min, float max, BVHNode *node)
+    std::optional<Hit> BVH::intersect_internal(Ray &ray, float min, float max, int nodeIndex)
     {
-        // AABBとレイが当たるかどうか判定
+        auto *node = &nodes[nodeIndex];
+        // rayとaabbとの交差判定
         if (node->bbox.intersect(ray)) {
-
-            // nodeがオブジェクトを持っているか判定, 持っていないということは中間node
+            // 中間ノードか調べる
             if (node->object == nullptr) {
-                auto right = intersect_internal(ray, min, max, node->right);
-                auto left = intersect_internal(ray, min, max, node->left);
+                // 中間ノードなので更に探索
 
-                if (right && left) {
-                    if (right->distance < left->distance) {
-                        return right;
-                    } else {
-                        return left;
-                    }
-                } else if (right) {
-                    return right;
-                } else if (left) {
-                    return left;
-                } else {
-                    return {};
+                std::optional<Hit> right = std::nullopt;
+                std::optional<Hit> left = std::nullopt;
+                if (node->right != -1) {
+                    right = intersect_internal(ray, min, max, node->right);
                 }
+                if (node->left != -1) {
+                    left = intersect_internal(ray, min, max, node->left);
+                }
+//                if (right)
+//                    std::cout << "right : " << right->distance << std::endl;
+//                if (left)
+//                    std::cout << "left : " << left->distance << std::endl;
+
+                if (!right && !left)
+                    return std::nullopt;
+                if (right && !left)
+                    return right;
+                if (!right && left)
+                    return left;
+                return right->distance < left->distance ? right : left;
+
             } else {
                 return node->object->intersect(ray, min, max);
             }
         } else {
-            return {};
+            // ヒットしてない場合
+            return std::nullopt;
         }
+    }
+
+    int BVH::getNodeCount()
+    {
+        return nodeCount;
+    }
+
+    size_t BVH::getMemorySize()
+    {
+        return static_cast<size_t>(sizeof(BVHNode) * BVH_NODE * 10e-6);
     }
 }
