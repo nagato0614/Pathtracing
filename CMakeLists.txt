@@ -67,8 +67,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -mtune=native -march=native -mfpmath=both -flto
 # openMP
 find_package(OpenMP)
 if (OPENMP_FOUND)
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fopenmp")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
 endif ()
 
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_DEBUG}")
