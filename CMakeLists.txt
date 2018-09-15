@@ -1,10 +1,29 @@
 cmake_minimum_required(VERSION 3.10)
 project(pathtracing)
-
 set(CMAKE_CXX_STANDARD 17)
+
+set(CMAKE_MACOSX_RPATH 1)
+
+# google test download
+include(${PROJECT_SOURCE_DIR}/cmake/DownloadProject/DownloadProject.cmake)
+download_project(PROJ googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG master
+        UPDATE_DISCONNECTED 1
+        )
+
+add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 
 include(CheckIPOSupported)
 check_ipo_supported(RESULT supported OUTPUT error)
+
+include(GoogleTest)
+
+# Google Test Definitions for macOS
+if (APPLE)
+    add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)
+    add_definitions(-D__GLIBCXX__)
+endif (APPLE)
 
 
 file(GLOB src
@@ -28,14 +47,15 @@ file(GLOB src
 # ライブラリ作成
 add_library(pathtracingLibrary STATIC ${src})
 
-#MESSAGE(STATUS "${src}")
-
 add_executable(pathtracing main.cpp)
-add_executable(bvh_test src/test/bvh_test.cpp)
+add_executable(gtestBVH
+        src/gtest/gtests.cpp)
 
 target_link_libraries(pathtracing pathtracingLibrary)
-target_link_libraries(bvh_test pathtracingLibrary)
-
+target_link_libraries(gtestBVH
+        pathtracingLibrary
+        gmock
+        gtest)
 
 # compile option
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
@@ -45,11 +65,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -mtune=native -march=native -mfpmath=both -flto
 # openMP
 find_package(OpenMP)
 if (OPENMP_FOUND)
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fopenmp")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
 endif ()
 
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_RELEASE}")
-
-
