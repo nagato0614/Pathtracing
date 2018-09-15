@@ -84,8 +84,8 @@ namespace nagato
         }
 
         // 子を作成
-        node->left = nodeCount++;
-        node->right = nodeCount++;
+        node->left = makeNewNode();
+        node->right = makeNewNode();
 
         constructBVH_internal(left, (splitAxis + 1) % 3, node->left);
         constructBVH_internal(right, (splitAxis + 1) % 3, node->right);
@@ -164,5 +164,14 @@ namespace nagato
     size_t BVH::getMemorySize()
     {
         return static_cast<size_t>(sizeof(BVHNode) * BVH_NODE * 10e-6);
+    }
+
+    int BVH::makeNewNode()
+    {
+        if (nodeCount >= BVH_NODE) {
+            fprintf(stderr, "[ERROR] BVHノードが足りません");
+            exit(EMPTY_NODE);
+        }
+        return nodeCount++;
     }
 }

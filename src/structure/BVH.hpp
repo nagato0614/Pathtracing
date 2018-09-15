@@ -46,6 +46,9 @@ namespace nagato
         // BVHとレイの交差判定を再帰的に行う
         std::optional<Hit> intersect_internal(Ray &ray, float min, float max, int nodeIndex);
 
+        // 新しいノードを作成する
+        int makeNewNode();
+
         float surfaceArea(Aabb bbox);
 
         Aabb mergeAABB(Aabb a, Aabb b);
