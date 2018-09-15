@@ -22,8 +22,10 @@ namespace nagato
     class BVH
     {
      public:
+        BVH();
+
         explicit BVH(std::vector<Object *> objects);
-        
+
         void setObject(std::vector<Object *> objects);
 
         // BVHの構築を始める

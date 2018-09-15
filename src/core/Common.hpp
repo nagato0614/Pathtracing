@@ -13,6 +13,7 @@
 // exit code
 #define EMPTY_OBJECT 64
 #define EMPTY_NODE 65
+#define CANNOT_CONSTRUCT_BVH 66
 
 #include <tuple>
 #include <vector>

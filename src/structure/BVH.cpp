@@ -38,6 +38,10 @@ namespace nagato
 
     void BVH::constructBVH()
     {
+        if (objects.size() == 0) {
+            fprintf(stderr, "[ERROR] オブジェクトがないためBVH構築できません");
+            exit(CANNOT_CONSTRUCT_BVH);
+        }
         constructBVH_internal(objects, 0, 0);
     }
 
@@ -178,5 +182,10 @@ namespace nagato
     void BVH::setObject(std::vector<Object *> objects)
     {
         this->objects = objects;
+    }
+
+    BVH::BVH()
+    {
+
     }
 }
