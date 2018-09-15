@@ -22,7 +22,8 @@ namespace nagato
         class BVHTest : public ::testing::Test
         {
          protected:
-            virtual void SetUp() {
+            virtual void SetUp()
+            {
                 // マテリアルの読み込み
                 Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
                 Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
@@ -95,10 +96,10 @@ namespace nagato
                 // 線形探索とBVHの判定が正しいばいい
                 if (intersect && intersectBVH) {
                     ASSERT_EQ(intersect->distance, intersectBVH->distance);
-                    ASSERT_EQ(intersect->normal, intersectBVH->normal);
-                } else if (!intersect && !intersectBVH) {
-                    EXPECT_EQ(intersect->distance, intersectBVH->distance);
-                    EXPECT_EQ(intersect->normal, intersectBVH->normal);
+                    ASSERT_FLOAT_EQ(intersect->normal.x, intersectBVH->normal.y);
+                    ASSERT_FLOAT_EQ(intersect->normal.y, intersectBVH->normal.y);
+                    ASSERT_FLOAT_EQ(intersect->normal.z, intersectBVH->normal.z);
+
                 } else {
                     // 片方だけがヒットしている場合はテスト失敗
                     FAIL();
@@ -107,7 +108,11 @@ namespace nagato
             scene.freeObject();
         }
 
-        TEST_F(BVHTest, existsObjectInNode) {
+        /**
+         * sceneとBVHそれぞれで線形探索によるヒット判定を行い比較
+         */
+        TEST_F(BVHTest, existsObjectInNode)
+        {
             for (int i = 0; i < width * height; i++) {
                 const int x = i % width;
                 const int y = height - i / width;
@@ -134,10 +139,47 @@ namespace nagato
                     EXPECT_EQ(intersect->normal, intersectBVH->normal);
                 } else {
                     // 片方だけがヒットしている場合はテスト失敗
-                    FAIL();
+                    FAIL() << "片方だけヒット";
                 }
             }
             scene.freeObject();
+        }
+
+        /**
+         * BVHのツリーにおいて葉にオブジェクトがあるか確認
+         * 逆に中間ノードはオブジェクトを持たず子を持つか確認
+         */
+        TEST_F(BVHTest, HasObjectAtLeaf)
+        {
+            if (bvh.getNodeCount() == 0)
+                SUCCEED();
+            auto nodes = bvh.getNodes();
+            for (int i = 0; i < bvh.getNodeCount(); i++) {
+                auto *node = &nodes[i];
+
+                // オブジェクトがない時片方だけでも子を保つ必要がある
+                if ((node->object == nullptr)
+                    && (node->left == -1)
+                    && (node->right == -1))
+                    FAIL() << "Index : " << i;
+
+                    // オブジェクトを持つ時必ず子を持っては行けない
+                else if ((node->object != nullptr)
+                         && (node->left != -1)
+                         && (node->right != -1))
+                    FAIL() << "Index : " << i;
+
+                else if ((node->object != nullptr)
+                         && (node->left == -1)
+                         && (node->right != -1))
+                    FAIL() << "Index : " << i;
+
+                else if ((node->object != nullptr)
+                         && (node->left != -1)
+                         && (node->right == -1))
+                    FAIL() << "Index : " << i;
+
+            }
         }
     }
 }
