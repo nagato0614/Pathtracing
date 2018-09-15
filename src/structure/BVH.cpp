@@ -191,11 +191,27 @@ namespace nagato
             auto *node = &nodes[i];
             if (node->object != nullptr) {
                 auto h = node->object->intersect(ray, min, max);
-                if (!h) continue;
+                if (!h)
+                    continue;
                 minh = h;
                 max = minh->distance;
             }
         }
         return minh;
+    }
+
+    BVHNode *BVH::getRoot() const
+    {
+        return root;
+    }
+
+    const std::vector<Object *> &BVH::getObjects() const
+    {
+        return objects;
+    }
+
+    const BVHNode *BVH::getNodes() const
+    {
+        return nodes;
     }
 }

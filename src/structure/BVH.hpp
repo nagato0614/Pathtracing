@@ -11,7 +11,8 @@
 namespace nagato
 {
     // BVHを構築するノード
-    struct BVHNode {
+    struct BVHNode
+    {
         Aabb bbox;
         Object *object = nullptr;
         int left = -1;
@@ -45,6 +46,13 @@ namespace nagato
 
         // デバッグ用 : ノード内にあるオブジェクトが正しいか比較する
         std::optional<Hit> testIntersect(Ray &ray, float min, float max);
+
+        BVHNode *getRoot() const;
+
+        const std::vector<Object *> &getObjects() const;
+
+        const BVHNode *getNodes() const;
+
      private:
 
         // BVH構築を再帰的に行う
