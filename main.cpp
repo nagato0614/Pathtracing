@@ -71,10 +71,10 @@ int main()
     Scene scene;
     scene.objects.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
     scene.objects.push_back(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
-    scene.loadObject("../models/left.obj",
-                     "../models/left.mtl", &redMaterial);
-    scene.loadObject("../models/right.obj",
-                     "../models/right.mtl", &blueMateral);
+    scene.loadObject("../models/left_plane.obj",
+                     "../models/left_plane.mtl", &redMaterial);
+    scene.loadObject("../models/right_plane.obj",
+                     "../models/right_plane.mtl", &blueMateral);
     scene.loadObject("../models/back_ceil_floor_plane.obj",
                      "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
     scene.loadObject("../models/light_plane.obj",
@@ -111,6 +111,8 @@ int main()
     std::cout << "width : height = " << width << " : " << height << std::endl;
     std::cout << "-- Number of Object --" << std::endl;
     std::cout << "objects : " << scene.objects.size() << std::endl;
+    std::cout << "nodes   : " << bvh.getNodeCount() << std::endl;
+    std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
     std::chrono::system_clock::time_point start, end;
@@ -299,7 +301,6 @@ int main()
     std::cout << "-- Memory release -- " << std::endl;
 
     scene.freeObject();
-    bvh.clearBVH();
 
     std::cout << "-- FINISH --" << std::endl;
 
