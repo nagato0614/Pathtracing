@@ -48,11 +48,11 @@ file(GLOB src
 add_library(pathtracingLibrary STATIC ${src})
 
 add_executable(pathtracing main.cpp)
-add_executable(gtestBVH
+add_executable(nagatoTest
         src/gtest/gtests.cpp)
 
 target_link_libraries(pathtracing pathtracingLibrary)
-target_link_libraries(gtestBVH
+target_link_libraries(nagatoTest
         pathtracingLibrary
         gmock
         gtest)
