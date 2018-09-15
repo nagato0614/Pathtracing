@@ -42,6 +42,9 @@ namespace nagato
 
         // デバッグ用
         void showBVH();
+
+        // デバッグ用 : ノード内にあるオブジェクトが正しいか比較する
+        std::optional<Hit> testIntersect(Ray &ray, float min, float max);
      private:
 
         // BVH構築を再帰的に行う

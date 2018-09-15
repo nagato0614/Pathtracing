@@ -47,15 +47,11 @@ namespace nagato
 
     void BVH::constructBVH_internal(std::vector<Object *> objects, int splitAxis, int nodeIndex)
     {
-//        std::cout << "NodeIndex  : " << nodeIndex << std::endl;
-//        std::cout << "Object num : " << objects.size() << "\n\n";
-
         // オブジェクトが１つだけの場合それを葉する
         if (objects.size() == 1) {
             nodes[nodeIndex].object = objects.front();
             nodes[nodeIndex].left = -1;
             nodes[nodeIndex].right = -1;
-//            std::cout << nodes[nodeIndex].object->toString() << std::endl;
             return;
         } else if (objects.empty()) {
             std::cerr << "empty" << std::endl;
@@ -65,9 +61,11 @@ namespace nagato
         auto *node = &nodes[nodeIndex];
 
         // 大きなAABBの構築
+        Aabb aabb;
         for (auto i : objects) {
-            node->bbox = mergeAABB(node->bbox, i->getAABB());
+            aabb = mergeAABB(aabb, i->getAABB());
         }
+        node->bbox = aabb;
 
         std::vector<Object *> left(0);
         std::vector<Object *> right(0);
@@ -138,18 +136,15 @@ namespace nagato
                 if (node->left != -1) {
                     left = intersect_internal(ray, min, max, node->left);
                 }
-//                if (right)
-//                    std::cout << "right : " << right->distance << std::endl;
-//                if (left)
-//                    std::cout << "left : " << left->distance << std::endl;
 
                 if (!right && !left)
                     return std::nullopt;
-                if (right && !left)
-                    return right;
-                if (!right && left)
+                else if (!right && left)
                     return left;
-                return right->distance < left->distance ? right : left;
+                else if (right && !left)
+                    return right;
+                else
+                    return right->distance > left->distance ? left : right;
 
             } else {
                 return node->object->intersect(ray, min, max);
@@ -187,5 +182,20 @@ namespace nagato
     BVH::BVH()
     {
 
+    }
+
+    std::optional<Hit> BVH::testIntersect(Ray &ray, float min, float max)
+    {
+        std::optional<Hit> minh;
+        for (int i = 0; i < getNodeCount(); i++) {
+            auto *node = &nodes[i];
+            if (node->object != nullptr) {
+                auto h = node->object->intersect(ray, min, max);
+                if (!h) continue;
+                minh = h;
+                max = minh->distance;
+            }
+        }
+        return minh;
     }
 }
