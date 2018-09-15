@@ -8,7 +8,7 @@
 #define RESOLUTION 400
 #define SAMPLE 1
 
-#define BVH_NODE 20000
+#define BVH_NODE 200000
 
 // exit code
 #define EMPTY_OBJECT 64

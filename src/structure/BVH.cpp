@@ -171,7 +171,7 @@ namespace nagato
             fprintf(stderr, "[ERROR] BVHノードが足りません");
             exit(EMPTY_NODE);
         }
-        return nodeCount++;
+        return ++nodeCount;
     }
 
     void BVH::setObject(std::vector<Object *> objects)
