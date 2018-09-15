@@ -49,8 +49,7 @@ add_library(pathtracingLibrary STATIC ${src})
 
 add_executable(pathtracing main.cpp)
 add_executable(gtestBVH
-        src/gtest/gtestBVH.cpp
-        src/gtest/MockBVH.hpp)
+        src/gtest/gtests.cpp)
 
 target_link_libraries(pathtracing pathtracingLibrary)
 target_link_libraries(gtestBVH
