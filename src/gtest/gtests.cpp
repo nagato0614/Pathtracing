@@ -41,8 +41,8 @@ namespace nagato
                 scene.loadObject("../models/light_plane.obj",
                                  "../models/light_plane.mtl", &d65);
 
-                scene.loadObject("../models/teapod.obj",
-                                 "../models/teapod.mtl", &whiteMaterial);
+                scene.loadObject("../models/suzanne.obj",
+                                 "../models/suzanne.mtl", &whiteMaterial);
 
                 bvh.setObject(scene.objects);
                 bvh.constructBVH();
@@ -97,8 +97,41 @@ namespace nagato
                     ASSERT_EQ(intersect->distance, intersectBVH->distance);
                     ASSERT_EQ(intersect->normal, intersectBVH->normal);
                 } else if (!intersect && !intersectBVH) {
+                    EXPECT_EQ(intersect->distance, intersectBVH->distance);
+                    EXPECT_EQ(intersect->normal, intersectBVH->normal);
+                } else {
+                    // 片方だけがヒットしている場合はテスト失敗
+                    FAIL();
+                }
+            }
+            scene.freeObject();
+        }
+
+        TEST_F(BVHTest, existsObjectInNode) {
+            for (int i = 0; i < width * height; i++) {
+                const int x = i % width;
+                const int y = height - i / width;
+                Ray ray;
+                ray.origin = eye;
+                ray.direction = [&]() {
+                    const float tf = std::tan(fov * .5);
+                    const float rpx = 2. * (x + 0.5) / width - 1;
+                    const float rpy = 2. * (y + 0.5) / height - 1;
+                    const Vector3 ww = normalize(
+                            Vector3(aspect * tf * rpx, tf * rpy, -1));
+                    return uE * ww.x + vE * ww.y + wE * ww.z;
+                }();
+
+                const auto intersect = scene.intersect(ray, 1e-4, 1e+100);
+                const auto intersectBVH = bvh.testIntersect(ray, 1e-4, 1e+100);
+
+                // 線形探索とBVHの判定が正しいばいい
+                if (intersect && intersectBVH) {
                     ASSERT_EQ(intersect->distance, intersectBVH->distance);
                     ASSERT_EQ(intersect->normal, intersectBVH->normal);
+                } else if (!intersect && !intersectBVH) {
+                    EXPECT_EQ(intersect->distance, intersectBVH->distance);
+                    EXPECT_EQ(intersect->normal, intersectBVH->normal);
                 } else {
                     // 片方だけがヒットしている場合はテスト失敗
                     FAIL();
