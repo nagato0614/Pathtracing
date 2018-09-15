@@ -1,32 +1,29 @@
 cmake_minimum_required(VERSION 3.10)
 project(pathtracing)
-
 set(CMAKE_CXX_STANDARD 17)
 
-if (POLICY CMP0048)
-    cmake_policy(SET CMP0048 NEW)
-endif (POLICY CMP0048)
+set(CMAKE_MACOSX_RPATH 1)
 
-project(googletest-distribution)
-set(GOOGLETEST_VERSION 1.9.0)
+# google test download
+include(${PROJECT_SOURCE_DIR}/cmake/DownloadProject/DownloadProject.cmake)
+download_project(PROJ googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG master
+        UPDATE_DISCONNECTED 1
+        )
 
-enable_testing()
-
-include(CMakeDependentOption)
-include(GNUInstallDirs)
-
-#Note that googlemock target already builds googletest
-option(BUILD_GMOCK "Builds the googlemock subproject" ON)
-option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" ON)
-
-if(BUILD_GMOCK)
-    add_subdirectory( googlemock )
-else()
-    add_subdirectory( googletest )
-endif()
+add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 
 include(CheckIPOSupported)
 check_ipo_supported(RESULT supported OUTPUT error)
+
+include(GoogleTest)
+
+# Google Test Definitions for macOS
+if (APPLE)
+    add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)
+    add_definitions(-D__GLIBCXX__)
+endif (APPLE)
 
 
 file(GLOB src
@@ -50,14 +47,16 @@ file(GLOB src
 # ライブラリ作成
 add_library(pathtracingLibrary STATIC ${src})
 
-#MESSAGE(STATUS "${src}")
-
 add_executable(pathtracing main.cpp)
-add_executable(bvh_test src/test/bvh_test.cpp)
+add_executable(gtestBVH
+        src/gtest/gtestBVH.cpp
+        src/gtest/MockBVH.hpp)
 
 target_link_libraries(pathtracing pathtracingLibrary)
-target_link_libraries(bvh_test pathtracingLibrary)
-
+target_link_libraries(gtestBVH
+        pathtracingLibrary
+        gmock
+        gtest)
 
 # compile option
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
@@ -73,5 +72,3 @@ endif ()
 
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_RELEASE}")
-
-
