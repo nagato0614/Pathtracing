@@ -17,53 +17,64 @@ namespace nagato
     {
 
         /**
-         * BVHと線形探索を比較しヒット判定をテスト
+         * BVHのテストフィクスチャ
          */
-        TEST(BVH_test, intersection)
+        class BVHTest : public ::testing::Test
         {
+         protected:
+            virtual void SetUp() {
+                // マテリアルの読み込み
+                Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
+                Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
+                Material whiteMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
+                Material d65(SurfaceType::Diffuse, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.5);
+                Material mirror(SurfaceType::Mirror, Spectrum(0.99));
+                Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
 
-            // マテリアルの読み込み
-            Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
-            Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
-            Material whiteMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
-            Material d65(SurfaceType::Diffuse, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.5);
-            Material mirror(SurfaceType::Mirror, Spectrum(0.99));
-            Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
+                // シーンの読み込み
+                scene.loadObject("../models/left.obj",
+                                 "../models/left.mtl", &redMaterial);
+                scene.loadObject("../models/right.obj",
+                                 "../models/right.mtl", &blueMateral);
+                scene.loadObject("../models/back_ceil_floor_plane.obj",
+                                 "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
+                scene.loadObject("../models/light_plane.obj",
+                                 "../models/light_plane.mtl", &d65);
 
-            // #TODO シーンファイルの読み込みモジュールの追加
-            // シーンの読み込み
+                scene.loadObject("../models/teapod.obj",
+                                 "../models/teapod.mtl", &whiteMaterial);
+
+                bvh.setObject(scene.objects);
+                bvh.constructBVH();
+
+            }
+
             Scene scene;
-            scene.objects.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
-            scene.objects.push_back(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
-            scene.loadObject("../models/left.obj",
-                             "../models/left.mtl", &redMaterial);
-            scene.loadObject("../models/right.obj",
-                             "../models/right.mtl", &blueMateral);
-            scene.loadObject("../models/back_ceil_floor_plane.obj",
-                             "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
-            scene.loadObject("../models/light_plane.obj",
-                             "../models/light_plane.mtl", &d65);
-
-            BVH bvh(scene.objects);
-            bvh.constructBVH();
+            BVH bvh;
 
             // Image size
-            const int width = 480;
-            const int height = 360;
+            int width = 480;
+            int height = 360;
 
             // Camera parameters
-            const Vector3 eye(0, 5, 6);
-            const Vector3 center = eye + Vector3(0, -0.5, -1);
+            Vector3 eye{0, 5, 6};
+            Vector3 center = eye + Vector3(0, -0.5, -1);
 
-            const Vector3 up(0, 1, 0);
-            const float fov = 55 * M_PI / 180;
-            const float aspect = float(width) / height;
+            Vector3 up{0, 1, 0};
+            float fov = 55 * M_PI / 180;
+            float aspect = width / height;
 
             // Basis vectors for camera coordinates
-            const auto wE = normalize(eye - center);
-            const auto uE = normalize(cross(up, wE));
-            const auto vE = cross(wE, uE);
+            Vector3 wE = normalize(eye - center);
+            Vector3 uE = normalize(cross(up, wE));
+            Vector3 vE = cross(wE, uE);
+        };
 
+        /**
+         * BVHと線形探索を比較しヒット判定をテスト
+         */
+        TEST_F(BVHTest, intersection)
+        {
             for (int i = 0; i < width * height; i++) {
                 const int x = i % width;
                 const int y = height - i / width;
