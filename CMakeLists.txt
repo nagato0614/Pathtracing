@@ -42,7 +42,9 @@ file(GLOB src
         ${PROJECT_SOURCE_DIR}/src/object/*.cpp
         ${PROJECT_SOURCE_DIR}/src/object/*.hpp
         ${PROJECT_SOURCE_DIR}/src/structure/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/structure/*.hpp)
+        ${PROJECT_SOURCE_DIR}/src/structure/*.hpp
+        ${PROJECT_SOURCE_DIR}/src/BSDF/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/BSDF/*.hpp)
 
 # ライブラリ作成
 add_library(pathtracingLibrary STATIC ${src})
