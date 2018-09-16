@@ -119,4 +119,10 @@ namespace nagato
     {
         objects.clear();
     }
+
+    void Scene::setObject(Object *object)
+    {
+        objectCount++;
+        objects.push_back(object);
+    }
 }
