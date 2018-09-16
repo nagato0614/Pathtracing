@@ -53,6 +53,7 @@ add_executable(nagatoTest
 
 target_link_libraries(pathtracing pathtracingLibrary)
 target_link_libraries(
+        nagatoTest
         pathtracingLibrary
         gmock
         gtest)
