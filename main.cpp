@@ -41,7 +41,7 @@ int main()
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 1;
+    const int samples = 10;
 
     // Camera parameters
     const Vector3 eye(0, 5, 6);
@@ -79,8 +79,8 @@ int main()
                      "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
     scene.loadObject("../models/light_plane.obj",
                      "../models/light_plane.mtl", &d65);
-//    scene.loadObject("../models/suzanne.obj",
-//                     "../models/suzanne.mtl", &whiteMaterial);
+    scene.loadObject("../models/suzanne.obj",
+                     "../models/suzanne.mtl", &whiteMaterial);
 
     std::cout << "-- Construct BVH --" << std::endl;
     BVH bvh(scene.objects);
@@ -155,19 +155,12 @@ int main()
 
             for (int depth = 0; depth < 10; depth++) {
 
-                // #TODO BVHの実装
                 // Intersection
-//                const auto intersect = scene.intersect(ray, 1e-4, 1e+100);
                 const auto intersect = bvh.intersect(ray, 1e-4, 1e+100);
 
                 if (!intersect) {
                     break;
                 }
-
-//                std::cout << "intersect : intersectP = " <<
-//                          intersect->distance <<
-//                          " : " <<
-//                          intersectp->distance << std::endl;
 
                 if (pass == 0 && depth == 0) {
                     nom[i] = (normalize(intersect->normal) + 1.0) / 2.0 * 255;
@@ -180,6 +173,7 @@ int main()
                     L = L + weight * intersect->sphere->material->emitter;
                 }
 
+                // #TODO : BSDFクラスの実装
                 // Update next direction
                 ray.origin = intersect->point;
                 ray.direction = [&]() {
