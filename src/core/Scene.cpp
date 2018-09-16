@@ -125,4 +125,9 @@ namespace nagato
         objectCount++;
         objects.push_back(object);
     }
+
+    int Scene::getObjectCount() const
+    {
+        return objectCount;
+    }
 }

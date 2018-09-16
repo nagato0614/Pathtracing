@@ -27,6 +27,8 @@ namespace nagato {
 
         void freeObject();
 
+        int getObjectCount() const;
+
      private:
         int objectCount = 0;
     };
