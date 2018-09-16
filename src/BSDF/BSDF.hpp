@@ -16,6 +16,8 @@ namespace nagato {
 
         virtual Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, Hit &surfaceInfo)= 0;
 
+        Material *getMaterial();
+
      protected:
         Material *material;
     };

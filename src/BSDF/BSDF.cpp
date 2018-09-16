@@ -13,4 +13,9 @@ namespace nagato {
     {
 
     }
+
+    Material *BSDF::getMaterial()
+    {
+        return this->material;
+    }
 }
