@@ -52,7 +52,7 @@ add_executable(nagatoTest
         src/gtest/gtests.cpp)
 
 target_link_libraries(pathtracing pathtracingLibrary)
-target_link_libraries(nagatoTest
+target_link_libraries(
         pathtracingLibrary
         gmock
         gtest)
