@@ -22,9 +22,9 @@ namespace nagato
         class BVHTest : public ::testing::Test
         {
          protected:
-            virtual void SetUp()
-            {
-                // マテリアルの読み込み
+
+            BVHTest()
+            {                // マテリアルの読み込み
                 Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
                 Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
                 Material whiteMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
@@ -33,6 +33,9 @@ namespace nagato
                 Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
 
                 // シーンの読み込み
+                Scene scene;
+                scene.setObject(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
+                scene.setObject(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
                 scene.loadObject("../models/left.obj",
                                  "../models/left.mtl", &redMaterial);
                 scene.loadObject("../models/right.obj",
@@ -41,13 +44,24 @@ namespace nagato
                                  "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
                 scene.loadObject("../models/light_plane.obj",
                                  "../models/light_plane.mtl", &d65);
-
                 scene.loadObject("../models/suzanne.obj",
                                  "../models/suzanne.mtl", &whiteMaterial);
 
                 bvh.setObject(scene.objects);
                 bvh.constructBVH();
+            }
 
+            ~BVHTest()
+            {
+                scene.freeObject();
+            }
+
+            virtual void SetUp()
+            {
+            }
+
+            virtual void TearDown()
+            {
             }
 
             Scene scene;
@@ -93,56 +107,55 @@ namespace nagato
                 const auto intersect = scene.intersect(ray, 1e-4, 1e+100);
                 const auto intersectBVH = bvh.intersect(ray, 1e-4, 1e+100);
 
-                // 線形探索とBVHの判定が正しいばいい
-                if (intersect && intersectBVH) {
-                    ASSERT_EQ(intersect->distance, intersectBVH->distance);
-                    ASSERT_FLOAT_EQ(intersect->normal.x, intersectBVH->normal.y);
-                    ASSERT_FLOAT_EQ(intersect->normal.y, intersectBVH->normal.y);
-                    ASSERT_FLOAT_EQ(intersect->normal.z, intersectBVH->normal.z);
-
+                if (!intersect && !intersectBVH) {
+                    continue;
+                } else if (intersect && intersectBVH) {
+                    // 線形探索とBVHの判定が正しいばいい
+                    ASSERT_FLOAT_EQ(intersect->distance, intersectBVH->distance);
+                    ASSERT_FLOAT_EQ(intersect->normal.x, intersectBVH->normal.x) << "[x, y] : " << x << ", " << y;
+                    ASSERT_FLOAT_EQ(intersect->normal.y, intersectBVH->normal.y) << "[x, y] : " << x << ", " << y;
+                    ASSERT_FLOAT_EQ(intersect->normal.z, intersectBVH->normal.z) << "[x, y] : " << x << ", " << y;
+                    ASSERT_FLOAT_EQ(intersect->point.x, intersectBVH->point.x) << "[x, y] : " << x << ", " << y;
+                    ASSERT_FLOAT_EQ(intersect->point.y, intersectBVH->point.y) << "[x, y] : " << x << ", " << y;
+                    ASSERT_FLOAT_EQ(intersect->point.z, intersectBVH->point.z) << "[x, y] : " << x << ", " << y;
                 } else {
                     // 片方だけがヒットしている場合はテスト失敗
-                    FAIL();
+                    auto inter = intersectBVH;
+                    std::string str = "BVH";
+                    if (intersect) {
+                        str = "scene";
+                        inter = intersect;
+                    }
+
+                    FAIL() << "片方だけヒット : " << str
+                           << "\n[x, y] : " << x << ", " << y
+                           << "\n" << inter->sphere->toString();
                 }
             }
-            scene.freeObject();
         }
 
         /**
-         * sceneとBVHそれぞれで線形探索によるヒット判定を行い比較
+         * sceneとBVH内にあるオブジェクトの個数を比較
          */
         TEST_F(BVHTest, existsObjectInNode)
         {
-            for (int i = 0; i < width * height; i++) {
-                const int x = i % width;
-                const int y = height - i / width;
-                Ray ray;
-                ray.origin = eye;
-                ray.direction = [&]() {
-                    const float tf = std::tan(fov * .5);
-                    const float rpx = 2. * (x + 0.5) / width - 1;
-                    const float rpy = 2. * (y + 0.5) / height - 1;
-                    const Vector3 ww = normalize(
-                            Vector3(aspect * tf * rpx, tf * rpy, -1));
-                    return uE * ww.x + vE * ww.y + wE * ww.z;
-                }();
+            auto nodes = bvh.getNodes();
+            auto nodeCount = bvh.getNodeCount();
 
-                const auto intersect = scene.intersect(ray, 1e-4, 1e+100);
-                const auto intersectBVH = bvh.testIntersect(ray, 1e-4, 1e+100);
-
-                // 線形探索とBVHの判定が正しいばいい
-                if (intersect && intersectBVH) {
-                    ASSERT_EQ(intersect->distance, intersectBVH->distance);
-                    ASSERT_EQ(intersect->normal, intersectBVH->normal);
-                } else if (!intersect && !intersectBVH) {
-                    EXPECT_EQ(intersect->distance, intersectBVH->distance);
-                    EXPECT_EQ(intersect->normal, intersectBVH->normal);
-                } else {
-                    // 片方だけがヒットしている場合はテスト失敗
-                    FAIL() << "片方だけヒット";
+            int existsBVHObjectCount = 0;
+            for (int i = 0; i < nodeCount; i++) {
+                if (nodes[i].object != nullptr) {
+                    existsBVHObjectCount++;
                 }
             }
-            scene.freeObject();
+
+            int existsObjectCount = 0;
+            for (auto o : scene.objects) {
+                if (o != nullptr)
+                    existsObjectCount++;
+            }
+
+            ASSERT_EQ(existsObjectCount, existsObjectCount);
         }
 
         /**
@@ -186,6 +199,6 @@ namespace nagato
 
 int main(int argc, char **argv)
 {
-    ::testing::InitGoogleMock(&argc, argv);
+    ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
