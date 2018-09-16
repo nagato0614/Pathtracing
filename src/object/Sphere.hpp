@@ -24,7 +24,11 @@ namespace nagato {
                 float tmin,
                 float tmax) override;
 
-        Aabb getAABB() override ;
+        Aabb getAABB() const override ;
+
+        Hit pointSampling(Hit surfaceInfo);
+
+        std::string toString() const override ;
     };
 }
 #endif //PATHTRACING_SPHERE_HPP

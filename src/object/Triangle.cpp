@@ -42,9 +42,11 @@ namespace nagato{
                 }
             }
         }
+
+        return std::nullopt;
     }
 
-    Aabb Triangle::getAABB()
+    Aabb Triangle::getAABB() const
     {
         Vector3 min(MAXFLOAT);
         Vector3 max(-MAXFLOAT);
@@ -92,5 +94,10 @@ namespace nagato{
         auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
 
         return Hit{distance, sampledPoint, normal, this};
+    }
+
+    std::string Triangle::toString() const
+    {
+        return "[Triangle]material : " + material->typeName();
     }
 }

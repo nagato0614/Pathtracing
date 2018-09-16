@@ -10,6 +10,7 @@
 #include "src/material/Material.hpp"
 #include "src/core/Scene.hpp"
 #include "src/object/Sphere.hpp"
+#include "src/structure/BVH.hpp"
 
 using namespace nagato;
 
@@ -40,7 +41,7 @@ int main()
     const int height = 360;
 
     // Samples per pixel
-    const int samples = 100;
+    const int samples = 1;
 
     // Camera parameters
     const Vector3 eye(0, 5, 6);
@@ -70,14 +71,18 @@ int main()
     Scene scene;
     scene.objects.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
     scene.objects.push_back(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
-    scene.loadObject("../models/left.obj",
-                     "../models/left.mtl", &redMaterial);
-    scene.loadObject("../models/right.obj",
-                     "../models/right.mtl", &blueMateral);
+    scene.loadObject("../models/left_plane.obj",
+                     "../models/left_plane.mtl", &redMaterial);
+    scene.loadObject("../models/right_plane.obj",
+                     "../models/right_plane.mtl", &blueMateral);
     scene.loadObject("../models/back_ceil_floor_plane.obj",
                      "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
     scene.loadObject("../models/light_plane.obj",
                      "../models/light_plane.mtl", &d65);
+
+    std::cout << "-- Construct BVH --" << std::endl;
+    BVH bvh(scene.objects);
+    bvh.constructBVH();
 
     // スペクトルからXYZに変換する等色関数
     const Spectrum xbar("../property/cie_sco_2degree_xbar.csv");
@@ -106,6 +111,8 @@ int main()
     std::cout << "width : height = " << width << " : " << height << std::endl;
     std::cout << "-- Number of Object --" << std::endl;
     std::cout << "objects : " << scene.objects.size() << std::endl;
+    std::cout << "nodes   : " << bvh.getNodeCount() << std::endl;
+    std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
     std::chrono::system_clock::time_point start, end;
@@ -148,11 +155,17 @@ int main()
 
                 // #TODO BVHの実装
                 // Intersection
-                const auto intersect = scene.intersect(
-                        ray, 1e-4, 1e+100);
+//                const auto intersect = scene.intersect(ray, 1e-4, 1e+100);
+                const auto intersect = bvh.intersect(ray, 1e-4, 1e+100);
+
                 if (!intersect) {
                     break;
                 }
+
+//                std::cout << "intersect : intersectP = " <<
+//                          intersect->distance <<
+//                          " : " <<
+//                          intersectp->distance << std::endl;
 
                 if (pass == 0 && depth == 0) {
                     nom[i] = (normalize(intersect->normal) + 1.0) / 2.0 * 255;
@@ -171,8 +184,7 @@ int main()
                     if (intersect->sphere->material->type() == SurfaceType::Diffuse) {
                         // Sample direction in local coordinates
                         const auto n =
-                                dot(intersect->normal, -ray.direction) > 0 ? intersect->normal : -intersect
-                                        ->normal;
+                                dot(intersect->normal, -ray.direction) > 0 ? intersect->normal : -intersect->normal;
                         const auto&[u, v] = tangentSpace(n);
                         const auto d = [&]() {
                             const auto r = sqrt(Random::Instance().next());
@@ -224,7 +236,7 @@ int main()
 
                         return Random::Instance().next() < Fr ?
                                intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi
-                                               : *wt;
+                                                              : *wt;
                     } else {
                         return Vector3();
                     }
@@ -237,7 +249,7 @@ int main()
                 }
             }
             // 各波長の重みを更新(サンプリング数に応じて重みをかける)
-                S[i] = S[i] + (L / samples);
+            S[i] = S[i] + (L / samples);
         }
 
         if ((pass) % 5 == 0 && isOutput) {
@@ -285,6 +297,10 @@ int main()
                      << tonemap(i.y) << " "
                      << tonemap(i.z) << "\n";
     }
+
+    std::cout << "-- Memory release -- " << std::endl;
+
+    scene.freeObject();
 
     std::cout << "-- FINISH --" << std::endl;
 

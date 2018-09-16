@@ -15,8 +15,18 @@ namespace nagato {
     Vector3::Vector3(float x, float y, float z)
             : x(x), y(y), z(z) {}
 
-    float Vector3::operator[](int i) {
-      return (&x)[i];
+    float Vector3::operator[](int i) const {
+        if (i == 0)
+            return x;
+        else if (i == 1)
+            return  y;
+        else if (i == 2)
+            return  x;
+        else {
+            fprintf(stderr, "ERROR : [Vector3]0~2の範囲で指定\n");
+            exit(-1);
+        }
+
     }
 
 

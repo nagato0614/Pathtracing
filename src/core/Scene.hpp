@@ -13,6 +13,7 @@
 namespace nagato {
     class Scene {
     public:
+        Scene();
 
         std::vector<Object *> objects;
 
@@ -21,6 +22,8 @@ namespace nagato {
         void loadObject(const std::string &objfilename,
                         const std::string &mtlfilename,
                         Material *m);
+
+        void freeObject();
     };
 }
 

@@ -19,7 +19,7 @@ namespace nagato {
 
         Vector3(float x, float y, float z);
 
-        float operator[](int i);
+        float operator[](int i) const;
 
         inline Vector3 operator+(Vector3 b) const {
           return Vector3(x + b.x, y + b.y, z + b.z);
@@ -65,6 +65,10 @@ namespace nagato {
 
         inline float norm() {
           return x * x + y * y + z * z;
+        }
+
+        inline std::string toString() const {
+            return "(" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")";
         }
     };
 

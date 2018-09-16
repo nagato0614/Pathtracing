@@ -10,19 +10,21 @@
 #include "../object/Triangle.hpp"
 
 
-namespace nagato {
+namespace nagato
+{
 
-    std::optional<Hit> Scene::intersect(Ray &ray, float tmin, float tmax) {
-      std::optional<Hit> minh;
-      for (auto &sphere : objects) {
-        auto h = sphere->intersect(ray, tmin, tmax);
-        if (!h) {
-          continue;
+    std::optional<Hit> Scene::intersect(Ray &ray, float tmin, float tmax)
+    {
+        std::optional<Hit> minh;
+        for (auto &sphere : objects) {
+            auto h = sphere->intersect(ray, tmin, tmax);
+            if (!h) {
+                continue;
+            }
+            minh = h;
+            tmax = minh->distance;
         }
-        minh = h;
-        tmax = minh->distance;
-      }
-      return minh;
+        return minh;
     }
 
     void Scene::loadObject(const std::string &objfilename, const std::string &mtlfilename, Material *m)
@@ -104,5 +106,17 @@ namespace nagato {
                 objects.push_back(new Triangle(m, p));
             }
         }
+    }
+
+    void Scene::freeObject()
+    {
+        for (auto i : objects) {
+            delete i;
+        }
+    }
+
+    Scene::Scene()
+    {
+        objects.clear();
     }
 }

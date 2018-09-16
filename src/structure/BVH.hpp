@@ -13,28 +13,54 @@ namespace nagato
     // BVHを構築するノード
     struct BVHNode {
         Aabb bbox;
-        int children[2];
-        Object *object{};
+        Object *object = nullptr;
+        int left = -1;
+        int right = -1;
     };
 
     // BVHを扱うクラス
     class BVH
     {
      public:
-        explicit BVH(std::vector<Object *> *o);
+        BVH();
 
+        explicit BVH(std::vector<Object *> objects);
+
+        void setObject(std::vector<Object *> objects);
+
+        // BVHの構築を始める
         void constructBVH();
 
+        // BVHとレイの交差判定
+        std::optional<Hit> intersect(Ray &ray, float min, float max);
+
+        // BVHのノード数を返す
+        int getNodeCount();
+
+        // BVHで使用しているメモリサイズを返す[MB]
+        size_t getMemorySize();
+
+        // デバッグ用
+        void showBVH();
      private:
 
-        void constructBVH_internal();
+        // BVH構築を再帰的に行う
+        void constructBVH_internal(std::vector<Object *> objects, int splitAxis, int nodeIndex);
+
+        // BVHとレイの交差判定を再帰的に行う
+        std::optional<Hit> intersect_internal(Ray &ray, float min, float max, int nodeIndex);
+
+        // 新しいノードを作成する
+        int makeNewNode();
+
         float surfaceArea(Aabb bbox);
 
         Aabb mergeAABB(Aabb a, Aabb b);
 
-        BVHNode root;
-        std::vector<Aabb> aabbList;
-        std::vector<Object *> *objects;
+        BVHNode *root = nullptr;
+        std::vector<Object *> objects;
+        int nodeCount = 0;
+        BVHNode nodes[BVH_NODE];
     };
 }
 

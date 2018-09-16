@@ -8,6 +8,13 @@
 #define RESOLUTION 400
 #define SAMPLE 1
 
+#define BVH_NODE 20000
+
+// exit code
+#define EMPTY_OBJECT 64
+#define EMPTY_NODE 65
+#define CANNOT_CONSTRUCT_BVH 66
+
 #include <tuple>
 #include <vector>
 #include "../linearAlgebra/Vector3.hpp"
