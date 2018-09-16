@@ -20,7 +20,7 @@ namespace nagato
 
     Spectrum::Spectrum(std::string filename)
     {
-        std::cout << "load spectrum data\t: " << filename << std::endl;
+//        std::cout << "load spectrum data\t: " << filename << std::endl;
         io::CSVReader<2> in(filename);
         in.read_header(io::ignore_extra_column, "Wavelength", "Intensity");
         int wave;

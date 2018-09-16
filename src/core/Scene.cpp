@@ -37,18 +37,12 @@ namespace nagato
             std::cerr << "オブジェクトファイルを開けませんでした : "
                       << objfilename << std::endl;
             exit(-1);
-        } else {
-            std::cout << "load object file \t: "
-                      << objfilename << std::endl;
         }
 
         if (cornellob_material.fail()) {
             std::cerr << "マテリアルファイルを開けませんでした : "
                       << mtlfilename << std::endl;
             exit(-1);
-        } else {
-            std::cout << "load material file \t: "
-                      << mtlfilename << std::endl;
         }
 
         // オブジェクトファイルを文字列に変換
