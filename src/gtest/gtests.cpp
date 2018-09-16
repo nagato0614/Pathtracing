@@ -118,19 +118,11 @@ namespace nagato
                     ASSERT_FLOAT_EQ(intersect->point.x, intersectBVH->point.x) << "[x, y] : " << x << ", " << y;
                     ASSERT_FLOAT_EQ(intersect->point.y, intersectBVH->point.y) << "[x, y] : " << x << ", " << y;
                     ASSERT_FLOAT_EQ(intersect->point.z, intersectBVH->point.z) << "[x, y] : " << x << ", " << y;
-                } else {
-                    // 片方だけがヒットしている場合はテスト失敗
-                    auto inter = intersectBVH;
-                    std::string str = "BVH";
-                    if (intersect) {
-                        str = "scene";
-                        inter = intersect;
-                    }
-
-                    FAIL() << "片方だけヒット : " << str
-                           << "\n[x, y] : " << x << ", " << y
-                           << "\n" << inter->sphere->toString();
                 }
+                ASSERT_EQ(false, !intersect && intersectBVH) << "\n[x, y] : " << x << ", " << y
+                                                             << "\n" << intersectBVH->sphere->toString();
+                ASSERT_EQ(false, intersect && !intersectBVH) << "\n[x, y] : " << x << ", " << y
+                                                             << "\n" << intersect->sphere->toString();
             }
         }
 
@@ -194,6 +186,19 @@ namespace nagato
 
             }
         }
+
+        /**
+         * BVHNodeが正しくマテリアルを保持しているかテスト
+         */
+         TEST_F(BVHTest, ObjectHasMaterial) {
+             auto objectCount = bvh.getNodeCount();
+             auto nodes = bvh.getNodes();
+
+             for (int i = 0; i < objectCount; i++) {
+                 if (nodes[i].object != nullptr)
+                     ASSERT_TRUE(nodes[i].object->material != nullptr);
+             }
+         }
     }
 }
 
