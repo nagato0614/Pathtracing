@@ -69,8 +69,8 @@ int main()
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     Scene scene;
-    scene.objects.push_back(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
-    scene.objects.push_back(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
+    scene.setObject(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
+    scene.setObject(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
     scene.loadObject("../models/left.obj",
                      "../models/left.mtl", &redMaterial);
     scene.loadObject("../models/right.obj",
@@ -79,8 +79,8 @@ int main()
                      "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
     scene.loadObject("../models/light_plane.obj",
                      "../models/light_plane.mtl", &d65);
-    scene.loadObject("../models/suzanne.obj",
-                     "../models/suzanne.mtl", &whiteMaterial);
+//    scene.loadObject("../models/suzanne.obj",
+//                     "../models/suzanne.mtl", &whiteMaterial);
 
     std::cout << "-- Construct BVH --" << std::endl;
     BVH bvh(scene.objects);

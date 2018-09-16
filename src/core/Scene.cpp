@@ -103,7 +103,7 @@ namespace nagato
                 }
                 index_offset += fnum;
 
-                objects.push_back(new Triangle(m, p));
+                setObject(new Triangle(m, p));
             }
         }
     }
