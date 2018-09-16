@@ -37,18 +37,12 @@ namespace nagato
             std::cerr << "オブジェクトファイルを開けませんでした : "
                       << objfilename << std::endl;
             exit(-1);
-        } else {
-            std::cout << "load object file \t: "
-                      << objfilename << std::endl;
         }
 
         if (cornellob_material.fail()) {
             std::cerr << "マテリアルファイルを開けませんでした : "
                       << mtlfilename << std::endl;
             exit(-1);
-        } else {
-            std::cout << "load material file \t: "
-                      << mtlfilename << std::endl;
         }
 
         // オブジェクトファイルを文字列に変換
@@ -103,7 +97,7 @@ namespace nagato
                 }
                 index_offset += fnum;
 
-                objects.push_back(new Triangle(m, p));
+                setObject(new Triangle(m, p));
             }
         }
     }
@@ -118,5 +112,16 @@ namespace nagato
     Scene::Scene()
     {
         objects.clear();
+    }
+
+    void Scene::setObject(Object *object)
+    {
+        objectCount++;
+        objects.push_back(object);
+    }
+
+    int Scene::getObjectCount() const
+    {
+        return objectCount;
     }
 }

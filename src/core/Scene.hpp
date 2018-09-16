@@ -19,11 +19,18 @@ namespace nagato {
 
         std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
 
+        void setObject(Object *object);
+
         void loadObject(const std::string &objfilename,
                         const std::string &mtlfilename,
                         Material *m);
 
         void freeObject();
+
+        int getObjectCount() const;
+
+     private:
+        int objectCount = 0;
     };
 }
 
