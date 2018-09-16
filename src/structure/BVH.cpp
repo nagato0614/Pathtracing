@@ -187,12 +187,13 @@ namespace nagato
     std::optional<Hit> BVH::testIntersect(Ray &ray, float min, float max)
     {
         std::optional<Hit> minh;
-        for (int i = 0; i < getNodeCount(); i++) {
+        for (int i = 0; i < nodeCount; i++) {
             auto *node = &nodes[i];
             if (node->object != nullptr) {
                 auto h = node->object->intersect(ray, min, max);
-                if (!h)
+                if (!h) {
                     continue;
+                }
                 minh = h;
                 max = minh->distance;
             }

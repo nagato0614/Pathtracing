@@ -66,23 +66,6 @@ namespace nagato
 
             Scene scene;
             BVH bvh;
-
-            // Image size
-            int width = 480;
-            int height = 360;
-
-            // Camera parameters
-            Vector3 eye{0, 5, 6};
-            Vector3 center = eye + Vector3(0, -0.5, -1);
-
-            Vector3 up{0, 1, 0};
-            float fov = 55 * M_PI / 180;
-            float aspect = width / height;
-
-            // Basis vectors for camera coordinates
-            Vector3 wE = normalize(eye - center);
-            Vector3 uE = normalize(cross(up, wE));
-            Vector3 vE = cross(wE, uE);
         };
 
         /**
@@ -90,39 +73,54 @@ namespace nagato
          */
         TEST_F(BVHTest, intersection)
         {
-            for (int i = 0; i < width * height; i++) {
-                const int x = i % width;
-                const int y = height - i / width;
-                Ray ray;
-                ray.origin = eye;
-                ray.direction = [&]() {
-                    const float tf = std::tan(fov * .5);
-                    const float rpx = 2. * (x + 0.5) / width - 1;
-                    const float rpy = 2. * (y + 0.5) / height - 1;
-                    const Vector3 ww = normalize(
-                            Vector3(aspect * tf * rpx, tf * rpy, -1));
-                    return uE * ww.x + vE * ww.y + wE * ww.z;
-                }();
+            // Image size
+            const int width = 480;
+            const int height = 360;
 
-                const auto intersect = scene.intersect(ray, 1e-4, 1e+100);
-                const auto intersectBVH = bvh.intersect(ray, 1e-4, 1e+100);
+            // Camera parameters
+            const Vector3 eye(0, 5, 6);
+            const Vector3 center = eye + Vector3(0, -0.5, -1);
 
-                if (!intersect && !intersectBVH) {
-                    continue;
-                } else if (intersect && intersectBVH) {
-                    // 線形探索とBVHの判定が正しいばいい
-                    ASSERT_FLOAT_EQ(intersect->distance, intersectBVH->distance);
-                    ASSERT_FLOAT_EQ(intersect->normal.x, intersectBVH->normal.x) << "[x, y] : " << x << ", " << y;
-                    ASSERT_FLOAT_EQ(intersect->normal.y, intersectBVH->normal.y) << "[x, y] : " << x << ", " << y;
-                    ASSERT_FLOAT_EQ(intersect->normal.z, intersectBVH->normal.z) << "[x, y] : " << x << ", " << y;
-                    ASSERT_FLOAT_EQ(intersect->point.x, intersectBVH->point.x) << "[x, y] : " << x << ", " << y;
-                    ASSERT_FLOAT_EQ(intersect->point.y, intersectBVH->point.y) << "[x, y] : " << x << ", " << y;
-                    ASSERT_FLOAT_EQ(intersect->point.z, intersectBVH->point.z) << "[x, y] : " << x << ", " << y;
+            const Vector3 up(0, 1, 0);
+            const float fov = 55 * M_PI / 180;
+            const float aspect = float(width) / height;
+
+            // Basis vectors for camera coordinates
+            const auto wE = normalize(eye - center);
+            const auto uE = normalize(cross(up, wE));
+            const auto vE = cross(wE, uE);
+
+            for (int x = 0; x < width; x++) {
+                for (int y = height; y > 0; y--) {
+                    Ray ray;
+                    ray.origin = eye;
+                    ray.direction = [&]() {
+                        const float tf = std::tan(fov * .5);
+                        const float rpx = 2. * (x + 0.5) / width - 1;
+                        const float rpy = 2. * (y + 0.5) / height - 1;
+                        const Vector3 ww = normalize(
+                                Vector3(aspect * tf * rpx, tf * rpy, -1));
+                        return uE * ww.x + vE * ww.y + wE * ww.z;
+                    }();
+
+                    const auto intersect = scene.intersect(ray, 1e-4, 1e+100);
+                    const auto intersectBVH = bvh.intersect(ray, 1e-4, 1e+100);
+
+
+
+                    if (!intersect && !intersectBVH) {
+                        continue;
+                    } else if (intersect && intersectBVH) {
+                        // 線形探索とBVHの判定が正しいばいい
+                        ASSERT_FLOAT_EQ(intersect->distance, intersectBVH->distance);
+                        ASSERT_FLOAT_EQ(intersect->normal.x, intersectBVH->normal.x) << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->normal.y, intersectBVH->normal.y) << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->normal.z, intersectBVH->normal.z) << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->point.x, intersectBVH->point.x) << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->point.y, intersectBVH->point.y) << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->point.z, intersectBVH->point.z) << "[x, y] : " << x << ", " << y;
+                    }
                 }
-                ASSERT_EQ(false, !intersect && intersectBVH) << "\n[x, y] : " << x << ", " << y
-                                                             << "\n" << intersectBVH->sphere->toString();
-                ASSERT_EQ(false, intersect && !intersectBVH) << "\n[x, y] : " << x << ", " << y
-                                                             << "\n" << intersect->sphere->toString();
             }
         }
 
