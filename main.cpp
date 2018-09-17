@@ -11,6 +11,7 @@
 #include "src/core/Scene.hpp"
 #include "src/object/Sphere.hpp"
 #include "src/structure/BVH.hpp"
+#include "src/BSDF/Specular.hpp"
 
 using namespace nagato;
 
@@ -193,46 +194,48 @@ int main()
                         // Convert to world coordinates
                         return u * d.x + v * d.y + n * d.z;
                     } else if (intersect->sphere->material->type() == SurfaceType::Mirror) {
-                        const auto wi = -ray.direction;
-                        return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
+                        Specular specular();
+//                        const auto wi = -ray.direction;
+//                        return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
                     } else if (intersect->sphere->material->type() == SurfaceType::Fresnel) {
 
-                        // サンプル点を１つにしてそれ以外の影響を0にする
-                        if (wavelength == -1 && !isSlected) {
-                            wavelength = Random::Instance().next(0, RESOLUTION - 1);
-                            weight.leaveOnePoint(wavelength);
-                            L.leaveOnePoint(wavelength);
-                            isSlected = true;
-                        }
-
-                        // 屈折率を取得
-                        const float ior = refraction.spectrum[wavelength];
-
-                        const auto wi = -ray.direction;
-                        const auto into = dot(wi, intersect->normal) > 0;
-                        const auto n = into ? intersect->normal : -intersect->normal;
-//                        const auto ior = intersect->sphere->ior;
-                        const auto eta = into ? 1 / ior : ior;
-                        const auto wt = [&]() -> std::optional<Vector3> {
-                            const auto t = dot(wi, n);
-                            const auto t2 = 1 - eta * eta * (1 - t * t);
-                            if (t2 < 0) {
-                                return {};
-                            };
-                            return (n * t - wi) * eta - n * sqrt(t2);
-                        }();
-                        if (!wt) {
-                            return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
-                        }
-                        const auto Fr = [&]() {
-                            const auto cos = into ? dot(wi, intersect->normal) : dot(*wt, intersect->normal);
-                            const auto r = (1 - ior) / (1 + ior);
-                            return r * r + (1 - r * r) * pow(1 - cos, 5);
-                        }();
-
-                        return Random::Instance().next() < Fr ?
-                               intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi
-                                                              : *wt;
+//
+//                        // サンプル点を１つにしてそれ以外の影響を0にする
+//                        if (wavelength == -1 && !isSlected) {
+//                            wavelength = Random::Instance().next(0, RESOLUTION - 1);
+//                            weight.leaveOnePoint(wavelength);
+//                            L.leaveOnePoint(wavelength);
+//                            isSlected = true;
+//                        }
+//
+//                        // 屈折率を取得
+//                        const float ior = refraction.spectrum[wavelength];
+//
+//                        const auto wi = -ray.direction;
+//                        const auto into = dot(wi, intersect->normal) > 0;
+//                        const auto n = into ? intersect->normal : -intersect->normal;
+////                        const auto ior = intersect->sphere->ior;
+//                        const auto eta = into ? 1 / ior : ior;
+//                        const auto wt = [&]() -> std::optional<Vector3> {
+//                            const auto t = dot(wi, n);
+//                            const auto t2 = 1 - eta * eta * (1 - t * t);
+//                            if (t2 < 0) {
+//                                return {};
+//                            };
+//                            return (n * t - wi) * eta - n * sqrt(t2);
+//                        }();
+//                        if (!wt) {
+//                            return intersect->normal * 2 * dot(wi, intersect->normal) - wi;
+//                        }
+//                        const auto Fr = [&]() {
+//                            const auto cos = into ? dot(wi, intersect->normal) : dot(*wt, intersect->normal);
+//                            const auto r = (1 - ior) / (1 + ior);
+//                            return r * r + (1 - r * r) * pow(1 - cos, 5);
+//                        }();
+//
+//                        return Random::Instance().next() < Fr ?
+//                               intersect->normal * 2 * dot(wi, intersect->normal) * intersect->normal - wi
+//                                                              : *wt;
                     } else {
                         return Vector3();
                     }

@@ -8,8 +8,10 @@
 #include <memory>
 #include "../color/Spectrum.hpp"
 #include "../core/Hit.hpp"
+#include "../material/Material.hpp"
 
 namespace nagato {
+    class Material;
     class BSDF {
      public:
         explicit BSDF(Material *m);
@@ -21,6 +23,8 @@ namespace nagato {
      protected:
         Material *material;
     };
+
+    std::shared_ptr<BSDF> createBSDF(Material *material);
 }
 
 #endif //PATHTRACING_BSDF_HPP
