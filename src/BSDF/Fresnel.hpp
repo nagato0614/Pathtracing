@@ -12,12 +12,9 @@ namespace nagato
     class Fresnel : BSDF
     {
      public:
-        Fresnel(Material *m, Spectrum refraction);
+        Fresnel(Material *m);
 
         Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, Hit &surfaceInfo);
-
-     private :
-        Spectrum refraction;
     };
 }
 

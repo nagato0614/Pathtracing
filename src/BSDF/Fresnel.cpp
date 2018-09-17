@@ -7,7 +7,7 @@
 namespace nagato
 {
 
-    Fresnel::Fresnel(Material *m, Spectrum refraction) : BSDF(m), refraction(refraction)
+    Fresnel::Fresnel(Material *m) : BSDF(m)
     {
 
     }
@@ -21,9 +21,9 @@ namespace nagato
             // 波長を一つだけサンプリングする
             if (*wavelengthIndex == -1) {
                 *wavelengthIndex = Random::Instance().next(0, RESOLUTION - 1);
-                ior = refraction.spectrum[*wavelengthIndex];
+                ior = material->getRefraction().spectrum[*wavelengthIndex];
             } else {
-                ior = refraction.spectrum[*wavelengthIndex];
+                ior = material->getRefraction().spectrum[*wavelengthIndex];
             }
         }
 
