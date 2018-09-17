@@ -12,7 +12,11 @@ namespace nagato
 
     }
 
-    Spectrum Fresnel::makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo) const
+    Spectrum Fresnel::makeNewDirection(
+            int *wavelengthIndex,
+            Vector3 *newDirection,
+            Ray &ray,
+            const Hit &surfaceInfo) const
     {
 
         float ior = 1.5;

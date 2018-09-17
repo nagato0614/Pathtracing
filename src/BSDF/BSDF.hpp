@@ -16,11 +16,22 @@ namespace nagato
 
     class Hit;
 
+    /**
+     * BSDFを扱う大本となるクラス
+     */
     class BSDF
     {
      public:
         explicit BSDF(Material *m);
 
+        /**
+         * 現在のrayから反射方向とweightを計算する関数
+         * @param wavelengthIndex
+         * @param newDirection
+         * @param ray
+         * @param surfaceInfo
+         * @return materialが持つ反射率
+         */
         virtual Spectrum makeNewDirection(
                 int *wavelengthIndex,
                 Vector3 *newDirection,

@@ -18,7 +18,7 @@ namespace nagato
                 int *wavelengthIndex,
                 Vector3 *newDirection,
                 Ray &ray,
-                const Hit &surfaceInfo) const override ;
+                const Hit &surfaceInfo) const override;
     };
 }
 

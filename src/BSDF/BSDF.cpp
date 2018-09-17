@@ -8,11 +8,12 @@
 #include "Fresnel.hpp"
 #include <bits/shared_ptr.h>
 
-namespace nagato {
+namespace nagato
+{
 
 
     BSDF::BSDF(Material *m)
-    : material(m)
+            : material(m)
     {
 
     }
@@ -35,7 +36,8 @@ namespace nagato {
             case SurfaceType::Fresnel:
                 bsdf = new Fresnel(material);
                 break;
-            case SurfaceType::Emitter:break;
+            case SurfaceType::Emitter:
+                break;
         }
         return bsdf;
     }

@@ -10,13 +10,19 @@
 
 namespace nagato
 {
+    /**
+     * 完全拡散面を扱うクラス
+     */
     class Lambert : public BSDF
     {
      public:
         explicit Lambert(Material *m);
 
-        Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo)
-        const override;
+        Spectrum makeNewDirection(
+                int *wavelengthIndex,
+                Vector3 *newDirection,
+                Ray &ray,
+                const Hit &surfaceInfo) const override;
     };
 }
 
