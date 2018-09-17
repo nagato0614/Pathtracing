@@ -20,7 +20,7 @@ namespace nagato
         if (wavelengthIndex != nullptr) {
             // 波長を一つだけサンプリングする
             if (*wavelengthIndex == -1) {
-                *wavelengthIndex = Random::Instance().next(0, RESOLUTION - 1);
+                *wavelengthIndex = Random::Instance().nextInt(0, RESOLUTION - 1);
                 ior = material->getRefraction().spectrum[*wavelengthIndex];
             } else {
                 ior = material->getRefraction().spectrum[*wavelengthIndex];

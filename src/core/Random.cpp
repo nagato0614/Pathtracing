@@ -19,7 +19,7 @@ namespace nagato
         return dist(engine);
     }
 
-    int Random::next(int from, int to)
+    int Random::nextInt(int from, int to)
     {
         std::uniform_int_distribution<> rand(from, to);
         return rand(engine);
@@ -29,5 +29,11 @@ namespace nagato
     {
         static Random instance;
         return instance;
+    }
+
+    float Random::nextFloat(float from, float to)
+    {
+        std::uniform_real_distribution<float> rand(from, to);
+        return rand(engine);
     }
 }

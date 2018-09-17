@@ -107,7 +107,6 @@ namespace nagato
                     const auto intersectBVH = bvh.intersect(ray, 1e-4, 1e+100);
 
 
-
                     if (!intersect && !intersectBVH) {
                         continue;
                     } else if (intersect && intersectBVH) {
@@ -188,15 +187,55 @@ namespace nagato
         /**
          * BVHNodeが正しくマテリアルを保持しているかテスト
          */
-         TEST_F(BVHTest, ObjectHasMaterial) {
-             auto objectCount = bvh.getNodeCount();
-             auto nodes = bvh.getNodes();
+        TEST_F(BVHTest, ObjectHasMaterial)
+        {
+            auto objectCount = bvh.getNodeCount();
+            auto nodes = bvh.getNodes();
 
-             for (int i = 0; i < objectCount; i++) {
-                 if (nodes[i].object != nullptr)
-                     ASSERT_TRUE(nodes[i].object->material != nullptr);
-             }
-         }
+            for (int i = 0; i < objectCount; i++) {
+                if (nodes[i].object != nullptr)
+                    ASSERT_TRUE(nodes[i].object->material != nullptr);
+            }
+        }
+
+        /**
+         * BSDFクラスのテストフィクスチャ
+         */
+        class BSDFTest : public ::testing::Test
+        {
+         protected :
+            BSDFTest()
+            {
+
+            }
+
+            ~BSDFTest()
+            {
+
+            }
+        };
+
+        Vector3 samplingSphere(float radius)
+        {
+        }
+
+        TEST_F(BSDFTest, Specular)
+        {
+            Material material{SurfaceType::Mirror, Spectrum(1.0)};
+            Sphere sphere(Vector3{0, 0, 0}, 1, &material);
+
+        }
+
+        TEST(Random, nextFloatTest)
+        {
+            auto &random = Random::Instance();
+
+            for (int i = 0; i < 10000; i++) {
+                auto randNum = random.nextFloat(0.0, 1.0);
+                ASSERT_TRUE((0 <= randNum)
+                            && (randNum <= 1.0));
+            }
+        }
     }
 }
 
