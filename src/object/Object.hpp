@@ -17,6 +17,7 @@
 namespace nagato {
 
     class Hit;
+    class Material;
     class Object {
     public:
         Material *material;
@@ -28,7 +29,7 @@ namespace nagato {
 
         virtual Aabb getAABB() const;
 
-        virtual Hit pointSampling(Hit surfaceInfo)= 0;
+        virtual Hit pointSampling(Hit surfaceInfo) = 0;
 
         virtual std::string toString() const;
     };

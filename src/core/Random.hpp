@@ -11,9 +11,24 @@
 namespace nagato {
     class Random {
     public:
+
         float next();
 
-        int next(int from, int to);
+        /**
+         * [from,to]の範囲のランダムな整数値を取得する
+         * @param from
+         * @param to
+         * @return
+         */
+        int nextInt(int from, int to);
+
+        /**
+         * [from, to]の範囲のランダムな整数値を取得する
+         * @param from
+         * @param to
+         * @return
+         */
+        float nextFloat(float from, float to);
 
         static Random& Instance();
      private:

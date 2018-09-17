@@ -9,15 +9,16 @@
 
 namespace nagato
 {
-    class Fresnel : BSDF
+    class Fresnel : public BSDF
     {
      public:
-        Fresnel(Material *m, Spectrum refraction);
+        Fresnel(Material *m);
 
-        Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, Hit &surfaceInfo);
-
-     private :
-        Spectrum refraction;
+        Spectrum makeNewDirection(
+                int *wavelengthIndex,
+                Vector3 *newDirection,
+                Ray &ray,
+                const Hit &surfaceInfo) const override;
     };
 }
 

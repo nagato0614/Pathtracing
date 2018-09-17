@@ -14,7 +14,7 @@ namespace nagato
     }
 
     Material::Material(SurfaceType t, Spectrum c, Spectrum e, float emitterL)
-            : surfaceType(t), color(c)
+            : surfaceType(t), color(c), refraction(Spectrum(1.5))
     {
         this->emitter = e * emitterL;
     }
@@ -40,4 +40,21 @@ namespace nagato
         return str;
     }
 
+    const Spectrum &Material::getRefraction() const
+    {
+        return refraction;
+    }
+
+    BSDF *Material::getBSDF()
+    {
+        if (bsdf == nullptr) {
+            bsdf = createBSDF(this);
+        }
+        return bsdf;
+    }
+
+    void Material::setRefraction(const Spectrum &refraction)
+    {
+        Material::refraction = refraction;
+    }
 }

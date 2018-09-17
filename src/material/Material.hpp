@@ -7,9 +7,11 @@
 
 #include "../core/SurfaceType.hpp"
 #include "../color/Spectrum.hpp"
+#include "../BSDF/BSDF.hpp"
 
 namespace nagato
 {
+    class BSDF;
     class Material
     {
      public:
@@ -18,11 +20,20 @@ namespace nagato
 
         Material(SurfaceType t, Spectrum c, Spectrum e = Spectrum(), float emitterL = 1.0);
 
+        BSDF *getBSDF();
+
         SurfaceType type();
 
         std::string typeName();
 
-     private:
+        const Spectrum &getRefraction() const;
+
+        void setRefraction(const Spectrum &refraction);
+
+     private :
+
+        BSDF *bsdf = nullptr;
+        Spectrum refraction;
         SurfaceType surfaceType;
     };
 }

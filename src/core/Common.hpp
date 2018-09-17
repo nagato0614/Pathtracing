@@ -15,9 +15,14 @@
 #define EMPTY_NODE 65
 #define CANNOT_CONSTRUCT_BVH 66
 
+// 角度の変換
+#define deg_to_rad(deg) (((deg)/360)*2*M_PI)
+#define rad_to_deg(rad) (((rad)/2/M_PI)*360)
+
 #include <tuple>
 #include <vector>
 #include "../linearAlgebra/Vector3.hpp"
+#include "../color/Spectrum.hpp"
 
 namespace nagato
 {

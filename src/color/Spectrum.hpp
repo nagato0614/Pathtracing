@@ -98,7 +98,7 @@ namespace nagato
         // サンプル点ランダムに一つ抽出
         inline int getOneSampledPoint()
         {
-            return Random::Instance().next(0, int(sample_));
+            return Random::Instance().nextInt(0, int(sample_));
         }
 
         // すべての波長要素を足し合わせる
