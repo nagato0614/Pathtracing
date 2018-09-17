@@ -6,7 +6,6 @@
 #include "Lambert.hpp"
 #include "Specular.hpp"
 #include "Fresnel.hpp"
-#include <bits/shared_ptr.h>
 
 namespace nagato
 {
