@@ -11,7 +11,7 @@ namespace nagato {
 
     }
 
-    Spectrum Specular::makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, Hit &surfaceInfo)
+    Spectrum Specular::makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, Hit &surfaceInfo) const
     {
         const auto wi = -ray.direction;
         *newDirection = surfaceInfo.normal * 2 * dot(wi, surfaceInfo.normal) - wi;

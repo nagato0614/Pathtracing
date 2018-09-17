@@ -11,7 +11,7 @@ namespace nagato
 
     }
 
-    Spectrum Lambert::makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, Hit &surfaceInfo)
+    Spectrum Lambert::makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, Hit &surfaceInfo) const
     {
         // Sample direction in local coordinates
         const auto n =

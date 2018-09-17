@@ -10,14 +10,21 @@
 #include "../core/Hit.hpp"
 #include "../material/Material.hpp"
 
-namespace nagato {
+namespace nagato
+{
     class Material;
+
     class Hit;
-    class BSDF {
+
+    class BSDF
+    {
      public:
         explicit BSDF(Material *m);
 
-        virtual Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, Hit &surfaceInfo)= 0;
+        virtual Spectrum makeNewDirection(int *wavelengthIndex,
+                                          Vector3 *newDirection,
+                                          Ray &ray,
+                                          Hit &surfaceInfo) const = 0;
 
         Material *getMaterial();
 
