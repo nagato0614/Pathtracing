@@ -39,8 +39,6 @@ namespace nagato {
             // resolutionが1の場合は380~780すべてをカバーしていると仮定して
             // csvファイルからデータを読み取る
             if (diff == 1) {
-                auto lastSpec = static_cast<int>(std::get<0>(spectrumData[0]) + (spectrumData.size() - 1) * diff);
-//            std::cout << "lastSpec : " << lastSpec << std::endl;
 
                 // 380nmのインデックスを調べる
                 int index = 0;

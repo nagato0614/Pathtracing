@@ -26,7 +26,7 @@ namespace nagato {
 
         Aabb getAABB() const override ;
 
-        Hit pointSampling(Hit surfaceInfo);
+        Hit pointSampling(Hit surfaceInfo) override;
 
         std::string toString() const override ;
     };

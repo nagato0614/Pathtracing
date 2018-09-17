@@ -14,7 +14,7 @@ namespace nagato
     class Matrix3
     {
      public:
-        float data[3][3] = {0};
+        float data[3][3] = {};
 
         Matrix3()
         = default;

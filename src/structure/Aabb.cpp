@@ -29,7 +29,7 @@ namespace nagato{
         return true;
     }
 
-    Aabb::Aabb() : min(Vector3(1e+1000)), max(Vector3(static_cast<float>(-1e+1000)))
+    Aabb::Aabb() : min(Vector3(MAXFLOAT)), max(Vector3(MAXFLOAT))
     {
 
     }

@@ -6,9 +6,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "../material/Material.hpp"
-#include "../core/scene.hpp"
+#include "../core/Scene.hpp"
 #include "../structure/BVH.hpp"
-#include "../object/sphere.hpp"
+#include "../object/Sphere.hpp"
 
 
 namespace nagato

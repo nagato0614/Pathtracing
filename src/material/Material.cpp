@@ -3,6 +3,7 @@
 //
 
 #include "Material.hpp"
+#include <utility>
 
 namespace nagato
 {
@@ -14,7 +15,7 @@ namespace nagato
     }
 
     Material::Material(SurfaceType t, Spectrum c, Spectrum e, float emitterL)
-            : surfaceType(t), color(c), refraction(Spectrum(1.5))
+            : surfaceType(t), color(std::move(c)), refraction(Spectrum(1.5))
     {
         this->emitter = e * emitterL;
     }
