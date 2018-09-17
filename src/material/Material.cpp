@@ -14,7 +14,7 @@ namespace nagato
     }
 
     Material::Material(SurfaceType t, Spectrum c, Spectrum e, float emitterL)
-            : surfaceType(t), color(c)
+            : surfaceType(t), color(c), refraction(Spectrum(1.5))
     {
         this->emitter = e * emitterL;
     }
@@ -38,6 +38,17 @@ namespace nagato
         }
 
         return str;
+    }
+
+    Material::Material(SurfaceType t, Spectrum c, Spectrum e, Spectrum refraction, float emitterL)
+            : surfaceType(t), color(c), refraction(refraction)
+    {
+
+    }
+
+    const Spectrum &Material::getRefraction() const
+    {
+        return refraction;
     }
 
 }

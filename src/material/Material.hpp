@@ -17,12 +17,18 @@ namespace nagato
         Spectrum emitter;
 
         Material(SurfaceType t, Spectrum c, Spectrum e = Spectrum(), float emitterL = 1.0);
+        Material(SurfaceType t, Spectrum c, Spectrum e = Spectrum(), Spectrum refraction, float emitterL = 1.0);
 
         SurfaceType type();
 
         std::string typeName();
 
-     private:
+     public:
+        const Spectrum &getRefraction() const;
+
+
+     private :
+        Spectrum refraction;
         SurfaceType surfaceType;
     };
 }
