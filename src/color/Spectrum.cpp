@@ -5,21 +5,14 @@
 #include "Spectrum.hpp"
 #include "../core/csv.h"
 
-namespace nagato
-{
-    Spectrum::Spectrum()
-    {
-        spectrum.resize(static_cast<unsigned long>(resolution_ + 1), 0.0); // NOLINT
-    }
+namespace nagato {
 
 
-    Spectrum::Spectrum(float init_num = 0.0)
-    {
+    Spectrum::Spectrum(float init_num) {
         spectrum.resize(static_cast<unsigned long>(resolution_ + 1), init_num); // NOLINT
     }
 
-    Spectrum::Spectrum(std::string filename)
-    {
+    Spectrum::Spectrum(std::string filename) {
 //        std::cout << "load spectrum data\t: " << filename << std::endl;
         io::CSVReader<2> in(filename);
         in.read_header(io::ignore_extra_column, "Wavelength", "Intensity");
@@ -107,8 +100,7 @@ namespace nagato
         }
     }
 
-    float Spectrum::findMaxSpectrum()
-    {
+    float Spectrum::findMaxSpectrum() {
         float max = 0.0;
         for (auto i : spectrum) {
             if (i > max)
@@ -116,14 +108,12 @@ namespace nagato
         }
         return max;
     }
-    
-    void Spectrum::addContribution(Spectrum weight, Spectrum emitter)
-    {
+
+    void Spectrum::addContribution(Spectrum weight, Spectrum emitter) {
 
     }
 
-    float Spectrum::sum() const
-    {
+    float Spectrum::sum() const {
         float sum = 0.0;
         for (auto i : spectrum) {
             sum += i;
@@ -131,8 +121,7 @@ namespace nagato
         return sum;
     }
 
-    void Spectrum::normilize()
-    {
+    void Spectrum::normilize() {
         float sum = 0.0;
         for (auto i : spectrum) {
             sum += i;
@@ -142,8 +131,7 @@ namespace nagato
             i /= sum;
     }
 
-    void Spectrum::leaveOnePoint(int index)
-    {
+    void Spectrum::leaveOnePoint(int index) {
         for (int i = 0; i < resolution_ + 1; ++i) {
             if (index != i)
                 spectrum[i] = 0.0;
@@ -152,8 +140,7 @@ namespace nagato
         }
     }
 
-    void printSpectrum(Spectrum s)
-    {
+    void printSpectrum(Spectrum s) {
         for (int i = 0; i < 401; i++) {
             printf("%3d \t : %10.5f\n", 380 + i, s.spectrum[i]);
         }

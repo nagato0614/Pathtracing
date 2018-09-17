@@ -10,94 +10,84 @@
 #include "../core/Random.hpp"
 #include "../core/Common.hpp"
 
-namespace nagato
-{
+namespace nagato {
 
     /**!
      * スペクトルを扱うデータ構造
      * 380nm ~ 780nmの可視光範囲のみ扱う前提
      */
-    class Spectrum
-    {
-     public:
+    class Spectrum {
+    public:
 
-        Spectrum();
 
         // すべての波長をinit_numの値で初期化する
-        explicit Spectrum(float init_num);
+        explicit Spectrum(float init_num = 0.0);
 
         // 波長に対する反射率を保存したcsvから読み込む1
         explicit Spectrum(std::string filenam);
 
-        friend inline Spectrum operator*(Spectrum a, Spectrum b)
-        {
-            Spectrum s;
+        friend inline Spectrum operator*(Spectrum a, Spectrum b) {
+            Spectrum spectrum(0.0);
 
             for (int i = 0; i < a.resolution_ + 1; ++i) {
-                s.spectrum[i] = a.spectrum[i] * b.spectrum[i];
+                spectrum.spectrum[i] = a.spectrum[i] * b.spectrum[i];
             }
-            return s;
+            return spectrum;
 
         }
 
-        friend inline Spectrum operator+(Spectrum a, Spectrum b)
-        {
-            Spectrum s;
+        friend inline Spectrum operator+(Spectrum a, Spectrum b) {
+            Spectrum spectrum(0.0);
 
             for (int i = 0; i < a.resolution_ + 1; ++i) {
-                s.spectrum[i] = a.spectrum[i] + b.spectrum[i];
+                spectrum.spectrum[i] = a.spectrum[i] + b.spectrum[i];
             }
-            return s;
+            return spectrum;
 
         }
 
-        friend inline Spectrum operator-(Spectrum a, Spectrum b)
-        {
-            Spectrum s;
+        friend inline Spectrum operator-(Spectrum a, Spectrum b) {
+            Spectrum spectrum(0.0);
 
             for (int i = 0; i < a.resolution_ + 1; ++i) {
-                s.spectrum[i] = a.spectrum[i] - b.spectrum[i];
+                spectrum.spectrum[i] = a.spectrum[i] - b.spectrum[i];
             }
-            return s;
+            return spectrum;
 
         }
 
-        friend inline Spectrum operator/(Spectrum a, Spectrum b)
-        {
-            Spectrum s;
+        friend inline Spectrum operator/(Spectrum a, Spectrum b) {
+            Spectrum spectrum(0.0);
 
             for (int i = 0; i < a.resolution_ + 1; ++i) {
-                s.spectrum[i] = a.spectrum[i] / b.spectrum[i];
+                spectrum.spectrum[i] = a.spectrum[i] / b.spectrum[i];
             }
-            return s;
+            return spectrum;
 
         }
 
-        friend inline Spectrum operator/(Spectrum a, float b)
-        {
-            Spectrum s;
+        friend inline Spectrum operator/(Spectrum a, float b) {
+            Spectrum spectrum(0.0);
 
             for (int i = 0; i < a.resolution_ + 1; ++i) {
-                s.spectrum[i] = a.spectrum[i] / b;
+                spectrum.spectrum[i] = a.spectrum[i] / b;
             }
 
-            return s;
+            return spectrum;
         }
 
-        friend inline Spectrum operator*(Spectrum a, float b)
-        {
-            Spectrum s;
+        friend inline Spectrum operator*(Spectrum a, float b) {
+            Spectrum spectrum(0.0);
 
             for (int i = 0; i < a.resolution_ + 1; ++i) {
-                s.spectrum[i] = a.spectrum[i] * b;
+                spectrum.spectrum[i] = a.spectrum[i] * b;
             }
 
-            return s;
+            return spectrum;
         }
 
         // サンプル点ランダムに一つ抽出
-        inline int getOneSampledPoint()
-        {
+        inline int getOneSampledPoint() {
             return Random::Instance().nextInt(0, int(sample_));
         }
 
@@ -124,7 +114,7 @@ namespace nagato
     };
 
     void printSpectrum(Spectrum s);
-    
+
     void printSample(Spectrum s);
 }
 
