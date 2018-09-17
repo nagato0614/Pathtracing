@@ -217,6 +217,9 @@ namespace nagato
 
         Vector3 samplingSphere(float radius)
         {
+            auto &rand = Random::Instance();
+            float u = rand.nextFloat(0.0, 1.0);
+            float v = rand.nextFloat(0.0, 1.0);
         }
 
         TEST_F(BSDFTest, Specular)
@@ -235,6 +238,21 @@ namespace nagato
                 ASSERT_TRUE((0 <= randNum)
                             && (randNum <= 1.0));
             }
+        }
+
+        /**
+         * nextfloatの取得平均が許容範囲内か調べる
+         */
+        TEST(Random, nextFloatUniformTest) {
+            auto &random = Random::Instance();
+
+            float sum = 0.0;
+            int itr = 1000000;
+            for (int i = 0; i < itr; i++) {
+                sum += random.nextFloat(0.0, 1.0);
+            }
+            sum /= itr;
+            ASSERT_NEAR(0.5, sum, 0.001);
         }
     }
 }
