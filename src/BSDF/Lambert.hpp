@@ -15,7 +15,7 @@ namespace nagato
      public:
         explicit Lambert(Material *m);
 
-        Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, Hit &surfaceInfo)
+        Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo)
         const override;
     };
 }

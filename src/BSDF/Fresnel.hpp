@@ -14,10 +14,11 @@ namespace nagato
      public:
         Fresnel(Material *m);
 
-        Spectrum makeNewDirection(int *wavelengthIndex,
-                                  Vector3 *newDirection,
-                                  Ray &ray,
-                                  Hit &surfaceInfo) const override ;
+        Spectrum makeNewDirection(
+                int *wavelengthIndex,
+                Vector3 *newDirection,
+                Ray &ray,
+                const Hit &surfaceInfo) const override ;
     };
 }
 

@@ -21,10 +21,11 @@ namespace nagato
      public:
         explicit BSDF(Material *m);
 
-        virtual Spectrum makeNewDirection(int *wavelengthIndex,
-                                          Vector3 *newDirection,
-                                          Ray &ray,
-                                          Hit &surfaceInfo) const = 0;
+        virtual Spectrum makeNewDirection(
+                int *wavelengthIndex,
+                Vector3 *newDirection,
+                Ray &ray,
+                const Hit &surfaceInfo) const = 0;
 
         Material *getMaterial();
 
