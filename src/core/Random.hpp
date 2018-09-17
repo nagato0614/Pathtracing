@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/18.
 //
 
-#ifndef PATHTRACING_RANDOM_HPPw
+#ifndef PATHTRACING_RANDOM_HPP
 #define PATHTRACING_RANDOM_HPP
 
 
