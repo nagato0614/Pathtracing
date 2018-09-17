@@ -60,17 +60,32 @@ target_link_libraries(
         gmock
         gtest)
 
-# compile option
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -mtune=native -march=native -mfpmath=both -flto -fwhole-program")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    # compile option
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wall")
+    if (OPENMP_FOUND)
+        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fopenmp")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
+    endif ()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    # compile option
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wall -mtune=native -march=native -mfpmath=both -flto -fwhole-program")
 
 
-# openMP
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fopenmp")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
-endif ()
+    # openMP
+    find_package(OpenMP)
+    if (OPENMP_FOUND)
+        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fopenmp")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
+    endif ()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    # using Intel C++
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    # using Visual Studio C++
+endif()
+
 
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_RELEASE}")
