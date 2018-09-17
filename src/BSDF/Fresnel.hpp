@@ -9,7 +9,7 @@
 
 namespace nagato
 {
-    class Fresnel : BSDF
+    class Fresnel : public BSDF
     {
      public:
         Fresnel(Material *m);

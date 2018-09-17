@@ -22,9 +22,9 @@ namespace nagato {
         return this->material;
     }
 
-    std::shared_ptr<BSDF> createBSDF(Material *material)
+    BSDF *createBSDF(Material *material)
     {
-        std::shared_ptr<BSDF> bsdf;
+        BSDF *bsdf = nullptr;
         switch (material->type()) {
             case SurfaceType::Diffuse:
                 bsdf = new Lambert(material);

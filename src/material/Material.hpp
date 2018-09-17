@@ -20,7 +20,7 @@ namespace nagato
 
         Material(SurfaceType t, Spectrum c, Spectrum e = Spectrum(), float emitterL = 1.0);
 
-        std::shared_ptr<BSDF> getBSDF();
+        BSDF *getBSDF();
 
         SurfaceType type();
 
@@ -32,7 +32,7 @@ namespace nagato
 
      private :
 
-        std::shared_ptr<BSDF> bsdf = nullptr;
+        BSDF *bsdf = nullptr;
         Spectrum refraction;
         SurfaceType surfaceType;
     };

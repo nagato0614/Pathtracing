@@ -12,6 +12,7 @@
 
 namespace nagato {
     class Material;
+    class Hit;
     class BSDF {
      public:
         explicit BSDF(Material *m);
@@ -24,7 +25,7 @@ namespace nagato {
         Material *material;
     };
 
-    std::shared_ptr<BSDF> createBSDF(Material *material);
+    BSDF *createBSDF(Material *material);
 }
 
 #endif //PATHTRACING_BSDF_HPP

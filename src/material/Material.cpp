@@ -45,7 +45,7 @@ namespace nagato
         return refraction;
     }
 
-    std::shared_ptr<BSDF> Material::getBSDF()
+    BSDF *Material::getBSDF()
     {
         if (bsdf == nullptr) {
             bsdf = createBSDF(this);

@@ -9,7 +9,7 @@
 
 namespace nagato
 {
-    class Specular : BSDF
+    class Specular : public BSDF
     {
      public:
         Specular(Material *m);
