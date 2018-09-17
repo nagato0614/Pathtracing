@@ -215,11 +215,26 @@ namespace nagato
             }
         };
 
+        /**
+         * 半径radiusの球の一点をサンプリングする
+         * 中心は原点
+         * @param radius サンプリングしたい級の半径
+         * @return サンプリングした座標
+         */
         Vector3 samplingSphere(float radius)
         {
             auto &rand = Random::Instance();
             float u = rand.nextFloat(0.0, 1.0);
             float v = rand.nextFloat(0.0, 1.0);
+
+            auto shita = deg_to_rad(180.0 * u - 90.0);
+            auto phi = deg_to_rad(360.0 * v);
+
+            auto x = radius * sin(shita) * cos(phi);
+            auto y = radius * sin(shita) * sin(phi);
+            auto z = cos(shita);
+
+            return Vector3{x, y, z};
         }
 
         TEST_F(BSDFTest, Specular)
@@ -227,6 +242,18 @@ namespace nagato
             Material material{SurfaceType::Mirror, Spectrum(1.0)};
             Sphere sphere(Vector3{0, 0, 0}, 1, &material);
 
+        }
+
+        /**
+         * samplingSphereが正しく球の表面をサンプリングできているか調べる
+         */
+        TEST(Random, SampleingSphereTest) {
+            int itr = 10000;
+            for (int i = 0; i < itr; i++) {
+                auto p = samplingSphere(1);
+                auto dis = std::sqrt(p.norm());
+                ASSERT_FLOAT_EQ(1.0, dis);
+            }
         }
 
         TEST(Random, nextFloatTest)
