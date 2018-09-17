@@ -234,7 +234,7 @@ namespace nagato
             auto y = radius * sin(shita) * sin(phi);
             auto z = cos(shita);
 
-            return Vector3{x, y, z};
+            return Vector3{static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)};
         }
 
         TEST_F(BSDFTest, Specular)
