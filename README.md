@@ -13,9 +13,9 @@ https://github.com/mitsuba-rei/rt
    - スペクトルを考慮した拡散面 
    - 鏡面
  - スペクトルを考慮した屈折
+ - BVH
  
 ## できてないこと
- - BVH
  - DirectLight
  - シーンファイルの読み込み
 
