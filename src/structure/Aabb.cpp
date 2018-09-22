@@ -29,7 +29,7 @@ namespace nagato{
         return true;
     }
 
-    Aabb::Aabb() : min(Vector3(MAXFLOAT)), max(Vector3(MAXFLOAT))
+    Aabb::Aabb() : min(Vector3(std::numeric_limits<float>::max())), max(Vector3(std::numeric_limits<float>::lowest()))
     {
 
     }
