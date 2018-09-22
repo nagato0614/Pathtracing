@@ -63,7 +63,8 @@ target_link_libraries(
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # compile option
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wall")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -flto -Wall")
+    find_package(OpenMP)
     if (OPENMP_FOUND)
         set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fopenmp")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
@@ -89,3 +90,4 @@ endif()
 
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "## using compiler : ${CMAKE_CXX_COMPILER_ID}")
