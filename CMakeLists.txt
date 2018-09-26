@@ -90,4 +90,4 @@ endif()
 
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_RELEASE}")
-message(STATUS "## using compiler : ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "## Using Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
