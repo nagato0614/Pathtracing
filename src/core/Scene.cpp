@@ -116,6 +116,10 @@ namespace nagato
 
     void Scene::setObject(Object *object)
     {
+        if (object->material->type() == SurfaceType::Emitter) {
+            lights.push_back(object);
+        }
+
         objectCount++;
         objects.push_back(object);
     }

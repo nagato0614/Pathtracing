@@ -63,28 +63,27 @@ int main()
     Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
     Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
     Material whiteMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
-    Material d65(SurfaceType::Diffuse, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.5);
+    Material d65(SurfaceType::Emitter, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.5);
     Material mirror(SurfaceType::Mirror, Spectrum(0.99));
     Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
-    Scene scene;
-    scene.setObject(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
-    scene.setObject(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
-    scene.loadObject("../models/left.obj",
+    BVH bvh;
+    bvh.setObject(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
+    bvh.setObject(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
+    bvh.loadObject("../models/left.obj",
                      "../models/left.mtl", &redMaterial);
-    scene.loadObject("../models/right.obj",
+    bvh.loadObject("../models/right.obj",
                      "../models/right.mtl", &blueMateral);
-    scene.loadObject("../models/back_ceil_floor_plane.obj",
+    bvh.loadObject("../models/back_ceil_floor_plane.obj",
                      "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
-    scene.loadObject("../models/light_plane.obj",
+    bvh.loadObject("../models/light_plane.obj",
                      "../models/light_plane.mtl", &d65);
 //    scene.loadObject("../models/suzanne.obj",
 //                     "../models/suzanne.mtl", &whiteMaterial);
 
     std::cout << "-- Construct BVH --" << std::endl;
-    BVH bvh(scene.objects);
     bvh.constructBVH();
 
     // スペクトルからXYZに変換する等色関数
@@ -113,7 +112,7 @@ int main()
     std::cout << "-- Out Put Image Size --" << std::endl;
     std::cout << "width : height = " << width << " : " << height << std::endl;
     std::cout << "-- Number of Object --" << std::endl;
-    std::cout << "objects : " << scene.objects.size() << std::endl;
+    std::cout << "objects : " << bvh.objects.size() << std::endl;
     std::cout << "nodes   : " << bvh.getNodeCount() << std::endl;
     std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
@@ -237,7 +236,7 @@ int main()
 
     std::cout << "-- Memory release -- " << std::endl;
 
-    scene.freeObject();
+    bvh.freeObject();
 
     std::cout << "-- FINISH --" << std::endl;
 

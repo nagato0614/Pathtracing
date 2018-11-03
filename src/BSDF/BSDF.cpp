@@ -36,6 +36,7 @@ namespace nagato
                 bsdf = new Fresnel(material);
                 break;
             case SurfaceType::Emitter:
+                bsdf = new Lambert(material);
                 break;
         }
         return bsdf;

@@ -5,6 +5,7 @@
 #ifndef PATHTRACING_BVH_HPP
 #define PATHTRACING_BVH_HPP
 
+#include "../core/Scene.hpp"
 #include "Aabb.hpp"
 #include "../object/Triangle.hpp"
 
@@ -19,21 +20,21 @@ namespace nagato
         int right = -1;
     };
 
+    class Scene;
+
     // BVHを扱うクラス
-    class BVH
+    class BVH : public Scene
     {
      public:
         BVH();
 
         explicit BVH(std::vector<Object *> objects);
 
-        void setObject(std::vector<Object *> objects);
-
         // BVHの構築を始める
         void constructBVH();
 
         // BVHとレイの交差判定
-        std::optional<Hit> intersect(Ray &ray, float min, float max);
+        std::optional<Hit> intersect(Ray &ray, float min, float max) override;
 
         // BVHのノード数を返す
         int getNodeCount();
@@ -69,7 +70,6 @@ namespace nagato
         Aabb mergeAABB(Aabb a, Aabb b);
 
         BVHNode *root = nullptr;
-        std::vector<Object *> objects;
         int nodeCount = 0;
         BVHNode nodes[BVH_NODE];
     };
