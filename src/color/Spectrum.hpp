@@ -110,7 +110,7 @@ namespace nagato {
         int resolution_ = RESOLUTION;
 
         // 実際の波長を保存する
-        std::vector<float> spectrum;
+        float spectrum[RESOLUTION];
     };
 
     void printSpectrum(Spectrum s);
