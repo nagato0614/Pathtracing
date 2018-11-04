@@ -28,6 +28,8 @@ class Scene {
 
   int getObjectCount() const;
 
+  Spectrum directLight(Ray &ray, Spectrum weight);
+
  protected:
 
   std::vector<Object *> lights;
