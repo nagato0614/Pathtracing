@@ -96,8 +96,9 @@ namespace nagato {
 //            }
             }
 
+            assert((400 % RESOLUTION) == 0);
             for (int i = 0; i < RESOLUTION; i++) {
-              spectrum[i] = s[i];
+              spectrum[i] = s[(400 / RESOLUTION) * i];
             }
         } else {
             std::cerr << "スペクトルデータがありません : "

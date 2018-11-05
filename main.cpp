@@ -38,15 +38,15 @@ int main()
 
     // #TODO カメラクラスの作成
     // Image size
-    const int width = 480;
-    const int height = 360;
+    const int width = 400;
+    const int height = 400;
 
     // Samples per pixel
     const int samples = 100;
 
     // Camera parameters
-    const Vector3 eye(0, 5, 6);
-    const Vector3 center = eye + Vector3(0, -0.5, -1);
+    const Vector3 eye(0, 5, 14);
+    const Vector3 center = eye + Vector3(0, 0, -1);
 
     const Vector3 up(0, 1, 0);
     const float fov = 55 * M_PI / 180;
@@ -63,15 +63,16 @@ int main()
     Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
     Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
     Material whiteMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
-    Material d65(SurfaceType::Emitter, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.5);
+    Material purpleMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_10_purple.csv"));
+    Material d65(SurfaceType::Emitter, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.4);
     Material mirror(SurfaceType::Mirror, Spectrum(0.99));
     Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     BVH bvh;
-    bvh.setObject(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
-    bvh.setObject(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
+    bvh.setObject(new Sphere{Vector3(-2, 1, -2), 1.1, &purpleMaterial});
+    bvh.setObject(new Sphere{Vector3(2, 1, -2), 1.1, &Fresnel});
     bvh.loadObject("../models/left.obj",
                      "../models/left.mtl", &redMaterial);
     bvh.loadObject("../models/right.obj",
@@ -80,8 +81,8 @@ int main()
                      "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
     bvh.loadObject("../models/light_plane.obj",
                      "../models/light_plane.mtl", &d65);
-//    scene.loadObject("../models/suzanne.obj",
-//                     "../models/suzanne.mtl", &whiteMaterial);
+    bvh.loadObject("../models/low_poly_bunny.obj",
+                     "../models/low_poly_bunny.mtl", &purpleMaterial);
 
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
@@ -153,7 +154,7 @@ int main()
 
             bool isSlected = false;
 
-            for (int depth = 0; depth < 10; depth++) {
+            for (int depth = 0; depth < 5; depth++) {
 
                 // Intersection
                 const auto intersect = bvh.intersect(ray, 1e-4, 1e+100);
@@ -174,9 +175,10 @@ int main()
                 }
 
                 // Update next direction
-                ray.origin = intersect->point;
                 BSDF *bsdf = intersect->sphere->material->getBSDF();
                 auto color = bsdf->makeNewDirection(&wavelength, &ray.direction, ray, intersect.value());
+                ray.origin = intersect->point + ray.direction * 10e-5;
+
 
                 // Update throughput
                 weight = weight * color;
@@ -199,7 +201,7 @@ int main()
     std::cout << elapsed / 1000.0 << "[sec]" << std::endl;
 
     std::cout << "-- Output ppm File --" << std::endl;
-    writePPM("result.ppm", S, width, height, xbar, ybar, zbar);
+    writePPM("output.ppm", S, width, height, xbar, ybar, zbar);
 
     // #TODO 法線マップとデプスマップを出力するモジュールの実装または外部ライブラリの実装
     // 法線マップを出力

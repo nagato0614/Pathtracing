@@ -50,6 +50,7 @@ file(GLOB src
 add_library(pathtracingLibrary STATIC ${src})
 
 add_executable(pathtracing main.cpp)
+add_executable(rt src/tools/rt.cpp)
 add_executable(nagatoTest
         src/gtest/gtests.cpp)
 
@@ -63,7 +64,7 @@ target_link_libraries(
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # compile option
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -flto -Wall")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -Wall")
     find_package(OpenMP)
     if (OPENMP_FOUND)
         set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fopenmp")

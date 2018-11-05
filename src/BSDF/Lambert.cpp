@@ -4,10 +4,8 @@
 
 #include "Lambert.hpp"
 
-namespace nagato
-{
-    Lambert::Lambert(Material *m) : BSDF(m)
-    {
+namespace nagato {
+    Lambert::Lambert(Material *m) : BSDF(m) {
 
     }
 
@@ -15,8 +13,7 @@ namespace nagato
             int *wavelengthIndex,
             Vector3 *newDirection,
             Ray &ray,
-            const Hit &surfaceInfo) const
-    {
+            const Hit &surfaceInfo) const {
         // Sample direction in local coordinates
         const auto n =
                 dot(surfaceInfo.normal, -ray.direction) > 0 ? surfaceInfo.normal : -surfaceInfo.normal;
@@ -26,8 +23,8 @@ namespace nagato
             const auto t = 2 * M_PI * Random::Instance().next();
             const auto x = r * cos(t);
             const auto y = r * sin(t);
-            return Vector3((float) x, (float) y, std::sqrt(std::max(float(0.0), static_cast<const float &>(
-                    1.0 - x * x - y * y))));
+            return Vector3((float) x, (float) y,
+                           std::sqrt(std::max(float(0.0), static_cast<const float &>(1.0 - x * x - y * y))));
         }();
         // Convert to world coordinates
         *newDirection = u * d.x + v * d.y + n * d.z;

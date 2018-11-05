@@ -24,7 +24,7 @@ namespace nagato {
         explicit Spectrum(float init_num = 0.0);
 
         // 波長に対する反射率を保存したcsvから読み込む1
-        explicit Spectrum(std::string filenam);
+        explicit Spectrum(std::string filename);
 
         friend inline Spectrum operator*(Spectrum a, Spectrum b) {
             Spectrum spectrum(0.0);
