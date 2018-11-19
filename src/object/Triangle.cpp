@@ -16,7 +16,7 @@ namespace nagato{
     {
         const auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
         const auto origin = ray.origin + ray.direction * tmin;
-        constexpr auto epsilon = 0.00000001;
+        constexpr auto epsilon = 0.000001;
 
         const auto edge1 = points[1] - points[0];
         const auto edge2 = points[2] - points[0];
@@ -32,7 +32,7 @@ namespace nagato{
                 const auto Q = cross(T, edge1);
                 const auto v = dot(Q, ray.direction);
 
-                if (v >= 0.0 && (u + v) <= 1 * det) {
+                if (v >= 0.0 && (u + v) <= 1.0 * det) {
                     float t = dot(Q, edge2) / det;
                     auto hitpoint = origin + ray.direction * t;
                     float distance = std::sqrt((hitpoint - origin).norm());

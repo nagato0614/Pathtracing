@@ -82,7 +82,7 @@ int main()
     bvh.loadObject("../models/light_plane.obj",
                      "../models/light_plane.mtl", &d65);
     bvh.loadObject("../models/low_poly_bunny.obj",
-                     "../models/low_poly_bunny.mtl", &purpleMaterial);
+                     "../models/low_poly_bunny.mtl", &mirror);
 
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
@@ -177,13 +177,21 @@ int main()
                 // Update next direction
                 BSDF *bsdf = intersect->sphere->material->getBSDF();
                 auto color = bsdf->makeNewDirection(&wavelength, &ray.direction, ray, intersect.value());
-                ray.origin = intersect->point + ray.direction * 10e-5;
+                ray.origin = intersect->point + ray.direction * 10e-3;
 
 
                 // Update throughput
                 weight = weight * color;
                 if (weight.findMaxSpectrum() == 0) {
                     break;
+                }
+
+                // ロシアンルーレットで追跡を終了する
+                auto maxWeight = weight.findMaxSpectrum();
+                if (Random::Instance().next() < 1.0 - maxWeight && depth > 3) {
+                    break;
+                } else {
+                    weight = weight / maxWeight;
                 }
             }
             // 各波長の重みを更新(サンプリング数に応じて重みをかける)
