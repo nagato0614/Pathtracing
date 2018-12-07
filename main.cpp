@@ -38,11 +38,11 @@ int main()
 
     // #TODO カメラクラスの作成
     // Image size
-    const int width = 400;
-    const int height = 400;
+    const int width = 300;
+    const int height = 300;
 
     // Samples per pixel
-    const int samples = 100;
+    const int samples = 1000;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -71,8 +71,9 @@ int main()
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     BVH bvh;
-    bvh.setObject(new Sphere{Vector3(-2, 1, -2), 1.1, &purpleMaterial});
-    bvh.setObject(new Sphere{Vector3(2, 1, -2), 1.1, &Fresnel});
+//    bvh.setObject(new Sphere{Vector3(-2, 1, -2), 1.1, &mirror});
+//    bvh.setObject(new Sphere{Vector3(2, 1, -2), 1.1, &Fresnel});
+
     bvh.loadObject("../models/left.obj",
                      "../models/left.mtl", &redMaterial);
     bvh.loadObject("../models/right.obj",
@@ -81,8 +82,8 @@ int main()
                      "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
     bvh.loadObject("../models/light_plane.obj",
                      "../models/light_plane.mtl", &d65);
-    bvh.loadObject("../models/low_poly_bunny.obj",
-                     "../models/low_poly_bunny.mtl", &mirror);
+    bvh.loadObject("../models/teapod.obj",
+                     "../models/teapod.mtl", &mirror);
 
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
@@ -114,8 +115,8 @@ int main()
     std::cout << "width : height = " << width << " : " << height << std::endl;
     std::cout << "-- Number of Object --" << std::endl;
     std::cout << "objects : " << bvh.objects.size() << std::endl;
-    std::cout << "nodes   : " << bvh.getNodeCount() << std::endl;
-    std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
+//    std::cout << "nodes   : " << bvh.getNodeCount() << std::endl;
+//    std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
     std::chrono::system_clock::time_point start, end;
@@ -157,7 +158,7 @@ int main()
             for (int depth = 0; depth < 5; depth++) {
 
                 // Intersection
-                const auto intersect = bvh.intersect(ray, 1e-4, 1e+100);
+                const auto intersect = bvh.intersect(ray, 0.0f, 1e+100);
 
                 if (!intersect) {
                     break;
@@ -175,9 +176,9 @@ int main()
                 }
 
                 // Update next direction
+                ray.origin = intersect->point;
                 BSDF *bsdf = intersect->sphere->material->getBSDF();
                 auto color = bsdf->makeNewDirection(&wavelength, &ray.direction, ray, intersect.value());
-                ray.origin = intersect->point + ray.direction * 10e-3;
 
 
                 // Update throughput

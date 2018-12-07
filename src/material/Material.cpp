@@ -58,4 +58,8 @@ namespace nagato
     {
         Material::refraction = refraction;
     }
+
+    Material::~Material() {
+        delete bsdf;
+    }
 }

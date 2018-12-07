@@ -20,6 +20,8 @@ namespace nagato
 
         Material(SurfaceType t, Spectrum c, Spectrum e = Spectrum(), float emitterL = 1.0);
 
+        ~Material();
+
         BSDF *getBSDF();
 
         SurfaceType type();
