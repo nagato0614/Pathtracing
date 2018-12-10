@@ -14,7 +14,6 @@ namespace nagato{
 
     std::optional<Hit> Triangle::intersect(Ray &ray, float tmin, float tmax)
     {
-        const auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
         const auto origin = ray.origin;
         constexpr auto epsilon = 0.000001;
 
@@ -24,7 +23,7 @@ namespace nagato{
         const auto P = cross(ray.direction, edge2);
         const float det = dot(P, edge1);
 
-        if (det > epsilon) {
+        if (det >= 0.0f) {
             Vector3 T = origin - points[0];
             float u = dot(P, T);
 
@@ -33,9 +32,10 @@ namespace nagato{
                 const auto v = dot(Q, ray.direction);
 
                 if (v >= 0.0 && (u + v) <= 1.0 * det) {
-                    float t = dot(Q, edge2) / det;
+                    auto t = dot(Q, edge2) / det;
                     auto hitpoint = origin + ray.direction * t;
-                    if (t >= tmin) {
+                    const auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
+                    if (0.0f <= t && t <= tmax) {
                         return Hit{t, hitpoint, normal, this};
                     }
                 }

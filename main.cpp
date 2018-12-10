@@ -38,11 +38,11 @@ int main()
 
     // #TODO カメラクラスの作成
     // Image size
-    const int width = 300;
-    const int height = 300;
+    const int width = 400;
+    const int height = 400;
 
     // Samples per pixel
-    const int samples = 1000;
+    const int samples = 200;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -64,15 +64,15 @@ int main()
     Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
     Material whiteMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
     Material purpleMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_10_purple.csv"));
-    Material d65(SurfaceType::Emitter, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.4);
+    Material d65(SurfaceType::Emitter, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.3);
     Material mirror(SurfaceType::Mirror, Spectrum(0.99));
     Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     BVH bvh;
-//    bvh.setObject(new Sphere{Vector3(-2, 1, -2), 1.1, &mirror});
-//    bvh.setObject(new Sphere{Vector3(2, 1, -2), 1.1, &Fresnel});
+//    bvh.setObject(new Sphere{Vector3(-2, 2, -2), 1.1, &mirror});
+//    bvh.setObject(new Sphere{Vector3(2, 2, -2), 1.1, &Fresnel});
 
     bvh.loadObject("../models/left.obj",
                      "../models/left.mtl", &redMaterial);
@@ -82,8 +82,8 @@ int main()
                      "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
     bvh.loadObject("../models/light_plane.obj",
                      "../models/light_plane.mtl", &d65);
-    bvh.loadObject("../models/teapod.obj",
-                     "../models/teapod.mtl", &mirror);
+    bvh.loadObject("../models/low_poly_bunny.obj",
+                     "../models/low_poly_bunny.mtl", &purpleMaterial);
 
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
@@ -115,8 +115,8 @@ int main()
     std::cout << "width : height = " << width << " : " << height << std::endl;
     std::cout << "-- Number of Object --" << std::endl;
     std::cout << "objects : " << bvh.objects.size() << std::endl;
-//    std::cout << "nodes   : " << bvh.getNodeCount() << std::endl;
-//    std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
+    std::cout << "nodes   : " << bvh.getNodeCount() << std::endl;
+    std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
     std::chrono::system_clock::time_point start, end;
@@ -174,6 +174,8 @@ int main()
                     // スペクトル寄与を追加する
                     L = L + weight * intersect->sphere->material->emitter;
                 }
+
+                if (intersect->sphere->)
 
                 // Update next direction
                 ray.origin = intersect->point;
