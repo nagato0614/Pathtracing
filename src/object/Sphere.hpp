@@ -29,6 +29,8 @@ namespace nagato {
         Hit pointSampling(Hit surfaceInfo) override;
 
         std::string toString() const override ;
+
+        float area() const override;
     };
 }
 #endif //PATHTRACING_SPHERE_HPP

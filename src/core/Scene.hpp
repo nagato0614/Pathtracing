@@ -28,7 +28,9 @@ class Scene {
 
   int getObjectCount() const;
 
-  Spectrum directLight(Ray &ray, Spectrum weight);
+  Spectrum directLight(Ray &ray, Hit info);
+
+
 
  protected:
 

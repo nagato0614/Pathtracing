@@ -23,6 +23,8 @@ namespace nagato
 
         std::string toString() const override ;
 
+        float area() const override;
+
      private:
         std::vector<Vector3> points;
     };

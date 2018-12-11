@@ -24,7 +24,9 @@ std::optional<Hit> Scene::intersect(Ray &ray, float tmin, float tmax) {
   return minh;
 }
 
-void Scene::loadObject(const std::string &objfilename, const std::string &mtlfilename, Material *m) {
+void Scene::loadObject(const std::string &objfilename,
+                       const std::string &mtlfilename,
+                       Material *m) {
   // オブジェクトファイルを読み込み
   std::ifstream cornellbox(objfilename);
   std::ifstream cornellob_material(mtlfilename);
@@ -53,7 +55,8 @@ void Scene::loadObject(const std::string &objfilename, const std::string &mtlfil
   std::string materialFileString(strstream.str());
 
   // マテリアルローダを初期化
-  tinyobj::MaterialStringStreamReader materialStringStreamReader(materialFileString);
+  tinyobj::MaterialStringStreamReader
+      materialStringStreamReader(materialFileString);
 
   std::string err;
 
@@ -121,9 +124,47 @@ int Scene::getObjectCount() const {
   return objectCount;
 }
 
-Spectrum Scene::directLight(Ray &ray, Spectrum weight) {
+Spectrum Scene::directLight(Ray &ray, Hit info) {
+  // 光源がない場合はエラーで終了
   if (lights.empty()) {
     exit(EXIT_CODE::EMPTY_LIGHT);
   }
+
+  // 接続を行う光源の選択
+  int lightNum = lights.size();
+  auto lightPdf = 1.0f / lightNum;    // 一つの光源がサンプリングされる確率
+  int selectedLight = Random::Instance().nextInt(0, lightNum - 1);
+  Object *light = lights[selectedLight];
+
+  auto sampledPoint = light->pointSampling(info);
+  Ray testRay;
+  testRay.origin = info.point;
+  testRay.direction = normalize(sampledPoint.point - info.point);
+
+  // 光源と接続点が遮られていないかテスト
+  const auto intersect = this->intersect(testRay, 0.0f, 1e+100);
+  if (!intersect)
+    return Spectrum(0.0f);
+  else
+    if (intersect->sphere != light)
+      return Spectrum(0.0f);
+
+
+  // 幾何項の計算
+  const auto distance = (sampledPoint.point - info.point).norm();
+  const auto cos_r = std::abs(dot(sampledPoint.normal, -testRay.direction));
+  const auto cos_i = std::abs(dot(info.normal, testRay.direction));
+  const auto geometry_term = (cos_r * cos_i) / distance;
+
+
+  const auto &material = info.sphere->material;
+  const auto Li = light->material->emitter;
+  const auto fr = material->getBSDF()->f_r(-ray.direction, testRay.direction);
+  const auto rho = material->color;
+  const auto areaPdf = 1.0f / light->area();
+
+  const auto Ld = (Li * geometry_term * rho) / areaPdf;
+
+  return Ld / lightPdf;
 }
 }

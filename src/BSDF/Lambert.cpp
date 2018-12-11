@@ -30,4 +30,11 @@ namespace nagato {
         *newDirection = u * d.x + v * d.y + n * d.z;
         return material->color;
     }
+float Lambert::f_r(Vector3 wi, Vector3 wo) {
+  return 1.0f / M_PI;
+}
+float Lambert::pdf(Vector3 wi, Vector3 wo, Hit hitPoint) {
+    auto cos = dot(wo, hitPoint.normal);
+    return cos / M_PI;
+}
 }

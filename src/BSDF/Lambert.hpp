@@ -23,6 +23,10 @@ namespace nagato
                 Vector3 *newDirection,
                 Ray &ray,
                 const Hit &surfaceInfo) const override;
+
+      float f_r(Vector3 wi, Vector3 wo) override;
+
+      float pdf(Vector3 wi, Vector3 wo, Hit hitPoint) override;
     };
 }
 

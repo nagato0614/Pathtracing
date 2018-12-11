@@ -48,6 +48,7 @@ namespace nagato
 
     Hit Sphere::pointSampling(Hit surfaceInfo)
     {
+        exit(EXIT_CODE::OTHER);
         return Hit(0, nagato::Vector3(), nagato::Vector3(), nullptr);
     }
 
@@ -57,5 +58,8 @@ namespace nagato
                ", radius : " + std::to_string(radius) +
                ", point : " + position.toString();
     }
+float Sphere::area() const {
+  return 4.0f * M_PI * std::pow(radius, 2.0f);
+}
 }
  

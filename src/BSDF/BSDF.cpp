@@ -7,38 +7,37 @@
 #include "Specular.hpp"
 #include "Fresnel.hpp"
 
-namespace nagato
-{
+namespace nagato {
 
+BSDF::BSDF(Material *m)
+    : material(m) {
 
-    BSDF::BSDF(Material *m)
-            : material(m)
-    {
+}
 
-    }
+Material *BSDF::getMaterial() {
+  return this->material;
+}
 
-    Material *BSDF::getMaterial()
-    {
-        return this->material;
-    }
+float BSDF::f_r(Vector3 wi, Vector3 wo) {
+  return 0;
+}
 
-    BSDF *createBSDF(Material *material)
-    {
-        BSDF *bsdf = nullptr;
-        switch (material->type()) {
-            case SurfaceType::Diffuse:
-                bsdf = new Lambert(material);
-                break;
-            case SurfaceType::Mirror:
-                bsdf = new Specular(material);
-                break;
-            case SurfaceType::Fresnel:
-                bsdf = new Fresnel(material);
-                break;
-            case SurfaceType::Emitter:
-                bsdf = new Lambert(material);
-                break;
-        }
-        return bsdf;
-    }
+float BSDF::pdf(Vector3 wi, Vector3 wo, Hit hitPoint) {
+  return 0;
+}
+
+BSDF *createBSDF(Material *material) {
+  BSDF *bsdf = nullptr;
+  switch (material->type()) {
+    case SurfaceType::Diffuse:bsdf = new Lambert(material);
+      break;
+    case SurfaceType::Mirror:bsdf = new Specular(material);
+      break;
+    case SurfaceType::Fresnel:bsdf = new Fresnel(material);
+      break;
+    case SurfaceType::Emitter:bsdf = new Lambert(material);
+      break;
+  }
+  return bsdf;
+}
 }

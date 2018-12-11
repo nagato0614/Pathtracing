@@ -16,6 +16,7 @@ enum EXIT_CODE {
   EMPTY_NODE ,
   EMPTY_LIGHT ,
   CANNOT_CONSTRUCT_BVH ,
+  OTHER,
 };
 
 // 角度の変換
