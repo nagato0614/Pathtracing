@@ -1,8 +1,5 @@
 # pathtracing
 
-三つ葉レイさんのプログラムをもとに実装を行っている
-https://github.com/mitsuba-rei/rt
-
 スペクトルを考慮したパストレーシング
 
 ## できていること
@@ -13,7 +10,9 @@ https://github.com/mitsuba-rei/rt
    - スペクトルを考慮した拡散面 
    - 鏡面
  - スペクトルを考慮した屈折
+   - デバックのため現在未使用
  - BVH
+   - 各軸ごとにソートし中央値で分割するだけの簡単なもの
  
 ## できてないこと
  - DirectLight
