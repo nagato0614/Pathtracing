@@ -41,7 +41,7 @@ int main() {
   const int height = 400;
 
   // Samples per pixel
-  const int samples = 10;
+  const int samples = 1000;
 
   // Camera parameters
   const Vector3 eye(0, 5, 14);
@@ -70,7 +70,7 @@ int main() {
   Material d65(SurfaceType::Emitter,
                Spectrum(),
                Spectrum("../property/cie_si_d65.csv"),
-               0.3);
+               0.1);
   Material mirror(SurfaceType::Mirror, Spectrum(0.99));
   Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
 
@@ -89,7 +89,7 @@ int main() {
   bvh.loadObject("../models/light_plane.obj",
                  "../models/light_plane.mtl", &d65);
   bvh.loadObject("../models/low_poly_bunny.obj",
-                 "../models/low_poly_bunny.mtl", &purpleMaterial);
+                 "../models/low_poly_bunny.mtl", &Fresnel);
 
   std::cout << "-- Construct BVH --" << std::endl;
   bvh.constructBVH();
@@ -161,7 +161,7 @@ int main() {
 
       bool isSlected = false;
 
-      for (int depth = 0; depth < 5; depth++) {
+      for (int depth = 0; depth < 10; depth++) {
 
         // Intersection
         const auto intersect = bvh.intersect(ray, 0.0f, 1e+100);
