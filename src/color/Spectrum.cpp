@@ -10,12 +10,11 @@ namespace nagato {
 
     Spectrum::Spectrum(float init_num) {
         for (auto &s : spectrum) {
-          s = init_num;
+            s = init_num;
         }
     }
 
     Spectrum::Spectrum(std::string filename) {
-//        std::cout << "load spectrum data\t: " << filename << std::endl;
         io::CSVReader<2> in(filename);
         in.read_header(io::ignore_extra_column, "Wavelength", "Intensity");
         int wave;
@@ -25,7 +24,6 @@ namespace nagato {
 
         // 波長データを取得
         while (in.read_row(wave, intensity)) {
-//        std::cout << "wave, intensity : " << wave << ", " << intensity << std::endl;
             spectrumData.emplace_back(wave, intensity);
         }
 
@@ -37,7 +35,6 @@ namespace nagato {
             }
         } else if (spectrumData.size() > 1) {
             int diff = std::get<0>(spectrumData[1]) - std::get<0>(spectrumData[0]);
-//        std::cout << "diff : " << diff << std::endl;
 
             // resolutionが1の場合は380~780すべてをカバーしていると仮定して
             // csvファイルからデータを読み取る
@@ -56,11 +53,6 @@ namespace nagato {
                     s.push_back(std::get<1>(spectrumData[i + index]));
                 }
 
-//            std::cout << "-------------" << std::endl;
-//            std::cout << "spectrum data size : " << spectrum.size() << std::endl;
-//            for (int i = 0; i < spectrum.size(); i++) {
-//                std::cout << i + 380 << " : " << spectrum[i] << std::endl;
-//            }
             } else if (diff == 5) {
                 // 380nmのインデックスを調べる
                 int index = 0;
@@ -71,34 +63,25 @@ namespace nagato {
                     }
                 }
 
-//            std::cout << "index : " << index << std::endl;
                 for (int i = 0; i < 401; i++) {
                     float rate = (380 + i) % 5;
                     if (rate == 0) {
-                        s.push_back(std::get<1>(spectrumData[(i / 5) + index]));
-//                    printf("%d : %f\n", 380 + i, std::get<1>(spectrumData[(i / 5) + index]));
                     } else {
                         int nowSpec = i / 5;
                         auto a = std::get<1>(spectrumData[(nowSpec) + index]);
                         auto b = std::get<1>(spectrumData[(nowSpec + 1) + index]);
                         float spec = (1.0 - rate / 5.0) * a + (rate / 5.0) * b;
-//                    printf("%d : %f\t --- (%.5f, %.5f) \t --- rate : %3f\t --\n", 380 + i, spec, a, b, rate);
                         s.push_back(spec);
                     }
 
 
                 }
 
-//            std::cout << "-------------" << std::endl;
-//            std::cout << "spectrum data size : " << spectrum.size() << std::endl;
-//            for (int i = 0; i < spectrum.size(); i++) {
-//                printf("%d : %5f\n", i + 380, spectrum[i]);
-//            }
             }
 
             assert((400 % RESOLUTION) == 0);
             for (int i = 0; i < RESOLUTION; i++) {
-              spectrum[i] = s[(400 / RESOLUTION) * i];
+                spectrum[i] = s[(400 / RESOLUTION) * i];
             }
         } else {
             std::cerr << "スペクトルデータがありません : "
