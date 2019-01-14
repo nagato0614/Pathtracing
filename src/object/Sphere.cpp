@@ -10,8 +10,8 @@ namespace nagato
     std::optional<Hit> Sphere::intersect(Ray &ray, float tmin, float tmax)
     {
         constexpr auto min = 1e-4;
-        const Vector3 op = position - ray.origin;
-        const float b = dot(op, ray.direction);
+        const Vector3 op = position - ray.getOrigin();
+        const float b = dot(op, ray.getDirection());
         const float det = b * b - dot(op, op) + radius * radius;
 
         if (det < 0) {
@@ -20,14 +20,14 @@ namespace nagato
         const auto t1 = (b - std::sqrt(det));
 
         if (min <= t1 && t1 < tmax) {
-            auto point = ray.origin + ray.direction * t1;
+            auto point = ray.getOrigin() + ray.getDirection() * t1;
             auto normal = (point - position) / radius;
             return Hit{t1, point, normal, this};
         }
 
         const auto t2 = (b + std::sqrt(det));
         if (min <= t2 && t2 < tmax) {
-            auto point = ray.origin + ray.direction * t2;
+            auto point = ray.getOrigin() + ray.getDirection() * t2;
             auto normal = (point - position) / radius;
             return Hit{t2, point, normal, this};
         }

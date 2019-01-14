@@ -16,7 +16,7 @@ namespace nagato {
             const Hit &surfaceInfo) const {
         // Sample direction in local coordinates
         const auto n =
-                dot(surfaceInfo.getNormal(), -ray.direction) > 0
+                dot(surfaceInfo.getNormal(), -ray.getDirection()) > 0
                 ? surfaceInfo.getNormal() : -surfaceInfo.getNormal();
         const auto&[u, v] = tangentSpace(n);
         const auto d = [&]() {

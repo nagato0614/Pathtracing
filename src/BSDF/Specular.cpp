@@ -15,7 +15,7 @@ namespace nagato {
             Vector3 *newDirection,
             Ray &ray,
             const Hit &surfaceInfo) const {
-        const auto wi = -ray.direction;
+        const auto wi = -ray.getDirection();
         *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
         return this->color;
     }

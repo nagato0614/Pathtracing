@@ -140,8 +140,8 @@ int main() {
             const int x = i % width;
             const int y = height - i / width;
             Ray ray;
-            ray.origin = eye;
-            ray.direction = [&]() {
+            ray.setOrigin(eye);
+            const auto firstDir = [&]() {
                 const auto tf = std::tan(fov * 0.5f);
                 const auto rpx = 2.0f * (x + Random::Instance().next()) / width - 1.0f;
                 const auto rpy = 2.0f * (y + Random::Instance().next()) / height - 1.0f;
@@ -149,6 +149,7 @@ int main() {
                         Vector3(aspect * tf * rpx, tf * rpy, -1));
                 return uE * ww.x + vE * ww.y + wE * ww.z;
             }();
+            ray.setDirection(firstDir);
 
             // スペクトルの最終的な寄与
             Spectrum L(0.0);
@@ -176,7 +177,7 @@ int main() {
                     depth_buffer[i] = {d, d, d};
                 }
 
-                if (dot(-ray.direction, intersect->getNormal()) > 0.0) {
+                if (dot(-ray.getDirection(), intersect->getNormal()) > 0.0) {
                     // スペクトル寄与を追加する
                     L = L + weight * intersect->getObject().getMaterial().emitter;
                 }
@@ -189,12 +190,14 @@ int main() {
                 }
 
                 // Update next direction
-                ray.origin = intersect->getPoint();
+                ray.setOrigin(intersect->getPoint());
+                Vector3 dir;
                 auto &bsdf = intersect->getObject().getMaterial().getBSDF();
                 auto color = bsdf.makeNewDirection(&wavelength,
-                                                    &ray.direction,
-                                                    ray,
-                                                    intersect.value());
+                                                   &dir,
+                                                   ray,
+                                                   intersect.value());
+                ray.setDirection(dir);
 
                 // Update throughput
                 weight = weight * color;

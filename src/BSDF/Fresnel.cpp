@@ -18,7 +18,7 @@ namespace nagato {
         // #TODO : 波長ごとに異なる屈折率を扱えるようにする
         float ior = 1.5;
 
-        const auto wi = -ray.direction;
+        const auto wi = -ray.getDirection();
         const auto into = dot(wi, surfaceInfo.getNormal()) > 0;
         const auto n = into ? surfaceInfo.getNormal() : -surfaceInfo.getNormal();
         const auto eta = into ? 1 / ior : ior;
