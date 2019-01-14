@@ -4,11 +4,9 @@
 
 #include "Fresnel.hpp"
 
-namespace nagato
-{
+namespace nagato {
 
-    Fresnel::Fresnel(Material *m) : BSDF(m)
-    {
+    Fresnel::Fresnel(Spectrum c) : BSDF(c) {
 
     }
 
@@ -16,8 +14,7 @@ namespace nagato
             int *wavelengthIndex,
             Vector3 *newDirection,
             Ray &ray,
-            const Hit &surfaceInfo) const
-    {
+            const Hit &surfaceInfo) const {
         // #TODO : 波長ごとに異なる屈折率を扱えるようにする
         float ior = 1.5;
 
@@ -35,7 +32,7 @@ namespace nagato
         }();
         if (!wt) {
             *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
-            return material->color;
+            return this->color;
         }
         const auto Fr = [&]() {
             const auto cos = into ? dot(wi, surfaceInfo.getNormal()) : dot(*wt, surfaceInfo.getNormal());
@@ -45,10 +42,10 @@ namespace nagato
 
         if (Random::Instance().next() < Fr) {
             *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
-            return material->color * Fr;
+            return this->color * Fr;
         } else {
             *newDirection = *wt;
-            return material->color * (1 - Fr);
+            return this->color * (1 - Fr);
         }
     }
 }

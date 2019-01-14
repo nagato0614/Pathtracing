@@ -89,7 +89,7 @@ int main() {
 //    bvh.loadObject("../models/light_plane.obj",
 //                   "../models/light_plane.mtl", &d65);
     bvh.loadObject("../models/low_poly_bunny.obj",
-                   "../models/low_poly_bunny.mtl", &purpleMaterial);
+                   "../models/low_poly_bunny.mtl", &Fresnel);
 
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();

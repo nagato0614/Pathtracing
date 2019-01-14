@@ -9,35 +9,36 @@
 
 namespace nagato {
 
-BSDF::BSDF(Material *m)
-    : material(m) {
 
-}
+    float BSDF::f_r(Vector3 wi, Vector3 wo) {
+        return 0;
+    }
 
-Material *BSDF::getMaterial() {
-  return this->material;
-}
+    float BSDF::pdf(Vector3 wi, Vector3 wo, Hit hitPoint) {
+        return 0;
+    }
 
-float BSDF::f_r(Vector3 wi, Vector3 wo) {
-  return 0;
-}
+    BSDF::BSDF(Spectrum color)
+    : color(color){
 
-float BSDF::pdf(Vector3 wi, Vector3 wo, Hit hitPoint) {
-  return 0;
-}
+    }
 
-BSDF *createBSDF(Material *material) {
-  BSDF *bsdf = nullptr;
-  switch (material->type()) {
-    case SurfaceType::Diffuse:bsdf = new Lambert(material);
-      break;
-    case SurfaceType::Mirror:bsdf = new Specular(material);
-      break;
-    case SurfaceType::Fresnel:bsdf = new Fresnel(material);
-      break;
-    case SurfaceType::Emitter:bsdf = new Lambert(material);
-      break;
-  }
-  return bsdf;
-}
+    BSDF *createBSDF(const Material &m) {
+        BSDF *bsdf = nullptr;
+        switch (m.type()) {
+            case SurfaceType::Diffuse:
+                bsdf = new Lambert(m.color);
+                break;
+            case SurfaceType::Mirror:
+                bsdf = new Specular(m.color);
+                break;
+            case SurfaceType::Fresnel:
+                bsdf = new Fresnel(m.color);
+                break;
+            case SurfaceType::Emitter:
+                bsdf = new Lambert(m.color);
+                break;
+        }
+        return bsdf;
+    }
 }

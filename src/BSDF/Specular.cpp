@@ -4,11 +4,9 @@
 
 #include "Specular.hpp"
 
-namespace nagato
-{
+namespace nagato {
 
-    Specular::Specular(Material *m) : BSDF(m)
-    {
+    Specular::Specular(Spectrum c) : BSDF(c) {
 
     }
 
@@ -16,10 +14,9 @@ namespace nagato
             int *wavelengthIndex,
             Vector3 *newDirection,
             Ray &ray,
-            const Hit &surfaceInfo) const
-    {
+            const Hit &surfaceInfo) const {
         const auto wi = -ray.direction;
         *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
-        return material->color;
+        return this->color;
     }
 }
