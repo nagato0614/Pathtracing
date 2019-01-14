@@ -48,16 +48,17 @@ namespace nagato
 
     Hit Sphere::pointSampling(Hit surfaceInfo)
     {
-        auto z = Random::Instance().nextFloat(-1.f, 1.f);
-        auto phi = Random::Instance().nextFloat(0, 2.0f * M_PI);
+        auto &rng = Random::Instance();
+        const float phi = M_PI * rng.nextFloat(-1.0f, 1.0f);
+        const float cos_theta = 1.0 - rng.nextFloat(0.0f, 2.0f);
+        const float sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
 
-        auto x = std::sqrt(1.0f - std::pow(z, 2.0f)) * std::cos(phi);
-        auto y = std::sqrt(1.0f - std::pow(z, 2.0f)) * std::sin(phi);
+        Vector3 normal{sin_theta * std::cos(phi),
+                       sin_theta * std::sin(phi),
+                       cos_theta};
 
-        Vector3 sampledPoint{x, y, z};
-        sampledPoint = position + sampledPoint * radius;
-        auto normal = sampledPoint;
-        auto distance = std::sqrt((sampledPoint - surfaceInfo.point).norm());
+        auto sampledPoint = position + normal * radius;
+        auto distance = std::sqrt((surfaceInfo.point - sampledPoint).norm());
 
         return Hit{distance, sampledPoint, normal, this};
     }
