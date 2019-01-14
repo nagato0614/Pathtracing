@@ -147,7 +147,7 @@ namespace nagato {
             return Spectrum(0.0f);
         } else {
             // ヒット下光源がサンプルした光源と違う場合接続を行わない
-            if (intersect->sphere != light)
+            if (intersect->object != light)
                 return Spectrum(0.0f);
 
             // 裏にあたった場合は計算を行わない.
@@ -162,7 +162,7 @@ namespace nagato {
         const auto geometry_term = (cos_r * cos_i) / distance;
 
 
-        const auto &material = info.sphere->material;
+        const auto &material = info.object->material;
         const auto Li = light->material->emitter;
         const auto fr = material->getBSDF()->f_r(-ray.direction, testRay.direction);
         const auto rho = material->color;
