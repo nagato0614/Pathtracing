@@ -27,7 +27,7 @@ namespace nagato
         return "Object : " + material->typeName();
     }
 
-    Material *Object::getMaterial() const {
-        return material;
+    const Material &Object::getMaterial() const {
+        return *material;
     }
 }

@@ -34,7 +34,7 @@ namespace nagato {
         // オブジェクトの表面積を計算する
         virtual float area() const = 0;
 
-        Material *getMaterial() const ;
+        const Material &getMaterial() const ;
 
     protected:
         Material *material;

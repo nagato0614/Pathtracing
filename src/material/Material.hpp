@@ -21,7 +21,7 @@ namespace nagato {
 
         ~Material();
 
-        BSDF &getBSDF();
+        BSDF &getBSDF() const ;
 
         SurfaceType type() const;
 

@@ -42,7 +42,7 @@ namespace nagato {
         return refraction;
     }
 
-    BSDF &Material::getBSDF() {
+    BSDF &Material::getBSDF() const {
         return *bsdf;
     }
 
