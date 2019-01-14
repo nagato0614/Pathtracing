@@ -8,15 +8,13 @@
 
 #include "BSDF.hpp"
 
-namespace nagato
-{
+namespace nagato {
     /**
      * 完全拡散面を扱うクラス
      */
-    class Lambert : public BSDF
-    {
-     public:
-        explicit Lambert(Material *m);
+    class Lambert : public BSDF {
+    public:
+        explicit Lambert(Spectrum c);
 
         Spectrum makeNewDirection(
                 int *wavelengthIndex,
@@ -24,9 +22,9 @@ namespace nagato
                 Ray &ray,
                 const Hit &surfaceInfo) const override;
 
-      float f_r(Vector3 wi, Vector3 wo) override;
+        float f_r(Vector3 wi, Vector3 wo) override;
 
-      float pdf(Vector3 wi, Vector3 wo, Hit hitPoint) override;
+        float pdf(Vector3 wi, Vector3 wo, Hit hitPoint) override;
     };
 }
 

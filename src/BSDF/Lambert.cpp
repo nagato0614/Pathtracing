@@ -5,7 +5,7 @@
 #include "Lambert.hpp"
 
 namespace nagato {
-    Lambert::Lambert(Material *m) : BSDF(m) {
+    Lambert::Lambert(Spectrum c) : BSDF(c) {
 
     }
 
@@ -16,7 +16,8 @@ namespace nagato {
             const Hit &surfaceInfo) const {
         // Sample direction in local coordinates
         const auto n =
-                dot(surfaceInfo.normal, -ray.direction) > 0 ? surfaceInfo.normal : -surfaceInfo.normal;
+                dot(surfaceInfo.getNormal(), -ray.getDirection()) > 0
+                ? surfaceInfo.getNormal() : -surfaceInfo.getNormal();
         const auto&[u, v] = tangentSpace(n);
         const auto d = [&]() {
             const auto r = sqrt(Random::Instance().next());
@@ -28,13 +29,15 @@ namespace nagato {
         }();
         // Convert to world coordinates
         *newDirection = u * d.x + v * d.y + n * d.z;
-        return material->color;
+        return this->color;
     }
-float Lambert::f_r(Vector3 wi, Vector3 wo) {
-  return 1.0f / M_PI;
-}
-float Lambert::pdf(Vector3 wi, Vector3 wo, Hit hitPoint) {
-    auto cos = dot(wo, hitPoint.normal);
-    return cos / M_PI;
-}
+
+    float Lambert::f_r(Vector3 wi, Vector3 wo) {
+        return 1.0f / M_PI;
+    }
+
+    float Lambert::pdf(Vector3 wi, Vector3 wo, Hit hitPoint) {
+        auto cos = dot(wo, hitPoint.getNormal());
+        return cos / M_PI;
+    }
 }

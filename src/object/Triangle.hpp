@@ -8,24 +8,22 @@
 
 #include "Object.hpp"
 
-namespace nagato
-{
-    class Triangle : public Object
-    {
-     public:
+namespace nagato {
+    class Triangle : public Object {
+    public:
         Triangle(Material *m, std::vector<Vector3> p);
 
         std::optional<Hit> intersect(Ray &ray, float tmin, float tmax) override;
 
-        Aabb getAABB() const override ;
+        Aabb getAABB() const override;
 
-        Hit pointSampling(Hit surfaceInfo) override ;
+        Hit pointSampling(Hit surfaceInfo) override;
 
-        std::string toString() const override ;
+        std::string toString() const override;
 
         float area() const override;
 
-     private:
+    private:
         std::vector<Vector3> points;
     };
 }

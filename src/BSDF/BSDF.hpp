@@ -22,7 +22,7 @@ namespace nagato
     class BSDF
     {
      public:
-        explicit BSDF(Material *m);
+        BSDF(Spectrum color);
 
         /**
          * 現在のrayから反射方向とweightを計算する関数
@@ -38,7 +38,6 @@ namespace nagato
                 Ray &ray,
                 const Hit &surfaceInfo) const = 0;
 
-        Material *getMaterial();
 
         // 反射率を返す
         virtual float f_r(Vector3 wi, Vector3 wo);
@@ -47,10 +46,10 @@ namespace nagato
         virtual float pdf(Vector3 wi, Vector3 wo, Hit hitPoint);
 
      protected:
-        Material *material;
+        Spectrum color;
     };
 
-    BSDF *createBSDF(Material *material);
+    BSDF *createBSDF(const Material &material);
 }
 
 #endif //PATHTRACING_BSDF_HPP

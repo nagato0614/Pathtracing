@@ -9,12 +9,11 @@
 #include "../color/Spectrum.hpp"
 #include "../BSDF/BSDF.hpp"
 
-namespace nagato
-{
+namespace nagato {
     class BSDF;
-    class Material
-    {
-     public:
+
+    class Material {
+    public:
         Spectrum color;
         Spectrum emitter;
 
@@ -22,9 +21,9 @@ namespace nagato
 
         ~Material();
 
-        BSDF *getBSDF();
+        BSDF &getBSDF() const ;
 
-        SurfaceType type();
+        SurfaceType type() const;
 
         std::string typeName();
 
@@ -32,9 +31,9 @@ namespace nagato
 
         void setRefraction(const Spectrum &refraction);
 
-     private :
+    private :
 
-        BSDF *bsdf = nullptr;
+        std::shared_ptr<BSDF> bsdf;
         Spectrum refraction;
         SurfaceType surfaceType;
     };

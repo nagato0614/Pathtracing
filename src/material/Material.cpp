@@ -5,23 +5,20 @@
 #include "Material.hpp"
 #include <utility>
 
-namespace nagato
-{
+namespace nagato {
 
 
-    SurfaceType Material::type()
-    {
+    SurfaceType Material::type() const {
         return surfaceType;
     }
 
     Material::Material(SurfaceType t, Spectrum c, Spectrum e, float emitterL)
-            : surfaceType(t), color(std::move(c)), refraction(Spectrum(1.5))
-    {
+            : surfaceType(t), color(std::move(c)), refraction(Spectrum(1.5)) {
         this->emitter = e * emitterL;
+        this->bsdf.reset(createBSDF(*this));
     }
 
-    std::string Material::typeName()
-    {
+    std::string Material::typeName() {
         std::string str;
         switch (type()) {
             case SurfaceType::Diffuse:
@@ -41,25 +38,18 @@ namespace nagato
         return str;
     }
 
-    const Spectrum &Material::getRefraction() const
-    {
+    const Spectrum &Material::getRefraction() const {
         return refraction;
     }
 
-    BSDF *Material::getBSDF()
-    {
-        if (bsdf == nullptr) {
-            bsdf = createBSDF(this);
-        }
-        return bsdf;
+    BSDF &Material::getBSDF() const {
+        return *bsdf;
     }
 
-    void Material::setRefraction(const Spectrum &refraction)
-    {
+    void Material::setRefraction(const Spectrum &refraction) {
         Material::refraction = refraction;
     }
 
     Material::~Material() {
-        delete bsdf;
     }
 }

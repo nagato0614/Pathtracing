@@ -12,14 +12,22 @@ namespace nagato {
 
     class Hit {
     public:
-        float distance;
-        Vector3 point;
-        Vector3 normal;
-        Object *sphere;
-
         Hit();
 
         Hit(float d, Vector3 p, Vector3 n, Object *sphere);
+
+        const float getDistance() const ;
+
+        const Vector3 &getPoint() const ;
+
+        const Vector3 &getNormal() const ;
+
+        const Object & getObject() const ;
+    private:
+        float distance;
+        Vector3 point;
+        Vector3 normal;
+        Object *object;
     };
 }
 

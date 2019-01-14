@@ -11,6 +11,29 @@
 namespace nagato {
     class Ray {
     public:
+        Ray() = default;
+
+        Ray(Vector3 o, Vector3 dir) : origin(o), direction(dir) {
+
+        }
+
+        const auto &getOrigin() const {
+            return origin;
+        }
+
+        const auto &getDirection() const {
+            return direction;
+        }
+
+        void setOrigin(const Vector3 &o) {
+            this->origin = o;
+        }
+
+        void setDirection(const Vector3 &dir) {
+            this->direction = dir;
+        }
+
+    private:
         Vector3 origin;
         Vector3 direction;
     };

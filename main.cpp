@@ -78,7 +78,7 @@ int main() {
     // シーンの読み込み
     BVH bvh;
 //    bvh.setObject(new Sphere{Vector3(-2, 2, -2), 1.1, &mirror});
-    bvh.setObject(new Sphere{Vector3(0, 8.5, 0), 0.1, &d65});
+    bvh.setObject(new Sphere{Vector3(0, 8.5, 0), 0.5, &d65});
 
     bvh.loadObject("../models/left.obj",
                    "../models/left.mtl", &redMaterial);
@@ -89,7 +89,7 @@ int main() {
 //    bvh.loadObject("../models/light_plane.obj",
 //                   "../models/light_plane.mtl", &d65);
     bvh.loadObject("../models/low_poly_bunny.obj",
-                   "../models/low_poly_bunny.mtl", &purpleMaterial);
+                   "../models/low_poly_bunny.mtl", &Fresnel);
 
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
@@ -140,15 +140,16 @@ int main() {
             const int x = i % width;
             const int y = height - i / width;
             Ray ray;
-            ray.origin = eye;
-            ray.direction = [&]() {
-                const float tf = std::tan(fov * .5);
-                const float rpx = 2. * (x + Random::Instance().next()) / width - 1;
-                const float rpy = 2. * (y + Random::Instance().next()) / height - 1;
+            ray.setOrigin(eye);
+            const auto firstDir = [&]() {
+                const auto tf = std::tan(fov * 0.5f);
+                const auto rpx = 2.0f * (x + Random::Instance().next()) / width - 1.0f;
+                const auto rpy = 2.0f * (y + Random::Instance().next()) / height - 1.0f;
                 const Vector3 ww = normalize(
                         Vector3(aspect * tf * rpx, tf * rpy, -1));
                 return uE * ww.x + vE * ww.y + wE * ww.z;
             }();
+            ray.setDirection(firstDir);
 
             // スペクトルの最終的な寄与
             Spectrum L(0.0);
@@ -161,7 +162,7 @@ int main() {
 
             bool isSlected = false;
 
-            for (int depth = 0; depth < 1; depth++) {
+            for (int depth = 0; depth < 5; depth++) {
 
                 // Intersection
                 const auto intersect = bvh.intersect(ray, 0.0f, 1e+100);
@@ -171,31 +172,32 @@ int main() {
                 }
 
                 if (pass == 0 && depth == 0) {
-                    nom[i] = (normalize(intersect->normal) + 1.0) / 2.0 * 255;
-                    auto d = intersect->distance;
+                    nom[i] = (normalize(intersect->getNormal()) + 1.0) / 2.0 * 255;
+                    auto d = intersect->getDistance();
                     depth_buffer[i] = {d, d, d};
                 }
 
-                if (dot(-ray.direction, intersect->normal) > 0.0) {
+                if (dot(-ray.getDirection(), intersect->getNormal()) > 0.0) {
                     // スペクトル寄与を追加する
-                    L = L + weight * intersect->sphere->material->emitter;
+                    L = L + weight * intersect->getObject().getMaterial().emitter;
                 }
 
                 // next event estimation
-                auto type = intersect->sphere->material->type();
+                auto type = intersect->getObject().getMaterial().type();
                 if (type != SurfaceType::Emitter
                     && type == SurfaceType::Diffuse) {
                     L = L + weight * bvh.directLight(ray, intersect.value());
                 }
 
                 // Update next direction
-                ray.origin = intersect->point;
-                BSDF *bsdf = intersect->sphere->material->getBSDF();
-                auto color = bsdf->makeNewDirection(&wavelength,
-                                                    &ray.direction,
-                                                    ray,
-                                                    intersect.value());
-
+                ray.setOrigin(intersect->getPoint());
+                Vector3 dir;
+                auto &bsdf = intersect->getObject().getMaterial().getBSDF();
+                auto color = bsdf.makeNewDirection(&wavelength,
+                                                   &dir,
+                                                   ray,
+                                                   intersect.value());
+                ray.setDirection(dir);
 
                 // Update throughput
                 weight = weight * color;

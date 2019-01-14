@@ -16,8 +16,8 @@ namespace nagato{
         float t_min = -FLT_MAX;  // AABB にレイが侵入する時刻
 
         for (int i=0; i<3; i++) {
-            float t1 = (min[i] - ray.origin[i])/ray.direction[i];
-            float t2 = (max[i] - ray.origin[i])/ray.direction[i];
+            float t1 = (min[i] - ray.getOrigin()[i])/ray.getDirection()[i];
+            float t2 = (max[i] - ray.getOrigin()[i])/ray.getDirection()[i];
             float t_near = std::min(t1, t2);
             float t_far = std::max(t1, t2);
             t_max = std::min(t_max, t_far);

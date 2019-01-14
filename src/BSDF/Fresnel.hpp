@@ -7,12 +7,10 @@
 
 #include "BSDF.hpp"
 
-namespace nagato
-{
-    class Fresnel : public BSDF
-    {
-     public:
-        Fresnel(Material *m);
+namespace nagato {
+    class Fresnel : public BSDF {
+    public:
+        Fresnel(Spectrum c);
 
         Spectrum makeNewDirection(
                 int *wavelengthIndex,

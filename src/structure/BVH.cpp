@@ -144,7 +144,7 @@ namespace nagato
                 else if (right && !left)
                     return right;
                 else
-                    return right->distance > left->distance ? left : right;
+                    return right->getDistance() > left->getDistance() ? left : right;
 
             } else {
                 return node->object->intersect(ray, min, max);
@@ -190,7 +190,7 @@ namespace nagato
                     continue;
                 }
                 minh = h;
-                max = minh->distance;
+                max = minh->getDistance();
             }
         }
         return minh;

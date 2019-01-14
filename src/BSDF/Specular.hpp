@@ -12,7 +12,7 @@ namespace nagato
     class Specular : public BSDF
     {
      public:
-        Specular(Material *m);
+        Specular(Spectrum c);
 
         Spectrum makeNewDirection(
                 int *wavelengthIndex,

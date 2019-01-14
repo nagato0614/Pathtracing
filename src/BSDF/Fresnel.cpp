@@ -4,11 +4,9 @@
 
 #include "Fresnel.hpp"
 
-namespace nagato
-{
+namespace nagato {
 
-    Fresnel::Fresnel(Material *m) : BSDF(m)
-    {
+    Fresnel::Fresnel(Spectrum c) : BSDF(c) {
 
     }
 
@@ -16,14 +14,13 @@ namespace nagato
             int *wavelengthIndex,
             Vector3 *newDirection,
             Ray &ray,
-            const Hit &surfaceInfo) const
-    {
+            const Hit &surfaceInfo) const {
         // #TODO : 波長ごとに異なる屈折率を扱えるようにする
         float ior = 1.5;
 
-        const auto wi = -ray.direction;
-        const auto into = dot(wi, surfaceInfo.normal) > 0;
-        const auto n = into ? surfaceInfo.normal : -surfaceInfo.normal;
+        const auto wi = -ray.getDirection();
+        const auto into = dot(wi, surfaceInfo.getNormal()) > 0;
+        const auto n = into ? surfaceInfo.getNormal() : -surfaceInfo.getNormal();
         const auto eta = into ? 1 / ior : ior;
         const auto wt = [&]() -> std::optional<Vector3> {
             const auto t = dot(wi, n);
@@ -34,21 +31,21 @@ namespace nagato
             return (n * t - wi) * eta - n * sqrt(t2);
         }();
         if (!wt) {
-            *newDirection = surfaceInfo.normal * 2 * dot(wi, surfaceInfo.normal) - wi;
-            return material->color;
+            *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
+            return this->color;
         }
         const auto Fr = [&]() {
-            const auto cos = into ? dot(wi, surfaceInfo.normal) : dot(*wt, surfaceInfo.normal);
+            const auto cos = into ? dot(wi, surfaceInfo.getNormal()) : dot(*wt, surfaceInfo.getNormal());
             const auto r = (1 - ior) / (1 + ior);
             return r * r + (1 - r * r) * pow(1 - cos, 5);
         }();
 
         if (Random::Instance().next() < Fr) {
-            *newDirection = surfaceInfo.normal * 2 * dot(wi, surfaceInfo.normal) - wi;
-            return material->color * Fr;
+            *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
+            return this->color * Fr;
         } else {
             *newDirection = *wt;
-            return material->color * (1 - Fr);
+            return this->color * (1 - Fr);
         }
     }
 }

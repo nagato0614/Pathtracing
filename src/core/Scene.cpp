@@ -19,7 +19,7 @@ namespace nagato {
                 continue;
             }
             minh = h;
-            tmax = minh->distance;
+            tmax = minh->getDistance();
         }
         return minh;
     }
@@ -112,7 +112,7 @@ namespace nagato {
     }
 
     void Scene::setObject(Object *object) {
-        if (object->material->type() == SurfaceType::Emitter) {
+        if (object->getMaterial().type() == SurfaceType::Emitter) {
             lights.push_back(object);
         }
 
@@ -138,8 +138,8 @@ namespace nagato {
 
         auto sampledPoint = light->pointSampling(info);
         Ray testRay;
-        testRay.origin = info.point;
-        testRay.direction = normalize(sampledPoint.point - info.point);
+        testRay.setOrigin(info.getPoint());
+        testRay.setDirection(normalize(sampledPoint.getPoint() - info.getPoint()));
 
         // 光源と接続点が遮られていないかテスト
         const auto intersect = this->intersect(testRay, 0.0f, 1e+100);
@@ -147,25 +147,25 @@ namespace nagato {
             return Spectrum(0.0f);
         } else {
             // ヒット下光源がサンプルした光源と違う場合接続を行わない
-            if (intersect->sphere != light)
+            if (&intersect->getObject() != light)
                 return Spectrum(0.0f);
 
             // 裏にあたった場合は計算を行わない.
-            if (dot(-testRay.direction, intersect->normal) < 0.0)
+            if (dot(-testRay.getDirection(), intersect->getNormal()) < 0.0)
                 return Spectrum(0.0f);
         }
 
         // 幾何項の計算
-        const auto distance = (sampledPoint.point - info.point).norm();
-        const auto cos_r = std::abs(dot(sampledPoint.normal, -testRay.direction));
-        const auto cos_i = std::abs(dot(info.normal, testRay.direction));
+        const auto distance = (sampledPoint.getPoint() - info.getPoint()).norm();
+        const auto cos_r = std::abs(dot(sampledPoint.getNormal(), -testRay.getDirection()));
+        const auto cos_i = std::abs(dot(info.getNormal(), testRay.getDirection()));
         const auto geometry_term = (cos_r * cos_i) / distance;
 
 
-        const auto &material = info.sphere->material;
-        const auto Li = light->material->emitter;
-        const auto fr = material->getBSDF()->f_r(-ray.direction, testRay.direction);
-        const auto rho = material->color;
+        const auto &material = info.getObject().getMaterial();
+        const auto Li = light->getMaterial().emitter;
+        const auto fr = material.getBSDF().f_r(-ray.getDirection(), testRay.getDirection());
+        const auto rho = material.color;
         const auto areaPdf = 1.0f / light->area();
 
         const auto Ld = (Li * geometry_term * rho) / areaPdf;
