@@ -10,4 +10,24 @@ namespace nagato {
             distance(d), point(p), normal(n), object(sphere) {
 
     }
+
+    Hit::Hit() {
+
+    }
+
+    float Hit::getDistance() const {
+        return distance;
+    }
+
+    Vector3 Hit::getPoint() const {
+        return point;
+    }
+
+    Vector3 Hit::getNormal() const {
+        return normal;
+    }
+
+    Object *Hit::getObject() const {
+        return object;
+    }
 }

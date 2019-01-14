@@ -16,7 +16,8 @@ namespace nagato {
             const Hit &surfaceInfo) const {
         // Sample direction in local coordinates
         const auto n =
-                dot(surfaceInfo.normal, -ray.direction) > 0 ? surfaceInfo.normal : -surfaceInfo.normal;
+                dot(surfaceInfo.getNormal(), -ray.direction) > 0
+                ? surfaceInfo.getNormal() : -surfaceInfo.getNormal();
         const auto&[u, v] = tangentSpace(n);
         const auto d = [&]() {
             const auto r = sqrt(Random::Instance().next());
@@ -34,7 +35,7 @@ float Lambert::f_r(Vector3 wi, Vector3 wo) {
   return 1.0f / M_PI;
 }
 float Lambert::pdf(Vector3 wi, Vector3 wo, Hit hitPoint) {
-    auto cos = dot(wo, hitPoint.normal);
+    auto cos = dot(wo, hitPoint.getNormal());
     return cos / M_PI;
 }
 }

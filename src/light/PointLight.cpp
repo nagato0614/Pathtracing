@@ -13,7 +13,7 @@ namespace nagato {
 
     Spectrum PointLight::samplePoint(Hit hit, Vector3 *sampledPoint, float *pdf)
     {
-        *sampledPoint = point - hit.point;
+        *sampledPoint = point - hit.getPoint();
         *pdf = 1.f;
         return I;
     }

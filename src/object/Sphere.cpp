@@ -58,7 +58,7 @@ namespace nagato
                        cos_theta};
 
         auto sampledPoint = position + normal * radius;
-        auto distance = std::sqrt((surfaceInfo.point - sampledPoint).norm());
+        auto distance = std::sqrt((surfaceInfo.getPoint() - sampledPoint).norm());
 
         return Hit{distance, sampledPoint, normal, this};
     }

@@ -171,26 +171,26 @@ int main() {
                 }
 
                 if (pass == 0 && depth == 0) {
-                    nom[i] = (normalize(intersect->normal) + 1.0) / 2.0 * 255;
-                    auto d = intersect->distance;
+                    nom[i] = (normalize(intersect->getNormal()) + 1.0) / 2.0 * 255;
+                    auto d = intersect->getDistance();
                     depth_buffer[i] = {d, d, d};
                 }
 
-                if (dot(-ray.direction, intersect->normal) > 0.0) {
+                if (dot(-ray.direction, intersect->getNormal()) > 0.0) {
                     // スペクトル寄与を追加する
-                    L = L + weight * intersect->object->material->emitter;
+                    L = L + weight * intersect->getObject()->material->emitter;
                 }
 
                 // next event estimation
-                auto type = intersect->object->material->type();
+                auto type = intersect->getObject()->material->type();
                 if (type != SurfaceType::Emitter
                     && type == SurfaceType::Diffuse) {
                     L = L + weight * bvh.directLight(ray, intersect.value());
                 }
 
                 // Update next direction
-                ray.origin = intersect->point;
-                BSDF *bsdf = intersect->object->material->getBSDF();
+                ray.origin = intersect->getPoint();
+                BSDF *bsdf = intersect->getObject()->material->getBSDF();
                 auto color = bsdf->makeNewDirection(&wavelength,
                                                     &ray.direction,
                                                     ray,
