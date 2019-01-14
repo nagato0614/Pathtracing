@@ -15,19 +15,19 @@ namespace nagato {
 
     }
 
-    float Hit::getDistance() const {
+    const float Hit::getDistance() const {
         return distance;
     }
 
-    Vector3 Hit::getPoint() const {
+    const Vector3 &Hit::getPoint() const {
         return point;
     }
 
-    Vector3 Hit::getNormal() const {
+    const Vector3 &Hit::getNormal() const {
         return normal;
     }
 
-    Object *Hit::getObject() const {
-        return object;
+    const Object & Hit::getObject() const {
+        return *object;
     }
 }

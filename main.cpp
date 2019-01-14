@@ -178,11 +178,11 @@ int main() {
 
                 if (dot(-ray.direction, intersect->getNormal()) > 0.0) {
                     // スペクトル寄与を追加する
-                    L = L + weight * intersect->getObject()->getMaterial().emitter;
+                    L = L + weight * intersect->getObject().getMaterial().emitter;
                 }
 
                 // next event estimation
-                auto type = intersect->getObject()->getMaterial().type();
+                auto type = intersect->getObject().getMaterial().type();
                 if (type != SurfaceType::Emitter
                     && type == SurfaceType::Diffuse) {
                     L = L + weight * bvh.directLight(ray, intersect.value());
@@ -190,7 +190,7 @@ int main() {
 
                 // Update next direction
                 ray.origin = intersect->getPoint();
-                auto &bsdf = intersect->getObject()->getMaterial().getBSDF();
+                auto &bsdf = intersect->getObject().getMaterial().getBSDF();
                 auto color = bsdf.makeNewDirection(&wavelength,
                                                     &ray.direction,
                                                     ray,

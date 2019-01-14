@@ -16,13 +16,13 @@ namespace nagato {
 
         Hit(float d, Vector3 p, Vector3 n, Object *sphere);
 
-        float getDistance() const ;
+        const float getDistance() const ;
 
-        Vector3 getPoint() const ;
+        const Vector3 &getPoint() const ;
 
-        Vector3 getNormal() const ;
+        const Vector3 &getNormal() const ;
 
-        Object *getObject() const ;
+        const Object & getObject() const ;
     private:
         float distance;
         Vector3 point;
