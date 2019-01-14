@@ -48,8 +48,18 @@ namespace nagato
 
     Hit Sphere::pointSampling(Hit surfaceInfo)
     {
-        exit(EXIT_CODE::OTHER);
-        return Hit(0, nagato::Vector3(), nagato::Vector3(), nullptr);
+        auto z = Random::Instance().nextFloat(-1.f, 1.f);
+        auto phi = Random::Instance().nextFloat(0, 2.0f * M_PI);
+
+        auto x = std::sqrt(1.0f - std::pow(z, 2.0f)) * std::cos(phi);
+        auto y = std::sqrt(1.0f - std::pow(z, 2.0f)) * std::sin(phi);
+
+        Vector3 sampledPoint{x, y, z};
+        sampledPoint = position + sampledPoint * radius;
+        auto normal = sampledPoint;
+        auto distance = std::sqrt((sampledPoint - surfaceInfo.point).norm());
+
+        return Hit{distance, sampledPoint, normal, this};
     }
 
     std::string Sphere::toString() const
@@ -58,8 +68,9 @@ namespace nagato
                ", radius : " + std::to_string(radius) +
                ", point : " + position.toString();
     }
-float Sphere::area() const {
-  return 4.0f * M_PI * std::pow(radius, 2.0f);
-}
+
+    float Sphere::area() const {
+        return 4.0f * M_PI * std::pow(radius, 2.0f);
+    }
 }
  

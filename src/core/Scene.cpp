@@ -151,8 +151,8 @@ namespace nagato {
                 return Spectrum(0.0f);
 
             // 裏にあたった場合は計算を行わない.
-//            if (dot(-testRay.direction, intersect->normal) > 0.0)
-//                return Spectrum(0.0f);
+            if (dot(-testRay.direction, intersect->normal) < 0.0)
+                return Spectrum(0.0f);
         }
 
         // 幾何項の計算

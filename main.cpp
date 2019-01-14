@@ -41,7 +41,7 @@ int main() {
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 1000;
+    const int samples = 10;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -78,7 +78,7 @@ int main() {
     // シーンの読み込み
     BVH bvh;
 //    bvh.setObject(new Sphere{Vector3(-2, 2, -2), 1.1, &mirror});
-//    bvh.setObject(new Sphere{Vector3(2, 2, -2), 1.1, &Fresnel});
+    bvh.setObject(new Sphere{Vector3(0, 8.5, 0), 0.1, &d65});
 
     bvh.loadObject("../models/left.obj",
                    "../models/left.mtl", &redMaterial);
@@ -86,10 +86,10 @@ int main() {
                    "../models/right.mtl", &blueMateral);
     bvh.loadObject("../models/back_ceil_floor_plane.obj",
                    "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
-    bvh.loadObject("../models/light_plane.obj",
-                   "../models/light_plane.mtl", &d65);
+//    bvh.loadObject("../models/light_plane.obj",
+//                   "../models/light_plane.mtl", &d65);
     bvh.loadObject("../models/low_poly_bunny.obj",
-                   "../models/low_poly_bunny.mtl", &Fresnel);
+                   "../models/low_poly_bunny.mtl", &purpleMaterial);
 
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
@@ -161,7 +161,7 @@ int main() {
 
             bool isSlected = false;
 
-            for (int depth = 0; depth < 10; depth++) {
+            for (int depth = 0; depth < 1; depth++) {
 
                 // Intersection
                 const auto intersect = bvh.intersect(ray, 0.0f, 1e+100);

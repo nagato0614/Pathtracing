@@ -85,7 +85,7 @@ Hit Triangle::pointSampling(Hit surfaceInfo) {
   auto sampledPoint = points[0] * u + points[1] * v + points[2] * (1 - u - v);
 
   // サンプリングされた座標と
-  auto distance = (sampledPoint - surfaceInfo.point).norm();
+  auto distance = std::sqrt((sampledPoint - surfaceInfo.point).norm());
 
   // サンプリング地点の法線ベクトル
   auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
