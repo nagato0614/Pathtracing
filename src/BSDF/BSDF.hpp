@@ -40,6 +40,12 @@ namespace nagato
 
         Material *getMaterial();
 
+        // 反射率を返す
+        virtual float f_r(Vector3 wi, Vector3 wo);
+
+        // wi方向に反射する確率
+        virtual float pdf(Vector3 wi, Vector3 wo, Hit hitPoint);
+
      protected:
         Material *material;
     };

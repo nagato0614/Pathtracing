@@ -9,7 +9,9 @@ namespace nagato {
 
 
     Spectrum::Spectrum(float init_num) {
-        spectrum.resize(static_cast<unsigned long>(resolution_ + 1), init_num); // NOLINT
+        for (auto &s : spectrum) {
+          s = init_num;
+        }
     }
 
     Spectrum::Spectrum(std::string filename) {
@@ -19,6 +21,7 @@ namespace nagato {
         int wave;
         float intensity;
         std::vector<std::tuple<int, float>> spectrumData;
+        std::vector<float> s;
 
         // 波長データを取得
         while (in.read_row(wave, intensity)) {
@@ -30,7 +33,7 @@ namespace nagato {
         // データは380~780のカバーしていると仮定している
         if (spectrumData.size() == 1) {
             for (int i = 0; i < 401; i++) {
-                spectrum.push_back(std::get<1>(spectrumData[0]));
+                s.push_back(std::get<1>(spectrumData[0]));
             }
         } else if (spectrumData.size() > 1) {
             int diff = std::get<0>(spectrumData[1]) - std::get<0>(spectrumData[0]);
@@ -50,7 +53,7 @@ namespace nagato {
                 }
 
                 for (int i = 0; i < 401; i++) {
-                    spectrum.push_back(std::get<1>(spectrumData[i + index]));
+                    s.push_back(std::get<1>(spectrumData[i + index]));
                 }
 
 //            std::cout << "-------------" << std::endl;
@@ -72,7 +75,7 @@ namespace nagato {
                 for (int i = 0; i < 401; i++) {
                     float rate = (380 + i) % 5;
                     if (rate == 0) {
-                        spectrum.push_back(std::get<1>(spectrumData[(i / 5) + index]));
+                        s.push_back(std::get<1>(spectrumData[(i / 5) + index]));
 //                    printf("%d : %f\n", 380 + i, std::get<1>(spectrumData[(i / 5) + index]));
                     } else {
                         int nowSpec = i / 5;
@@ -80,7 +83,7 @@ namespace nagato {
                         auto b = std::get<1>(spectrumData[(nowSpec + 1) + index]);
                         float spec = (1.0 - rate / 5.0) * a + (rate / 5.0) * b;
 //                    printf("%d : %f\t --- (%.5f, %.5f) \t --- rate : %3f\t --\n", 380 + i, spec, a, b, rate);
-                        spectrum.push_back(spec);
+                        s.push_back(spec);
                     }
 
 
@@ -91,6 +94,11 @@ namespace nagato {
 //            for (int i = 0; i < spectrum.size(); i++) {
 //                printf("%d : %5f\n", i + 380, spectrum[i]);
 //            }
+            }
+
+            assert((400 % RESOLUTION) == 0);
+            for (int i = 0; i < RESOLUTION; i++) {
+              spectrum[i] = s[(400 / RESOLUTION) * i];
             }
         } else {
             std::cerr << "スペクトルデータがありません : "

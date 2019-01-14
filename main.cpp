@@ -15,38 +15,37 @@
 
 using namespace nagato;
 
-int main()
-{
+int main() {
 
-    #ifdef _DEBUG
+#ifdef _DEBUG
     std::cout << "-- DEBUF MODE --" << std::endl;
-    #endif
+#endif
 
-    #ifndef _DEBUG
+#ifndef _DEBUG
     std::cout << "-- REREASE MODE --" << std::endl;
-    #endif
+#endif
 
     // スレッド数の表示
-    #ifdef _OPENMP
+#ifdef _OPENMP
     std::cout << "-- openMP --" << std::endl;
     std::cout << "The number of processors is " << omp_get_num_procs() << std::endl;
     std::cout << "OpenMP : Enabled (Max # of threads = " << omp_get_max_threads() << ")" << std::endl;
     omp_set_num_threads(omp_get_max_threads());
-    #else
+#else
     std::cout << "OpenMP : OFF" << std::endl;
-    #endif
+#endif
 
     // #TODO カメラクラスの作成
     // Image size
-    const int width = 480;
-    const int height = 360;
+    const int width = 400;
+    const int height = 400;
 
     // Samples per pixel
-    const int samples = 100;
+    const int samples = 10;
 
     // Camera parameters
-    const Vector3 eye(0, 5, 6);
-    const Vector3 center = eye + Vector3(0, -0.5, -1);
+    const Vector3 eye(0, 5, 14);
+    const Vector3 center = eye + Vector3(0, 0, -1);
 
     const Vector3 up(0, 1, 0);
     const float fov = 55 * M_PI / 180;
@@ -60,31 +59,39 @@ int main()
     std::cout << "-- Load Scene -- " << std::endl;
 
     // マテリアルの読み込み
-    Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
-    Material blueMateral(SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
-    Material whiteMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
-    Material d65(SurfaceType::Diffuse, Spectrum(), Spectrum("../property/cie_si_d65.csv"), 0.5);
+    Material redMaterial
+            (SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
+    Material blueMateral
+            (SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
+    Material whiteMaterial
+            (SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
+    Material purpleMaterial
+            (SurfaceType::Diffuse, Spectrum("../property/macbeth_10_purple.csv"));
+    Material d65(SurfaceType::Emitter,
+                 Spectrum(),
+                 Spectrum("../property/cie_si_d65.csv"),
+                 0.1);
     Material mirror(SurfaceType::Mirror, Spectrum(0.99));
     Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
-    Scene scene;
-    scene.setObject(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
-    scene.setObject(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
-    scene.loadObject("../models/left.obj",
-                     "../models/left.mtl", &redMaterial);
-    scene.loadObject("../models/right.obj",
-                     "../models/right.mtl", &blueMateral);
-    scene.loadObject("../models/back_ceil_floor_plane.obj",
-                     "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
-    scene.loadObject("../models/light_plane.obj",
-                     "../models/light_plane.mtl", &d65);
-//    scene.loadObject("../models/suzanne.obj",
-//                     "../models/suzanne.mtl", &whiteMaterial);
+    BVH bvh;
+//    bvh.setObject(new Sphere{Vector3(-2, 2, -2), 1.1, &mirror});
+    bvh.setObject(new Sphere{Vector3(0, 8.5, 0), 0.1, &d65});
+
+    bvh.loadObject("../models/left.obj",
+                   "../models/left.mtl", &redMaterial);
+    bvh.loadObject("../models/right.obj",
+                   "../models/right.mtl", &blueMateral);
+    bvh.loadObject("../models/back_ceil_floor_plane.obj",
+                   "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
+//    bvh.loadObject("../models/light_plane.obj",
+//                   "../models/light_plane.mtl", &d65);
+    bvh.loadObject("../models/low_poly_bunny.obj",
+                   "../models/low_poly_bunny.mtl", &purpleMaterial);
 
     std::cout << "-- Construct BVH --" << std::endl;
-    BVH bvh(scene.objects);
     bvh.constructBVH();
 
     // スペクトルからXYZに変換する等色関数
@@ -113,7 +120,7 @@ int main()
     std::cout << "-- Out Put Image Size --" << std::endl;
     std::cout << "width : height = " << width << " : " << height << std::endl;
     std::cout << "-- Number of Object --" << std::endl;
-    std::cout << "objects : " << scene.objects.size() << std::endl;
+    std::cout << "objects : " << bvh.objects.size() << std::endl;
     std::cout << "nodes   : " << bvh.getNodeCount() << std::endl;
     std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
@@ -126,9 +133,9 @@ int main()
         std::cout << "\rpath : " << (pass + 1) << " / " << samples;
         fflush(stdout);
 
-        #ifdef _OPENMP
-            #pragma omp parallel for schedule(dynamic, 1)
-        #endif
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1)
+#endif
         for (int i = 0; i < width * height; i++) {
             const int x = i % width;
             const int y = height - i / width;
@@ -154,10 +161,10 @@ int main()
 
             bool isSlected = false;
 
-            for (int depth = 0; depth < 10; depth++) {
+            for (int depth = 0; depth < 1; depth++) {
 
                 // Intersection
-                const auto intersect = bvh.intersect(ray, 1e-4, 1e+100);
+                const auto intersect = bvh.intersect(ray, 0.0f, 1e+100);
 
                 if (!intersect) {
                     break;
@@ -174,15 +181,34 @@ int main()
                     L = L + weight * intersect->sphere->material->emitter;
                 }
 
+                // next event estimation
+                auto type = intersect->sphere->material->type();
+                if (type != SurfaceType::Emitter
+                    && type == SurfaceType::Diffuse) {
+                    L = L + weight * bvh.directLight(ray, intersect.value());
+                }
+
                 // Update next direction
                 ray.origin = intersect->point;
                 BSDF *bsdf = intersect->sphere->material->getBSDF();
-                auto color = bsdf->makeNewDirection(&wavelength, &ray.direction, ray, intersect.value());
+                auto color = bsdf->makeNewDirection(&wavelength,
+                                                    &ray.direction,
+                                                    ray,
+                                                    intersect.value());
+
 
                 // Update throughput
                 weight = weight * color;
                 if (weight.findMaxSpectrum() == 0) {
                     break;
+                }
+
+                // ロシアンルーレットで追跡を終了する
+                auto maxWeight = weight.findMaxSpectrum();
+                if (Random::Instance().next() < 1.0 - maxWeight && depth > 3) {
+                    break;
+                } else {
+                    weight = weight / maxWeight;
                 }
             }
             // 各波長の重みを更新(サンプリング数に応じて重みをかける)
@@ -190,17 +216,19 @@ int main()
         }
 
         if ((pass) % 5 == 0 && isOutput) {
-            std::string outputfile = "./" + saveDirName + "/result_" + std::to_string(pass) + ".ppm";
+            std::string outputfile =
+                    "./" + saveDirName + "/result_" + std::to_string(pass) + ".ppm";
             writePPM(outputfile, S, width, height, xbar, ybar, zbar);
         }
     }
     end = std::chrono::system_clock::now();  // 計測終了時間
-    float elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); //処理に要した時間をミリ秒に変換
+    float elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            end - start).count(); //処理に要した時間をミリ秒に変換
     std::cout << "\n-- Rendering Time --" << std::endl;
     std::cout << elapsed / 1000.0 << "[sec]" << std::endl;
 
     std::cout << "-- Output ppm File --" << std::endl;
-    writePPM("result.ppm", S, width, height, xbar, ybar, zbar);
+    writePPM("output.ppm", S, width, height, xbar, ybar, zbar);
 
     // #TODO 法線マップとデプスマップを出力するモジュールの実装または外部ライブラリの実装
     // 法線マップを出力
@@ -237,7 +265,7 @@ int main()
 
     std::cout << "-- Memory release -- " << std::endl;
 
-    scene.freeObject();
+    bvh.freeObject();
 
     std::cout << "-- FINISH --" << std::endl;
 

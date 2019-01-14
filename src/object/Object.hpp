@@ -32,6 +32,9 @@ namespace nagato {
         virtual Hit pointSampling(Hit surfaceInfo) = 0;
 
         virtual std::string toString() const;
+
+        // オブジェクトの表面積を計算する
+        virtual float area() const = 0;
     };
 }
 

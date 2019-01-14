@@ -9,6 +9,7 @@ namespace nagato
 
     std::optional<Hit> Sphere::intersect(Ray &ray, float tmin, float tmax)
     {
+        constexpr auto min = 1e-4;
         const Vector3 op = position - ray.origin;
         const float b = dot(op, ray.direction);
         const float det = b * b - dot(op, op) + radius * radius;
@@ -18,14 +19,14 @@ namespace nagato
         }
         const auto t1 = (b - std::sqrt(det));
 
-        if (tmin < t1 && t1 < tmax) {
+        if (min <= t1 && t1 < tmax) {
             auto point = ray.origin + ray.direction * t1;
             auto normal = (point - position) / radius;
             return Hit{t1, point, normal, this};
         }
 
         const auto t2 = (b + std::sqrt(det));
-        if (tmin < t2 && t2 < tmax) {
+        if (min <= t2 && t2 < tmax) {
             auto point = ray.origin + ray.direction * t2;
             auto normal = (point - position) / radius;
             return Hit{t2, point, normal, this};
@@ -47,7 +48,19 @@ namespace nagato
 
     Hit Sphere::pointSampling(Hit surfaceInfo)
     {
-        return Hit(0, nagato::Vector3(), nagato::Vector3(), nullptr);
+        auto &rng = Random::Instance();
+        const float phi = M_PI * rng.nextFloat(-1.0f, 1.0f);
+        const float cos_theta = 1.0 - rng.nextFloat(0.0f, 2.0f);
+        const float sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
+
+        Vector3 normal{sin_theta * std::cos(phi),
+                       sin_theta * std::sin(phi),
+                       cos_theta};
+
+        auto sampledPoint = position + normal * radius;
+        auto distance = std::sqrt((surfaceInfo.point - sampledPoint).norm());
+
+        return Hit{distance, sampledPoint, normal, this};
     }
 
     std::string Sphere::toString() const
@@ -55,6 +68,10 @@ namespace nagato
         return "[Shpere]material : " + material->typeName() +
                ", radius : " + std::to_string(radius) +
                ", point : " + position.toString();
+    }
+
+    float Sphere::area() const {
+        return 4.0f * M_PI * std::pow(radius, 2.0f);
     }
 }
  

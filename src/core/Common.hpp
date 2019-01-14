@@ -5,15 +5,19 @@
 #ifndef PATHTRACING_COMMON_HPP
 #define PATHTRACING_COMMON_HPP
 
-#define RESOLUTION 400
+#define RESOLUTION 40
 #define SAMPLE 1
 
 #define BVH_NODE 200000
 
 // exit code
-#define EMPTY_OBJECT 64
-#define EMPTY_NODE 65
-#define CANNOT_CONSTRUCT_BVH 66
+enum EXIT_CODE {
+  EMPTY_OBJECT = 64,
+  EMPTY_NODE ,
+  EMPTY_LIGHT ,
+  CANNOT_CONSTRUCT_BVH ,
+  OTHER,
+};
 
 // 角度の変換
 #define deg_to_rad(deg) (((deg)/360)*2*M_PI)

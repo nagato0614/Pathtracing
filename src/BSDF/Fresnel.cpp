@@ -18,23 +18,12 @@ namespace nagato
             Ray &ray,
             const Hit &surfaceInfo) const
     {
-
+        // #TODO : 波長ごとに異なる屈折率を扱えるようにする
         float ior = 1.5;
-
-        if (wavelengthIndex != nullptr) {
-            // 波長を一つだけサンプリングする
-            if (*wavelengthIndex == -1) {
-                *wavelengthIndex = Random::Instance().nextInt(0, RESOLUTION - 1);
-                ior = material->getRefraction().spectrum[*wavelengthIndex];
-            } else {
-                ior = material->getRefraction().spectrum[*wavelengthIndex];
-            }
-        }
 
         const auto wi = -ray.direction;
         const auto into = dot(wi, surfaceInfo.normal) > 0;
         const auto n = into ? surfaceInfo.normal : -surfaceInfo.normal;
-//                        const auto ior = intersect->sphere->ior;
         const auto eta = into ? 1 / ior : ior;
         const auto wt = [&]() -> std::optional<Vector3> {
             const auto t = dot(wi, n);
@@ -55,7 +44,7 @@ namespace nagato
         }();
 
         if (Random::Instance().next() < Fr) {
-            *newDirection = surfaceInfo.normal * 2 * dot(wi, surfaceInfo.normal);
+            *newDirection = surfaceInfo.normal * 2 * dot(wi, surfaceInfo.normal) - wi;
             return material->color * Fr;
         } else {
             *newDirection = *wt;

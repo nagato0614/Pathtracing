@@ -17,6 +17,8 @@ namespace nagato {
         Vector3 normal;
         Object *sphere;
 
+        Hit();
+
         Hit(float d, Vector3 p, Vector3 n, Object *sphere);
     };
 }

@@ -174,11 +174,6 @@ namespace nagato
         return ++nodeCount;
     }
 
-    void BVH::setObject(std::vector<Object *> objects)
-    {
-        this->objects = objects;
-    }
-
     BVH::BVH()
     {
 
