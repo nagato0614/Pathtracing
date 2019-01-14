@@ -20,8 +20,6 @@ namespace nagato {
     class Material;
     class Object {
     public:
-        Material *material;
-        float ior = 1.5;
 
         explicit Object(Material *m);
 
@@ -35,6 +33,11 @@ namespace nagato {
 
         // オブジェクトの表面積を計算する
         virtual float area() const = 0;
+
+        Material *getMaterial() const ;
+
+    protected:
+        Material *material;
     };
 }
 

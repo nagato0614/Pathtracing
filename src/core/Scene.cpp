@@ -112,7 +112,7 @@ namespace nagato {
     }
 
     void Scene::setObject(Object *object) {
-        if (object->material->type() == SurfaceType::Emitter) {
+        if (object->getMaterial()->type() == SurfaceType::Emitter) {
             lights.push_back(object);
         }
 
@@ -162,9 +162,9 @@ namespace nagato {
         const auto geometry_term = (cos_r * cos_i) / distance;
 
 
-        const auto &material = info.getObject()->material;
-        const auto Li = light->material->emitter;
-        const auto fr = material->getBSDF()->f_r(-ray.direction, testRay.direction);
+        const auto &material = info.getObject()->getMaterial();
+        const auto Li = light->getMaterial()->emitter;
+        const auto fr = material->getBSDF().f_r(-ray.direction, testRay.direction);
         const auto rho = material->color;
         const auto areaPdf = 1.0f / light->area();
 

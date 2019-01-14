@@ -46,12 +46,12 @@ namespace nagato
         return refraction;
     }
 
-    BSDF *Material::getBSDF()
+    BSDF &Material::getBSDF()
     {
         if (bsdf == nullptr) {
             bsdf = createBSDF(this);
         }
-        return bsdf;
+        return *bsdf;
     }
 
     void Material::setRefraction(const Spectrum &refraction)

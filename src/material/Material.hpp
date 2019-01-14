@@ -22,7 +22,7 @@ namespace nagato
 
         ~Material();
 
-        BSDF *getBSDF();
+        BSDF &getBSDF();
 
         SurfaceType type();
 
