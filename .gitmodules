@@ -1,3 +1,6 @@
 [submodule "cmake/DownloadProject"]
 	path = cmake/DownloadProject
 	url = https://github.com/Crascit/DownloadProject.git
+[submodule "src/openEXR"]
+	path = src/openEXR
+	url = https://github.com/openexr/openexr.git

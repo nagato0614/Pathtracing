@@ -25,6 +25,31 @@ if (APPLE)
     add_definitions(-D__GLIBCXX__)
 endif (APPLE)
 
+# libpng
+find_package(png)
+
+#openEXR
+find_package(zlib)
+find_package(boost)
+
+SET(ILMBASE_NAMESPACE_VERSIONING OFF CACHE BOOL " " FORCE)
+SET(OPENEXR_NAMESPACE_VERSIONING OFF CACHE BOOL " " FORCE)
+SET(OPENEXR_BUILD_SHARED_LIBS    OFF CACHE BOOL " " FORCE)
+SET(ILMBASE_BUILD_SHARED_LIBS    OFF CACHE BOOL " " FORCE)
+
+add_subdirectory(src/openEXR)
+
+
+INCLUDE_DIRECTORIES (
+        src/openEXR/IlmBase/Imath
+        src/openEXR/IlmBase/Half
+        src/openEXR/IlmBase/Iex
+        src/openEXR/OpenEXR/IlmImf
+        ${CMAKE_BINARY_DIR}/src/openEXR/IlmBase/config
+        ${CMAKE_BINARY_DIR}/src/openEXR/OpenEXR/config
+)
+
+SET(OPENEXR_LIBS IlmImf Imath Half)
 
 file(GLOB src
         ${PROJECT_SOURCE_DIR}/src/core/*.cc
@@ -56,12 +81,19 @@ add_executable(rt src/tools/rt.cpp)
 add_executable(nagatoTest
         src/gtest/gtests.cpp)
 
-target_link_libraries(pathtracing pathtracingLibrary)
+target_link_libraries(pathtracing
+        pathtracingLibrary
+        ${OPENEXR_LIBS}
+        ${PNG_LIBRARIES}
+        )
+
 target_link_libraries(
         nagatoTest
         pathtracingLibrary
         gmock
-        gtest)
+        gtest
+        ${PNG_LIBRARIES}
+        )
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # compile option

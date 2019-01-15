@@ -35,6 +35,8 @@ namespace nagato {
 
         const size_t getHeight() const ;
 
+        const size_t getPixelSize() const ;
+
         /**
          * 指定した位置に求めた値を蓄積する
          * @param s
@@ -55,13 +57,20 @@ namespace nagato {
          * 拡張子がpng以外の場合はpngにする
          * @param filename
          */
-        void outputImage(std::string filename) const ;
+        void outputImage(const std::string &filename) const ;
+
+        std::unique_ptr<Vector3[]> toRGB() const ;
 
         const Spectrum &getPixel(size_t x, size_t y) const;
+
     private:
         size_t width;
         size_t height;
         std::size_t size;
+
+        const Spectrum xbar{"../property/cie_sco_2degree_xbar.csv"};
+        const Spectrum ybar{"../property/cie_sco_2degree_ybar.csv"};
+        const Spectrum zbar{"../property/cie_sco_2degree_zbar.csv"};
 
         std::unique_ptr<Spectrum[]> data;
     };
