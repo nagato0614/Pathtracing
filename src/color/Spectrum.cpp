@@ -66,6 +66,7 @@ namespace nagato {
                 for (int i = 0; i < 401; i++) {
                     float rate = (380 + i) % 5;
                     if (rate == 0) {
+                        s.push_back(std::get<1>(spectrumData[(i / 5) + index]));
                     } else {
                         int nowSpec = i / 5;
                         auto a = std::get<1>(spectrumData[(nowSpec) + index]);
