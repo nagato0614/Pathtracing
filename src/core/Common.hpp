@@ -49,5 +49,28 @@ namespace nagato
             std::vector<Spectrum> s,
             int width, int height,
             Spectrum xbar, Spectrum ybar, Spectrum zbar);
+
+    /**
+     * 画像の座標系からindexに変換する
+     * 左上が原点
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @return
+     */
+    inline size_t toIndex(const size_t x, const size_t y, const size_t width, const size_t height) {
+        assert(0 <= x && x < width);
+        assert(0 <= y && y < height);
+
+        return y * width + x;
+    }
+
+    inline std::pair<size_t, size_t> toXY(const size_t index, const size_t width, const size_t height) {
+        assert(0 <= index && index < width * height);
+        size_t x = index % width;
+        size_t y = index / width;
+        return {x, y};
+    }
 }
 #endif //PATHTRACING_COMMON_HPP

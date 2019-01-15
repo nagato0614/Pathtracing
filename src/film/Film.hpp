@@ -15,7 +15,7 @@ namespace nagato {
          * @param width
          * @param height
          */
-        Film(int width, int height);
+        Film(size_t width, size_t height);
 
         /**
          * 指定したindexのピクセル値を取得
@@ -31,9 +31,9 @@ namespace nagato {
          */
         Spectrum &operator[](std::size_t index);
 
-        const int getWidth() const ;
+        const size_t getWidth() const ;
 
-        const int getHeight() const ;
+        const size_t getHeight() const ;
 
         /**
          * 指定した位置に求めた値を蓄積する
@@ -41,7 +41,14 @@ namespace nagato {
          * @param x
          * @param y
          */
-        void addSample(Spectrum &s, int x, int y);
+        void addSample(const Spectrum &s, size_t x, size_t y);
+
+        /**
+         * 指定したindexに放射輝度を蓄積する
+         * @param s
+         * @param index
+         */
+        void addSample(const Spectrum &s, size_t index);
 
         /**
          * 指定したファイル名の画像を作成する
@@ -50,12 +57,13 @@ namespace nagato {
          */
         void outputImage(std::string filename) const ;
 
-        const Spectrum &getPixel(int x, int y) const;
+        const Spectrum &getPixel(size_t x, size_t y) const;
     private:
-        int width;
-        int height;
+        size_t width;
+        size_t height;
+        std::size_t size;
 
-        std::shared_ptr<Spectrum[]> data;
+        std::unique_ptr<Spectrum[]> data;
     };
 }
 
