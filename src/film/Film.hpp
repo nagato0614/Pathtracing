@@ -6,6 +6,7 @@
 #define PATHTRACING_FILM_H
 
 #include "../color/Spectrum.hpp"
+#include "../color/ColorRGB.hpp"
 
 namespace nagato {
     class Film {
@@ -59,7 +60,7 @@ namespace nagato {
          */
         void outputImage(const std::string &filename) const ;
 
-        std::unique_ptr<Vector3[]> toRGB() const ;
+        std::unique_ptr<ColorRGB[]> toRGB() const ;
 
         const Spectrum &getPixel(size_t x, size_t y) const;
 

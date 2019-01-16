@@ -10,6 +10,7 @@
 #include "../structure/BVH.hpp"
 #include "../object/Sphere.hpp"
 #include "../film/Film.hpp"
+#include "../color/ColorRGB.hpp"
 
 namespace nagato {
     namespace nagatoTest {
@@ -263,13 +264,27 @@ namespace nagato {
         }
 
         TEST(Specturm, spectrumToRGB) {
-            Spectrum d65("../property/cie_si_d65.csv");
-            Spectrum blue("../property/macbeth_13_blue.csv");
-            d65 = d65 * blue;
+            const Spectrum d65("../property/cie_si_d65.csv");
+            const Spectrum blue("../property/macbeth_13_blue.csv");
+            const auto blue_plane = d65 * blue;
             Film film(480, 360);
-            for (int i = 0; i < film.getPixelSize(); i++) {
-                film[i] = d65;
+            for (size_t i = 0; i < film.getPixelSize(); i++) {
+                film[i] = blue_plane;
             }
+            auto filmPixel = film.toRGB();
+
+            // スペクトルからXYZに変換する等色関数
+            const Spectrum xbar("../property/cie_sco_2degree_xbar.csv");
+            const Spectrum ybar("../property/cie_sco_2degree_ybar.csv");
+            const Spectrum zbar("../property/cie_sco_2degree_zbar.csv");
+
+            ColorRGB pixelColor;
+            pixelColor.spectrum2rgb(blue_plane, xbar, ybar, zbar);
+            ASSERT_NEAR(pixelColor.r, filmPixel[0].r, 0.001);
+            ASSERT_NEAR(pixelColor.g, filmPixel[0].g, 0.001);
+            ASSERT_NEAR(pixelColor.b, filmPixel[0].b, 0.001);
+
+
             film.outputImage("test.png");
         }
     }

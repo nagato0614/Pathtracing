@@ -106,19 +106,19 @@ namespace nagato
         b = std::pow(b, inverse_gamma);
     }
 
-    int ColorRGB::r255()
+    int ColorRGB::r255() const
     {
-        return static_cast<int>(r * 255.0);
+        return static_cast<int>(std::floor(r * 255.0));
     }
 
-    int ColorRGB::g255()
+    int ColorRGB::g255() const
     {
-        return static_cast<int>(g * 255.0);
+        return static_cast<int>(std::floor(g * 255.0));
     }
 
-    int ColorRGB::b255()
+    int ColorRGB::b255() const
     {
-        return static_cast<int>(b * 255.0);
+        return static_cast<int>(std::floor(b * 255.0));
     }
 
     float ColorRGB::sum()
