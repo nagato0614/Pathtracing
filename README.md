@@ -32,4 +32,12 @@
     - プログレッシブフォトンマッピングの実装
  - BSDFの追加
    
+## 必要なもの
+- libpng
+- png++
+  - https://www.nongnu.org/pngpp/doc/0.2.9/
+- boost
+- zlib
+- cmake
 
+cmakeでのビルドを想定しています
