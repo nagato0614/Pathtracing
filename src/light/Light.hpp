@@ -13,6 +13,7 @@ namespace nagato
 {
     enum LightType
     {
+        None,
         Point,
         SpotLight,
         DiffuseLight
