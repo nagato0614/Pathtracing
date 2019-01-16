@@ -18,6 +18,7 @@ namespace nagato
 
         ColorRGB(float r, float g, float b);
 
+
         void spectrum2rgb(Spectrum s, Spectrum xbar, Spectrum y, Spectrum z);
 
         void normilize();
@@ -38,9 +39,9 @@ namespace nagato
         float sum();
 
         // [0, 255]の各色を渡す
-        int r255();
-        int g255();
-        int b255();
+        int r255() const;
+        int g255() const;
+        int b255() const;
 
         float r;
         float g;

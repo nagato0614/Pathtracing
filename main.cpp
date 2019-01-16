@@ -12,6 +12,7 @@
 #include "src/object/Sphere.hpp"
 #include "src/structure/BVH.hpp"
 #include "src/BSDF/Specular.hpp"
+#include "src/film/Film.hpp"
 
 using namespace nagato;
 
@@ -41,7 +42,7 @@ int main() {
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 10;
+    const int samples = 1;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -112,7 +113,7 @@ int main() {
     }
 
     // 波長データを保存
-    std::vector<Spectrum> S(width * height);
+    Film film(width, height);
 
     std::vector<Vector3> nom(width * height);
     std::vector<Vector3> depth_buffer(width * height);
@@ -162,7 +163,7 @@ int main() {
 
             bool isSlected = false;
 
-            for (int depth = 0; depth < 5; depth++) {
+            for (int depth = 0; depth < 1; depth++) {
 
                 // Intersection
                 const auto intersect = bvh.intersect(ray, 0.0f, 1e+100);
@@ -214,15 +215,16 @@ int main() {
                 }
             }
             // 各波長の重みを更新(サンプリング数に応じて重みをかける)
-            S[i] = S[i] + (L / samples);
+            film[i] = film[i] + (L / samples);
         }
 
         if ((pass) % 5 == 0 && isOutput) {
             std::string outputfile =
                     "./" + saveDirName + "/result_" + std::to_string(pass) + ".ppm";
-            writePPM(outputfile, S, width, height, xbar, ybar, zbar);
+            film.outputImage(outputfile);
         }
     }
+
     end = std::chrono::system_clock::now();  // 計測終了時間
     float elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             end - start).count(); //処理に要した時間をミリ秒に変換
@@ -230,7 +232,7 @@ int main() {
     std::cout << elapsed / 1000.0 << "[sec]" << std::endl;
 
     std::cout << "-- Output ppm File --" << std::endl;
-    writePPM("output.ppm", S, width, height, xbar, ybar, zbar);
+    film.outputImage("output2.ppm");
 
     // #TODO 法線マップとデプスマップを出力するモジュールの実装または外部ライブラリの実装
     // 法線マップを出力
