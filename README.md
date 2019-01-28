@@ -36,8 +36,9 @@
 - libpng
 - png++
   - https://www.nongnu.org/pngpp/doc/0.2.9/
-- boost
+- boost-python
 - zlib
 - cmake
+
 
 cmakeでのビルドを想定しています
