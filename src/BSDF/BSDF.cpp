@@ -10,11 +10,11 @@
 namespace nagato {
 
 
-    float BSDF::f_r(Vector3 wi, Vector3 wo) {
-        return 0;
+    Spectrum BSDF::f_r(const Vector3 &wi, const Vector3 &wo) const  {
+        return Spectrum(0);
     }
 
-    float BSDF::pdf(Vector3 wi, Vector3 wo, Hit hitPoint) {
+    float BSDF::pdf(const Vector3 &wi, const Vector3 &wo, const Hit &hitPoint) const {
         return 0;
     }
 

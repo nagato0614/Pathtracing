@@ -16,15 +16,11 @@ namespace nagato {
     public:
         explicit Lambert(Spectrum c);
 
-        Spectrum makeNewDirection(
-                int *wavelengthIndex,
-                Vector3 *newDirection,
-                Ray &ray,
-                const Hit &surfaceInfo) const override;
+        Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const override;
 
-        float f_r(Vector3 wi, Vector3 wo) override;
+        Spectrum f_r(const Vector3 &wi, const Vector3 &wo) const override;
 
-        float pdf(Vector3 wi, Vector3 wo, Hit hitPoint) override;
+        float pdf(const Vector3 &wi, const Vector3 &wo, const Hit &hitPoint) const override;
     };
 }
 

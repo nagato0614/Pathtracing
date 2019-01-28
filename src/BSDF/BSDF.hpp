@@ -32,18 +32,14 @@ namespace nagato
          * @param surfaceInfo
          * @return materialが持つ反射率
          */
-        virtual Spectrum makeNewDirection(
-                int *wavelengthIndex,
-                Vector3 *newDirection,
-                Ray &ray,
-                const Hit &surfaceInfo) const = 0;
+        virtual Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const = 0;
 
 
         // 反射率を返す
-        virtual float f_r(Vector3 wi, Vector3 wo);
+        virtual Spectrum f_r(const Vector3 &wi, const Vector3 &wo) const ;
 
         // wi方向に反射する確率
-        virtual float pdf(Vector3 wi, Vector3 wo, Hit hitPoint);
+        virtual float pdf(const Vector3 &wi, const Vector3 &wo, const Hit &hitPoint) const ;
 
      protected:
         Spectrum color;

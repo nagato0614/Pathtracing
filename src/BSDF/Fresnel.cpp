@@ -10,11 +10,7 @@ namespace nagato {
 
     }
 
-    Spectrum Fresnel::makeNewDirection(
-            int *wavelengthIndex,
-            Vector3 *newDirection,
-            Ray &ray,
-            const Hit &surfaceInfo) const {
+    Spectrum Fresnel::makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const {
         // #TODO : 波長ごとに異なる屈折率を扱えるようにする
         float ior = 1.5;
 
@@ -42,9 +38,11 @@ namespace nagato {
 
         if (Random::Instance().next() < Fr) {
             *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
+            *pdf = Fr;
             return this->color * Fr;
         } else {
             *newDirection = *wt;
+            *pdf = 1 - Fr;
             return this->color * (1 - Fr);
         }
     }

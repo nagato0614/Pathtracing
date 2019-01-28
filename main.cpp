@@ -42,7 +42,7 @@ int main() {
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 1;
+    const int samples = 100;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -163,7 +163,7 @@ int main() {
 
             bool isSlected = false;
 
-            for (int depth = 0; depth < 1; depth++) {
+            for (int depth = 0; depth < 5; depth++) {
 
                 // Intersection
                 const auto intersect = bvh.intersect(ray, 0.0f, 1e+100);
@@ -193,18 +193,23 @@ int main() {
                 // Update next direction
                 ray.setOrigin(intersect->getPoint());
                 Vector3 dir;
+                float pdf = 1.0;
                 auto &bsdf = intersect->getObject().getMaterial().getBSDF();
                 auto color = bsdf.makeNewDirection(&wavelength,
                                                    &dir,
                                                    ray,
-                                                   intersect.value());
-                ray.setDirection(dir);
+                                                   intersect.value(),
+                                                   &pdf);
 
                 // Update throughput
-                weight = weight * color;
+                weight = weight *
+                        ((color * std::abs(dot(-ray.getDirection(), dir))) / pdf);
                 if (weight.findMaxSpectrum() == 0) {
                     break;
                 }
+
+                ray.setDirection(dir);
+
 
                 // ロシアンルーレットで追跡を終了する
                 auto maxWeight = weight.findMaxSpectrum();

@@ -9,11 +9,7 @@ namespace nagato {
 
     }
 
-    Spectrum Lambert::makeNewDirection(
-            int *wavelengthIndex,
-            Vector3 *newDirection,
-            Ray &ray,
-            const Hit &surfaceInfo) const {
+    Spectrum Lambert::makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const {
         // Sample direction in local coordinates
         const auto n =
                 dot(surfaceInfo.getNormal(), -ray.getDirection()) > 0
@@ -29,14 +25,15 @@ namespace nagato {
         }();
         // Convert to world coordinates
         *newDirection = u * d.x + v * d.y + n * d.z;
-        return this->color;
+        *pdf = this->pdf(-ray.getDirection(), *newDirection, surfaceInfo);
+        return f_r(-ray.getDirection(), *newDirection);
     }
 
-    float Lambert::f_r(Vector3 wi, Vector3 wo) {
-        return 1.0f / M_PI;
+    Spectrum Lambert::f_r(const Vector3 &wi, const Vector3 &wo) const {
+        return color / M_PI;
     }
 
-    float Lambert::pdf(Vector3 wi, Vector3 wo, Hit hitPoint) {
+    float Lambert::pdf(const Vector3 &wi, const Vector3 &wo, const Hit &hitPoint) const {
         auto cos = dot(wo, hitPoint.getNormal());
         return cos / M_PI;
     }

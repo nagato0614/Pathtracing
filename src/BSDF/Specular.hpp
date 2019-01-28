@@ -14,11 +14,7 @@ namespace nagato
      public:
         Specular(Spectrum c);
 
-        Spectrum makeNewDirection(
-                int *wavelengthIndex,
-                Vector3 *newDirection,
-                Ray &ray,
-                const Hit &surfaceInfo) const override;
+        Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const override;
     };
 }
 
