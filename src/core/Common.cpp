@@ -88,6 +88,17 @@ namespace nagato
         return std::string(buff);
     }
 
+    Vector3 sampleDirectionUniformly() {
+        auto &rng = Random::Instance();
+        const auto u1 = rng.nextReal(0.0f, 1.0f);
+        const auto u2 = rng.nextReal(0.0f, 1.0f);
+
+        const float r = std::sqrt(1.0f - u1 * u1);
+        const float phi = 2.0f * M_PI * u2;
+        return Vector3{r * std::cos(phi), r * std::sin(phi), u1};
+
+    }
+
     void writePPM(
             std::string filename, std::vector<Spectrum> s,
             int width, int height,

@@ -5,12 +5,14 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "../core/Common.hpp"
 #include "../material/Material.hpp"
 #include "../core/Scene.hpp"
 #include "../structure/BVH.hpp"
 #include "../object/Sphere.hpp"
 #include "../film/Film.hpp"
 #include "../color/ColorRGB.hpp"
+#include "../BSDF/Lambert.hpp"
 
 namespace nagato {
     namespace nagatoTest {
@@ -286,6 +288,42 @@ namespace nagato {
 
 
             film.outputImage("test.png");
+        }
+
+        // BRDFのテスト
+        // 参照 https://zin-box.blogspot.com/2016/08/brdf.html
+        TEST(LambertTest, EnergyConservationTest) {
+            Lambert lambert(Spectrum(0.5));
+            constexpr int N = 10000;
+            constexpr auto inv_N = static_cast<float>(1 / N);
+            Vector3 normal{0, 1.0f, 0};
+            for (int i = 0; i < N; i++) {
+                 float energySum = 0.0;
+                const Vector3 vin = sampleDirectionUniformly();
+                for (int o = 0; o < N; o++) {
+                    const Vector3 vout = sampleDirectionUniformly();
+                    const float f = lambert.f(vin, vout);
+                    ASSERT_LE(0.0, f);
+                    const float cosTheta = dot(normal, vout);
+                    energySum += f * cosTheta * (2.0f * M_PI);
+                }
+                const float energy = energySum * inv_N;
+                ASSERT_GE(1.0f, energy);
+            }
+        }
+
+        TEST(LambertTest, HelmHoltzReciprocityTest) {
+            Lambert lambert(Spectrum(0.5));
+            constexpr int N = 1000000;
+            constexpr float error = 1.0e-5;
+            for (int i = 0; i < N; i++) {
+                const auto vin = sampleDirectionUniformly();
+                const auto vout = sampleDirectionUniformly();
+
+                const float f1 = lambert.f(vin, vout);
+                const float f2 = lambert.f(-vout, -vin);
+                ASSERT_NEAR(f1, f2, error);
+            }
         }
     }
 }

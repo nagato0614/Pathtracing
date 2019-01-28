@@ -72,5 +72,7 @@ namespace nagato
         size_t y = index / width;
         return {x, y};
     }
+
+    Vector3 sampleDirectionUniformly();
 }
 #endif //PATHTRACING_COMMON_HPP

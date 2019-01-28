@@ -21,6 +21,8 @@ namespace nagato {
         Spectrum f_r(const Vector3 &wi, const Vector3 &wo) const override;
 
         float pdf(const Vector3 &wi, const Vector3 &wo, const Hit &hitPoint) const override;
+
+        float f(const Vector3 &wi, const Vector3 &wo) const override;
     };
 }
 

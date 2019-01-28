@@ -23,6 +23,10 @@ namespace nagato {
 
     }
 
+    float BSDF::f(const Vector3 &wi, const Vector3 &wo) const {
+        return 0;
+    }
+
     BSDF *createBSDF(const Material &m) {
         BSDF *bsdf = nullptr;
         switch (m.type()) {

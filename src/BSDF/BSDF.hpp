@@ -41,6 +41,8 @@ namespace nagato
         // wi方向に反射する確率
         virtual float pdf(const Vector3 &wi, const Vector3 &wo, const Hit &hitPoint) const ;
 
+        virtual float f(const Vector3 &wi, const Vector3 &wo) const ;
+
      protected:
         Spectrum color;
     };
