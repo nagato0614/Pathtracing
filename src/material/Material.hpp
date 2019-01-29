@@ -14,8 +14,7 @@ namespace nagato {
 
     class Material {
     public:
-        Spectrum color;
-        Spectrum emitter;
+
 
         Material(SurfaceType t, Spectrum c, Spectrum e = Spectrum(), float emitterL = 1.0);
 
@@ -27,14 +26,14 @@ namespace nagato {
 
         std::string typeName();
 
-        const Spectrum &getRefraction() const;
+        const Spectrum &getColor() const;
 
-        void setRefraction(const Spectrum &refraction);
+        const Spectrum &getEmitter() const;
 
-    private :
-
+    protected :
+        Spectrum color;
+        Spectrum emitter;
         std::shared_ptr<BSDF> bsdf;
-        Spectrum refraction;
         SurfaceType surfaceType;
     };
 }

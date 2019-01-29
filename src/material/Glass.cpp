@@ -9,6 +9,6 @@ namespace nagato {
 
     Glass::Glass(Spectrum c, float ior)
     : Material(SurfaceType::Fresnel, c, Spectrum(), 0), ior(ior) {
-        this->bsdf.reset(createFresnel(c, ior));
+        this->bsdf.reset(createBSDF(*this));
     }
 }

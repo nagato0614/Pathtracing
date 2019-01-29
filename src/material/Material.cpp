@@ -13,10 +13,10 @@ namespace nagato {
     }
 
     Material::Material(SurfaceType t, Spectrum c, Spectrum e, float emitterL)
-            : surfaceType(t), color(std::move(c)), refraction(Spectrum(1.5)) {
+            : surfaceType(t), color(c) {
         this->emitter = e * emitterL;
-        this->bsdf.reset(createBSDF(*this));
     }
+
 
     std::string Material::typeName() {
         std::string str;
@@ -38,18 +38,20 @@ namespace nagato {
         return str;
     }
 
-    const Spectrum &Material::getRefraction() const {
-        return refraction;
-    }
-
     BSDF &Material::getBSDF() const {
         return *bsdf;
     }
 
-    void Material::setRefraction(const Spectrum &refraction) {
-        Material::refraction = refraction;
-    }
-
     Material::~Material() {
     }
+
+    const Spectrum &Material::getColor() const {
+        return color;
+    }
+
+    const Spectrum &Material::getEmitter() const {
+        return emitter;
+    }
+
+
 }

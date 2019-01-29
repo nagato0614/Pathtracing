@@ -163,9 +163,9 @@ namespace nagato {
 
 
         const auto &material = info.getObject().getMaterial();
-        const auto Li = light->getMaterial().emitter;
+        const auto Li = light->getMaterial().getEmitter();
         const auto fr = material.getBSDF().f_r(-ray.getDirection(), testRay.getDirection());
-        const auto rho = material.color;
+        const auto rho = material.getColor();
         const auto areaPdf = 1.0f / light->area();
 
         const auto Ld = (Li * geometry_term * rho) / areaPdf;

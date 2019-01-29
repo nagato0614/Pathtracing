@@ -2,8 +2,8 @@
 // Created by 長井亨 on 2019/01/29.
 //
 
-#ifndef PATHTRACING_FRESNEL_HPP
-#define PATHTRACING_FRESNEL_HPP
+#ifndef PATHTRACING_GLASS_HPP
+#define PATHTRACING_GLASS_HPP
 
 
 #include "Material.hpp"
@@ -19,4 +19,4 @@ namespace nagato {
     };
 }
 
-#endif //PATHTRACING_FRESNEL_HPP
+#endif //PATHTRACING_GLASS_HPP

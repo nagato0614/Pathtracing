@@ -6,7 +6,7 @@
 #define PATHTRACING_SURFACETYPE_HPP
 namespace nagato {
 
-    enum class SurfaceType {
+    enum class SurfaceType : int {
         Diffuse,
         Mirror,
         Fresnel,

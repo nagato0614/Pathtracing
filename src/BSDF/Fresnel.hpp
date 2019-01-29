@@ -9,11 +9,22 @@
 
 namespace nagato {
     class Fresnel : public BSDF {
-    public:
-        Fresnel(Spectrum c);
+     public:
+        explicit Fresnel(Spectrum c);
 
-        Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const override;
+        Fresnel(Spectrum c, float ior);
+
+        Spectrum makeNewDirection(int *wavelengthIndex,
+                                  Vector3 *newDirection,
+                                  Ray &ray,
+                                  const Hit &surfaceInfo,
+                                  float *pdf) const override;
+
+     private:
+        float ior;
     };
+
+    BSDF *createFresnel(Spectrum c, float ior);
 }
 
 #endif //PATHTRACING_FRESNEL_HPP

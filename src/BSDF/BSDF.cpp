@@ -31,16 +31,16 @@ namespace nagato {
         BSDF *bsdf = nullptr;
         switch (m.type()) {
             case SurfaceType::Diffuse:
-                bsdf = new Lambert(m.color);
+                bsdf = new Lambert(m.getColor());
                 break;
             case SurfaceType::Mirror:
-                bsdf = new Specular(m.color);
+                bsdf = new Specular(m.getColor());
                 break;
             case SurfaceType::Fresnel:
-                bsdf = new Fresnel(m.color);
+                bsdf = new Fresnel(m.getColor());
                 break;
             case SurfaceType::Emitter:
-                bsdf = new Lambert(m.color);
+                bsdf = new Lambert(m.getColor());
                 break;
         }
         return bsdf;

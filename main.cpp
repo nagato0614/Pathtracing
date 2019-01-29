@@ -13,6 +13,10 @@
 #include "src/structure/BVH.hpp"
 #include "src/BSDF/Specular.hpp"
 #include "src/film/Film.hpp"
+#include "src/material/Diffuse.hpp"
+#include "src/material/DiffuseLight.hpp"
+#include "src/material/Glass.hpp"
+#include "src/material/Mirror.hpp"
 
 using namespace nagato;
 
@@ -60,26 +64,19 @@ int main() {
     std::cout << "-- Load Scene -- " << std::endl;
 
     // マテリアルの読み込み
-    Material redMaterial
-            (SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
-    Material blueMateral
-            (SurfaceType::Diffuse, Spectrum("../property/macbeth_13_blue.csv"));
-    Material whiteMaterial
-            (SurfaceType::Diffuse, Spectrum("../property/macbeth_19_white.csv"));
-    Material purpleMaterial
-            (SurfaceType::Diffuse, Spectrum("../property/macbeth_10_purple.csv"));
-    Material d65(SurfaceType::Emitter,
-                 Spectrum(),
-                 Spectrum("../property/cie_si_d65.csv"),
-                 0.1);
-    Material mirror(SurfaceType::Mirror, Spectrum(0.99));
-    Material Fresnel(SurfaceType::Fresnel, Spectrum(0.99));
+    Diffuse redMaterial(Spectrum("../property/macbeth_15_red.csv"));
+    Diffuse blueMateral(Spectrum("../property/macbeth_13_blue.csv"));
+    Diffuse whiteMaterial(Spectrum("../property/macbeth_19_white.csv"));
+    Diffuse purpleMaterial(Spectrum("../property/macbeth_10_purple.csv"));
+    DiffuseLight d65(Spectrum("../property/cie_si_d65.csv"), 10);
+    Mirror mirror(Spectrum(0.99));
+    Glass fresnel(Spectrum(0.99), 1.5);
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     BVH bvh;
     bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &mirror});
-    bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &Fresnel});
+    bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &fresnel});
 
     bvh.loadObject("../models/left.obj",
                    "../models/left.mtl", &redMaterial);
@@ -180,7 +177,7 @@ int main() {
 
                 if (dot(-ray.getDirection(), intersect->getNormal()) > 0.0) {
                     // スペクトル寄与を追加する
-                    L = L + weight * intersect->getObject().getMaterial().emitter;
+                    L = L + weight * intersect->getObject().getMaterial().getEmitter();
                 }
 
                 // next event estimation
@@ -203,7 +200,7 @@ int main() {
 
                 // Update throughput
                 weight = weight *
-                        ((color * std::abs(dot(-ray.getDirection(), dir))) / pdf);
+                         ((color * std::abs(dot(-ray.getDirection(), dir))) / pdf);
                 if (weight.findMaxSpectrum() == 0) {
                     break;
                 }

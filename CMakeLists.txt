@@ -59,8 +59,8 @@ file(GLOB src
         ${PROJECT_SOURCE_DIR}/src/core/*.hpp
         ${PROJECT_SOURCE_DIR}/src/color/*.cpp
         ${PROJECT_SOURCE_DIR}/src/color/*.hpp
-        ${PROJECT_SOURCE_DIR}/src/light/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/light/*.hpp
+#        ${PROJECT_SOURCE_DIR}/src/light/*.cpp
+#        ${PROJECT_SOURCE_DIR}/src/light/*.hpp
         ${PROJECT_SOURCE_DIR}/src/linearAlgebra/*.cpp
         ${PROJECT_SOURCE_DIR}/src/linearAlgebra/*.hpp
         ${PROJECT_SOURCE_DIR}/src/material/*.cpp

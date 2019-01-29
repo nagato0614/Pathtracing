@@ -2,13 +2,19 @@
 // Created by kiki on 2019/01/29.
 //
 
-#ifndef PATHTRACING_LAMBERT_HPP
-#define PATHTRACING_LAMBERT_HPP
+#ifndef PATHTRACING_DIFFUSE_HPP
+#define PATHTRACING_DIFFUSE_HPP
+
+#include "Material.hpp"
+
+namespace nagato {
+    class Diffuse : public Material {
+     public:
+        explicit Diffuse(Spectrum c);
 
 
-class Lambert {
+     private:
+    };
+}
 
-};
-
-
-#endif //PATHTRACING_LAMBERT_HPP
+#endif //PATHTRACING_DIFFUSE_HPP

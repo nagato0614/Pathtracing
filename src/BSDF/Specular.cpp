@@ -4,6 +4,7 @@
 
 #include "Specular.hpp"
 
+
 namespace nagato {
 
     Specular::Specular(Spectrum c) : BSDF(c) {
@@ -16,4 +17,5 @@ namespace nagato {
         *pdf = 1.0;
         return this->color;
     }
+
 }

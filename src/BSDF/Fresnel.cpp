@@ -6,13 +6,12 @@
 
 namespace nagato {
 
-    Fresnel::Fresnel(Spectrum c) : BSDF(c) {
+    Fresnel::Fresnel(Spectrum c) : BSDF(c), ior(1.5) {
 
     }
 
     Spectrum Fresnel::makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const {
         // #TODO : 波長ごとに異なる屈折率を扱えるようにする
-        float ior = 1.5;
 
         const auto wi = -ray.getDirection();
         const auto into = dot(wi, surfaceInfo.getNormal()) > 0;
@@ -38,12 +37,20 @@ namespace nagato {
 
         if (Random::Instance().next() < Fr) {
             *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
-            *pdf = Fr;
+            *pdf = (float) Fr;
             return this->color * Fr;
         } else {
             *newDirection = *wt;
-            *pdf = 1 - Fr;
+            *pdf = static_cast<float>(1 - Fr);
             return this->color * (1 - Fr);
         }
+    }
+
+    Fresnel::Fresnel(Spectrum c, float ior) : BSDF(c), ior(ior) {
+
+    }
+
+    BSDF *createFresnel(const Spectrum c, const float ior) {
+        return new Fresnel(c, ior);
     }
 }
