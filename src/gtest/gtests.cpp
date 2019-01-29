@@ -12,7 +12,7 @@
 #include "../object/Sphere.hpp"
 #include "../film/Film.hpp"
 #include "../color/ColorRGB.hpp"
-#include "../BSDF/Lambert.hpp"
+#include "../BSDF/Diffuse.hpp"
 
 namespace nagato {
     namespace nagatoTest {
