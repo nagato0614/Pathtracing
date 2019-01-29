@@ -22,6 +22,8 @@ namespace nagato {
 
         float pdf(const Vector3 &wi, const Vector3 &wo, const Hit &hitPoint) const override;
 
+        float pdf(const Vector3 &wi, const Vector3 &wo) const ;
+
         float f(const Vector3 &wi, const Vector3 &wo) const override;
     };
 }

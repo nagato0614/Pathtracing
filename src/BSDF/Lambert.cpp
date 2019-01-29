@@ -41,4 +41,9 @@ namespace nagato {
     float Lambert::f(const Vector3 &wi, const Vector3 &wo) const {
         return 1.0f / M_PI;
     }
+
+    float Lambert::pdf(const Vector3 &wi, const Vector3 &wo) const {
+        auto cos = dot(wo, Vector3{0, 0, 1.0});
+        return cos * M_1_PI;
+    }
 }

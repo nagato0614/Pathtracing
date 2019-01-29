@@ -9,11 +9,9 @@
 #include "Common.hpp"
 #include "../color/ColorRGB.hpp"
 
-namespace nagato
-{
+namespace nagato {
 
-    std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n)
-    {
+    std::tuple<Vector3, Vector3> tangentSpace(const Vector3 &n) {
         const float s = static_cast<const float>(std::copysign(1, n.z));
         const float a = -1 / (s + n.z);
         const float b = n.x * n.y * a;
@@ -23,24 +21,20 @@ namespace nagato
         };
     }
 
-    int tonemap(float v)
-    {
+    int tonemap(float v) {
         return std::min(
                 std::max(int(std::pow(v / (1.0 + v), 1 / 2.2) * 255), 0), 255);
     }
 
-    int clamp(float v)
-    {
+    int clamp(float v) {
         return std::min(std::max(0, int(v)), 255);
     }
 
-    float clamp(const float min, const float max, const float x)
-    {
+    float clamp(const float min, const float max, const float x) {
         return ((x < min) ? min : (max < x) ? max : x);
     }
 
-    std::vector<int> make_rand_array_unique(const size_t size, int rand_min, int rand_max, int seed)
-    {
+    std::vector<int> make_rand_array_unique(const size_t size, int rand_min, int rand_max, int seed) {
         if (rand_min > rand_max)
             std::swap(rand_min, rand_max);
         const auto max_min_diff = (rand_max - rand_min + 1);
@@ -78,16 +72,19 @@ namespace nagato
         return std::move(tmp);
     }
 
-    std::string getNowTimeString()
-    {
+    std::string getNowTimeString() {
         char buff[] = "";
-        time_t now = time(NULL);
+        time_t now = time(nullptr);
         struct tm *pnow = localtime(&now);
         sprintf(buff, "%04d%02d%02d%02d%02d", pnow->tm_year + 1900, pnow->tm_mon + 1, pnow->tm_mday,
                 pnow->tm_hour, pnow->tm_min);
         return std::string(buff);
     }
 
+    /**
+     * z軸を法線方向とした半球面サンプリング
+     * @return
+     */
     Vector3 sampleDirectionUniformly() {
         auto &rng = Random::Instance();
         const auto u1 = rng.nextReal(0.0f, 1.0f);
@@ -102,8 +99,7 @@ namespace nagato
     void writePPM(
             std::string filename, std::vector<Spectrum> s,
             int width, int height,
-            Spectrum xbar, Spectrum ybar, Spectrum zbar)
-    {
+            Spectrum xbar, Spectrum ybar, Spectrum zbar) {
         std::ofstream ofs(filename);
         ofs << "P3\n" << width << " " << height << "\n255\n";
         for (const auto &i : s) {

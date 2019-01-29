@@ -21,7 +21,7 @@ namespace nagato {
  * BVHのテストフィクスチャ
  */
         class BVHTest : public ::testing::Test {
-        protected:
+         protected:
 
             BVHTest() {                // マテリアルの読み込み
                 Material redMaterial(SurfaceType::Diffuse, Spectrum("../property/macbeth_15_red.csv"));
@@ -104,12 +104,18 @@ namespace nagato {
                     } else if (intersect && intersectBVH) {
                         // 線形探索とBVHの判定が正しいばいい
                         ASSERT_FLOAT_EQ(intersect->getDistance(), intersectBVH->getDistance());
-                        ASSERT_FLOAT_EQ(intersect->getNormal().x, intersectBVH->getNormal().x) << "[x, y] : " << x << ", " << y;
-                        ASSERT_FLOAT_EQ(intersect->getNormal().y, intersectBVH->getNormal().y) << "[x, y] : " << x << ", " << y;
-                        ASSERT_FLOAT_EQ(intersect->getNormal().z, intersectBVH->getNormal().z) << "[x, y] : " << x << ", " << y;
-                        ASSERT_FLOAT_EQ(intersect->getPoint().x, intersectBVH->getPoint().x) << "[x, y] : " << x << ", " << y;
-                        ASSERT_FLOAT_EQ(intersect->getPoint().y, intersectBVH->getPoint().y) << "[x, y] : " << x << ", " << y;
-                        ASSERT_FLOAT_EQ(intersect->getPoint().z, intersectBVH->getPoint().z) << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->getNormal().x, intersectBVH->getNormal().x)
+                                                    << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->getNormal().y, intersectBVH->getNormal().y)
+                                                    << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->getNormal().z, intersectBVH->getNormal().z)
+                                                    << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->getPoint().x, intersectBVH->getPoint().x)
+                                                    << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->getPoint().y, intersectBVH->getPoint().y)
+                                                    << "[x, y] : " << x << ", " << y;
+                        ASSERT_FLOAT_EQ(intersect->getPoint().z, intersectBVH->getPoint().z)
+                                                    << "[x, y] : " << x << ", " << y;
                     }
                 }
             }
@@ -191,7 +197,7 @@ namespace nagato {
  * BSDFクラスのテストフィクスチャ
  */
         class BSDFTest : public ::testing::Test {
-        protected :
+         protected :
             BSDFTest() {
 
             }
@@ -294,11 +300,11 @@ namespace nagato {
         // 参照 https://zin-box.blogspot.com/2016/08/brdf.html
         TEST(LambertTest, EnergyConservationTest) {
             Lambert lambert(Spectrum(0.5));
-            constexpr int N = 10000;
+            constexpr int N = 100000;
             constexpr auto inv_N = static_cast<float>(1 / N);
-            Vector3 normal{0, 1.0f, 0};
+            Vector3 normal{0, 0, 1.0f};
             for (int i = 0; i < N; i++) {
-                 float energySum = 0.0;
+                float energySum = 0.0;
                 const Vector3 vin = sampleDirectionUniformly();
                 for (int o = 0; o < N; o++) {
                     const Vector3 vout = sampleDirectionUniformly();
@@ -314,8 +320,8 @@ namespace nagato {
 
         TEST(LambertTest, HelmHoltzReciprocityTest) {
             Lambert lambert(Spectrum(0.5));
-            constexpr int N = 1000000;
-            constexpr float error = 1.0e-5;
+            constexpr int N = 100000;
+            constexpr float error = 1.0e-1;
             for (int i = 0; i < N; i++) {
                 const auto vin = sampleDirectionUniformly();
                 const auto vout = sampleDirectionUniformly();
@@ -323,6 +329,31 @@ namespace nagato {
                 const float f1 = lambert.f(vin, vout);
                 const float f2 = lambert.f(-vout, -vin);
                 ASSERT_NEAR(f1, f2, error);
+            }
+        }
+
+        TEST(LambertTest, PdfTest) {
+            Lambert lambert(Spectrum(0.5));
+            constexpr int N = 100000;
+            constexpr auto inv_N = 1.0 / static_cast<float>(N);
+            constexpr double error = 1.0e-1;
+            Hit hitpoint{0, Vector3{}, Vector3{0, 0, 1.0}, nullptr};
+            for (int i = 0; i < N; i++) {
+                auto pdfSum = 0.0;
+                const auto vin = sampleDirectionUniformly();
+
+                for (int o = 0; o < N; o++) {
+                    const auto vout = sampleDirectionUniformly();
+                    const auto pdf = lambert.pdf(vin, vout, hitpoint);
+
+                    pdfSum += pdf * (2.0 * M_PI);
+                    ASSERT_LE(pdf, 1.0) << "pdf : " << pdf;
+                    ASSERT_LE(0.0, pdf) << "pdf : " << pdf;
+                }
+
+                const auto pdf = pdfSum * inv_N;
+                ASSERT_NEAR(1.0f, pdf, error) << "pdf : " << pdf
+                                             << "\nerror : " << error;
             }
         }
     }
