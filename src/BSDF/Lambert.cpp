@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/09/06.
 //
 
-#include "Diffuse.hpp"
+#include "Lambert.hpp"
 
 namespace nagato {
     Lambert::Lambert(Spectrum c) : BSDF(c) {

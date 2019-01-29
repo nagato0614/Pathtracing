@@ -42,7 +42,7 @@ int main() {
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 100;
+    const int samples = 50;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -78,8 +78,8 @@ int main() {
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     BVH bvh;
-//    bvh.setObject(new Sphere{Vector3(-2, 2, -2), 1.1, &mirror});
-    bvh.setObject(new Sphere{Vector3(0, 8.5, 0), 0.5, &d65});
+    bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &mirror});
+    bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &Fresnel});
 
     bvh.loadObject("../models/left.obj",
                    "../models/left.mtl", &redMaterial);
@@ -87,10 +87,10 @@ int main() {
                    "../models/right.mtl", &blueMateral);
     bvh.loadObject("../models/back_ceil_floor_plane.obj",
                    "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
-//    bvh.loadObject("../models/light_plane.obj",
-//                   "../models/light_plane.mtl", &d65);
-    bvh.loadObject("../models/low_poly_bunny.obj",
-                   "../models/low_poly_bunny.mtl", &Fresnel);
+    bvh.loadObject("../models/light_plane.obj",
+                   "../models/light_plane.mtl", &d65);
+//    bvh.loadObject("../models/low_poly_bunny.obj",
+//                   "../models/low_poly_bunny.mtl", &Fresnel);
 
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();

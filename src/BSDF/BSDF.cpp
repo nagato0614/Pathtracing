@@ -3,7 +3,7 @@
 //
 
 #include "BSDF.hpp"
-#include "Diffuse.hpp"
+#include "Lambert.hpp"
 #include "Specular.hpp"
 #include "Fresnel.hpp"
 
