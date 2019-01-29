@@ -18,4 +18,8 @@ namespace nagato {
         return this->color;
     }
 
+    std::shared_ptr<Specular> createSpecular(Spectrum c) {
+        return std::make_shared<Specular>(c);
+    }
+
 }

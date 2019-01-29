@@ -50,7 +50,7 @@ namespace nagato {
 
     }
 
-    BSDF *createFresnel(const Spectrum c, const float ior) {
-        return new Fresnel(c, ior);
+    std::shared_ptr<Fresnel> createFresnel(Spectrum c, float ior) {
+        return std::make_shared<Fresnel>(c, ior);
     }
 }

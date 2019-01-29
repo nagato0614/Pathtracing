@@ -46,7 +46,7 @@ int main() {
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 50;
+    const int samples = 1000;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -91,11 +91,6 @@ int main() {
 
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
-
-    // スペクトルからXYZに変換する等色関数
-    const Spectrum xbar("../property/cie_sco_2degree_xbar.csv");
-    const Spectrum ybar("../property/cie_sco_2degree_ybar.csv");
-    const Spectrum zbar("../property/cie_sco_2degree_zbar.csv");
 
     // #TODO 屈折率と反射率で異なるスペクトルクラスの実装
     // 屈折率

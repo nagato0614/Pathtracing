@@ -46,4 +46,8 @@ namespace nagato {
         auto cos = dot(wo, Vector3{0, 0, 1.0});
         return cos * M_1_PI;
     }
+
+    std::shared_ptr<Lambert> createLambert(Spectrum c) {
+        return std::make_shared<Lambert>(c);
+    }
 }

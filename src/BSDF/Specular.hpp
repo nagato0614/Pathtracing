@@ -12,10 +12,12 @@ namespace nagato
     class Specular : public BSDF
     {
      public:
-        Specular(Spectrum c);
+        explicit Specular(Spectrum c);
 
         Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const override;
     };
+
+    std::shared_ptr<Specular> createSpecular(Spectrum c);
 }
 
 #endif //PATHTRACING_SPECULAR_HPP

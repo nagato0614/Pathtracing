@@ -24,7 +24,7 @@ namespace nagato {
         float ior;
     };
 
-    BSDF *createFresnel(Spectrum c, float ior);
+    std::shared_ptr<Fresnel> createFresnel(Spectrum c, float ior);
 }
 
 #endif //PATHTRACING_FRESNEL_HPP

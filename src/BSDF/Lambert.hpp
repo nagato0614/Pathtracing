@@ -26,6 +26,8 @@ namespace nagato {
 
         float f(const Vector3 &wi, const Vector3 &wo) const override;
     };
+
+    std::shared_ptr<Lambert> createLambert(Spectrum c);
 }
 
 #endif //PATHTRACING_LAMBERT_HPP

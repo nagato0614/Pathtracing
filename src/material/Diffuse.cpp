@@ -3,10 +3,10 @@
 //
 
 #include "Diffuse.hpp"
+#include "../BSDF/Lambert.hpp"
 
 namespace nagato {
     Diffuse::Diffuse(nagato::Spectrum c) : Material(SurfaceType::Diffuse, c, Spectrum(), 1) {
-        this->bsdf.reset(createBSDF(*this));
-
+        this->bsdf = createLambert(c);
     }
 }
