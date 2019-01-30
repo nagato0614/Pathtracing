@@ -4,4 +4,15 @@
 
 #include "Camera.hpp"
 
-namespace nagato {}
+namespace nagato {
+    Camera::Camera(const Vector3 &e, const Vector3 &up, float f, int width, int height)
+    : eye(e),
+    up(up),
+    fov(f),
+    aspect(float(width) / float(height)),
+    center(eye + Vector3(0, 0, -1)),
+    width(width),
+    height(height) {
+    }
+
+}

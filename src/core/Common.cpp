@@ -96,6 +96,19 @@ namespace nagato {
 
     }
 
+    std::tuple<Vector3, Vector3, Vector3> orthonormalBasis(const Vector3 &v1) {
+        Vector3 v2, v3;
+        if (std::abs(v1.x) > 0.9)
+            v2 = Vector3{0, 1, 0};
+        else
+            v2 = Vector3{1, 0, 0};
+
+        v2 = normalize(v2 - dot(v1, v2) * v1);
+        v3 = cross(v1, v2);
+
+        return std::make_tuple(v1, v2, v3);
+    }
+
     void writePPM(
             std::string filename, std::vector<Spectrum> s,
             int width, int height,

@@ -17,6 +17,7 @@
 #include "src/material/DiffuseLight.hpp"
 #include "src/material/Glass.hpp"
 #include "src/material/Mirror.hpp"
+#include "src/camera/PinholeCamera.hpp"
 
 using namespace nagato;
 
@@ -40,26 +41,20 @@ int main() {
     std::cout << "OpenMP : OFF" << std::endl;
 #endif
 
-    // #TODO カメラクラスの作成
     // Image size
     const int width = 400;
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 1000;
+    const int samples = 1;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
-    const Vector3 center = eye + Vector3(0, 0, -1);
+    const auto center = eye + Vector3(0, 0, -1);
 
     const Vector3 up(0, 1, 0);
-    const float fov = 55 * M_PI / 180;
-    const float aspect = float(width) / height;
+    const auto fov = 55 * M_PI / 180;
 
-    // Basis vectors for camera coordinates
-    const auto wE = normalize(eye - center);
-    const auto uE = normalize(cross(up, wE));
-    const auto vE = cross(wE, uE);
 
     std::cout << "-- Load Scene -- " << std::endl;
 
@@ -104,6 +99,9 @@ int main() {
         system(command.c_str());
     }
 
+    // ピンホールカメラ
+    PinholeCamera pinholeCamera{eye, up, fov, width, height};
+
     // 波長データを保存
     Film film(width, height);
 
@@ -132,17 +130,7 @@ int main() {
         for (int i = 0; i < width * height; i++) {
             const int x = i % width;
             const int y = height - i / width;
-            Ray ray;
-            ray.setOrigin(eye);
-            const auto firstDir = [&]() {
-                const auto tf = std::tan(fov * 0.5f);
-                const auto rpx = 2.0f * (x + Random::Instance().next()) / width - 1.0f;
-                const auto rpy = 2.0f * (y + Random::Instance().next()) / height - 1.0f;
-                const Vector3 ww = normalize(
-                        Vector3(aspect * tf * rpx, tf * rpy, -1));
-                return uE * ww.x + vE * ww.y + wE * ww.z;
-            }();
-            ray.setDirection(firstDir);
+            auto ray = pinholeCamera.makePrimaryRay(x, y);
 
             // スペクトルの最終的な寄与
             Spectrum L(0.0);

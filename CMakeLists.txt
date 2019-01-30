@@ -78,7 +78,6 @@ file(GLOB src
 add_library(pathtracingLibrary STATIC ${src})
 
 add_executable(pathtracing main.cpp)
-add_executable(rt src/tools/rt.cpp)
 add_executable(nagatoTest
         src/gtest/gtests.cpp)
 
