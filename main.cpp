@@ -26,11 +26,11 @@ using namespace nagato;
 
 int main() {
 
-#ifdef _DEBUG
+#ifdef MY_DEBUG
     std::cout << "-- DEBUF MODE --" << std::endl;
 #endif
 
-#ifndef _DEBUG
+#ifndef MY_DEBUG
     std::cout << "-- REREASE MODE --" << std::endl;
 #endif
 
@@ -107,7 +107,6 @@ int main() {
 
     // 波長データを保存
     Film film(width, height);
-    Film film2(width, height);
 
     std::vector<Vector3> nom(width * height);
     std::vector<Vector3> depth_buffer(width * height);
@@ -120,8 +119,7 @@ int main() {
     std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
-    Pathtracing pathtracing(&bvh, &film2, &pinholeCamera, samples);
-
+    Pathtracing pathtracing(&bvh, &film, &pinholeCamera, samples);
 
     Timer timer;
     timer.start();
