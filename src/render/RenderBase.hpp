@@ -12,16 +12,16 @@
 namespace nagato {
     class RenderBase {
      public:
-        RenderBase(const Scene &scene, const Film &film, const Camera &camera);
+        RenderBase(Scene *scene, Film *film, Camera *camera);
 
         virtual void render() = 0;
 
         const Film &getFilm() const;
 
-     private:
-        Scene scene;
-        Film film;
-        Camera camera;
+     protected:
+        Scene *scene;
+        Film *film;
+        Camera *camera;
     };
 }
 

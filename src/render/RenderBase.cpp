@@ -7,12 +7,12 @@
 
 namespace nagato {
 
-    RenderBase::RenderBase(const Scene &scene, const Film &film, const Camera &camera)
+    RenderBase::RenderBase(Scene *scene, Film *film, Camera *camera)
             : scene(scene), film(film), camera(camera) {
 
     }
 
     const Film &RenderBase::getFilm() const {
-        return film;
+        return *film;
     }
 }

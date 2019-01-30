@@ -26,6 +26,7 @@ namespace nagato
 
         /**
          * 現在のrayから反射方向とweightを計算する関数
+         * #TODO : 構造化束縛で値を返すようにする
          * @param wavelengthIndex
          * @param newDirection
          * @param ray

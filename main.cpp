@@ -49,7 +49,7 @@ int main() {
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 50;
+    const int samples = 10;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -107,6 +107,7 @@ int main() {
 
     // 波長データを保存
     Film film(width, height);
+    Film film2(width, height);
 
     std::vector<Vector3> nom(width * height);
     std::vector<Vector3> depth_buffer(width * height);
@@ -119,11 +120,11 @@ int main() {
     std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
-    Pathtracing pathtracing(bvh, film, pinholeCamera);
+    Pathtracing pathtracing(&bvh, &film2, &pinholeCamera, samples);
+    pathtracing.render();
 
     Timer timer;
     timer.start();
-    // #TODO　pathtracingクラスの作成
     for (int pass = 0; pass < samples; pass++) {
         std::cout << "\rpath : " << (pass + 1) << " / " << samples;
         fflush(stdout);

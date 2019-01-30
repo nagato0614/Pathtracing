@@ -28,9 +28,7 @@ namespace nagato {
          * @param y
          * @return
          */
-        virtual Ray makePrimaryRay(int x, int y) const {
-            return {};
-        } ;
+        virtual Ray makePrimaryRay(int x, int y) const = 0;
 
      protected:
         /**

@@ -93,13 +93,4 @@ namespace nagato {
     const size_t Film::getPixelSize() const {
         return width * height;
     }
-
-    Film::Film(const Film &film) {
-        this->width = film.width;
-        this->height = film.height;
-        this->size = film.size;
-        for (auto i = 0; i < size; i++) {
-            this->data[i] = film.data[i];
-        }
-    }
 }

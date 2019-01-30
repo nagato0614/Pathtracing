@@ -11,11 +11,15 @@ namespace nagato {
     class Pathtracing : public RenderBase {
 
      public:
-        Pathtracing(const Scene &scene, const Film &film, const Camera &camera);
+        Pathtracing(Scene *scene, Film *film, Camera *camera, int spp, int depth = 5);
 
-        void render() override {}
+        void render() override;
 
      private:
+        Spectrum Li(size_t x, size_t y);
+
+        int spp;
+        int maxDepth;
     };
 }
 

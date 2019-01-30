@@ -12,11 +12,6 @@
 namespace nagato {
     class Film {
     public:
-        /**
-         * コピーコンストラクタ
-         * @param film
-         */
-        Film(const Film &film);
 
         /**
          * 生成するフィルムサイズを指定する
