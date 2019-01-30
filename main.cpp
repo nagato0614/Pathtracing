@@ -121,105 +121,36 @@ int main() {
     std::cout << "-- RENDERING START --" << std::endl;
 
     Pathtracing pathtracing(&bvh, &film2, &pinholeCamera, samples);
-    pathtracing.render();
+
 
     Timer timer;
     timer.start();
-    for (int pass = 0; pass < samples; pass++) {
-        std::cout << "\rpath : " << (pass + 1) << " / " << samples;
-        fflush(stdout);
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1)
-#endif
-        for (int i = 0; i < width * height; i++) {
-            const int x = i % width;
-            const int y = height - i / width;
-            auto ray = pinholeCamera.makePrimaryRay(x, y);
-
-            // スペクトルの最終的な寄与
-            Spectrum L(0.0);
-
-            // 各パスにおけるウェイト
-            Spectrum weight(1.0);
-
-            // 波長ごとの追跡を行う場合における追跡している波長
-            int wavelength = -1;
-
-            bool isSlected = false;
-
-            for (int depth = 0; depth < 5; depth++) {
-
-                // Intersection
-                const auto intersect = bvh.intersect(ray, 0.0f, 1e+100);
-
-                if (!intersect) {
-                    break;
-                }
-
-                if (pass == 0 && depth == 0) {
-                    nom[i] = (normalize(intersect->getNormal()) + 1.0) / 2.0 * 255;
-                    auto d = intersect->getDistance();
-                    depth_buffer[i] = {d, d, d};
-                }
-
-                if (dot(-ray.getDirection(), intersect->getNormal()) > 0.0) {
-                    // スペクトル寄与を追加する
-                    L = L + weight * intersect->getObject().getMaterial().getEmitter();
-                }
-
-                // next event estimation
-                auto type = intersect->getObject().getMaterial().type();
-                if (type != SurfaceType::Emitter
-                    && type == SurfaceType::Diffuse) {
-                    L = L + weight * bvh.directLight(ray, intersect.value());
-                }
-
-                // Update next direction
-                ray.setOrigin(intersect->getPoint());
-                Vector3 dir;
-                float pdf = 1.0;
-                auto &bsdf = intersect->getObject().getMaterial().getBSDF();
-                auto color = bsdf.makeNewDirection(&wavelength,
-                                                   &dir,
-                                                   ray,
-                                                   intersect.value(),
-                                                   &pdf);
-
-                // Update throughput
-                weight = weight *
-                         ((color * std::abs(dot(-ray.getDirection(), dir))) / pdf);
-                if (weight.findMaxSpectrum() == 0) {
-                    break;
-                }
-
-                ray.setDirection(dir);
-
-
-                // ロシアンルーレットで追跡を終了する
-                auto maxWeight = weight.findMaxSpectrum();
-                if (Random::Instance().next() < 1.0 - maxWeight && depth > 3) {
-                    break;
-                } else {
-                    weight = weight / maxWeight;
-                }
-            }
-            // 各波長の重みを更新(サンプリング数に応じて重みをかける)
-            film[i] = film[i] + (L / samples);
-        }
-
-        if ((pass) % 5 == 0 && isOutput) {
-            std::string outputfile =
-                    "./" + saveDirName + "/result_" + std::to_string(pass) + ".ppm";
-            film.outputImage(outputfile);
-        }
-    }
+    pathtracing.render();
     timer.stop();
     std::cout << "\n-- Rendering Time --" << std::endl;
     std::cout << timer.getTime<>() << "[sec]" << std::endl;
 
-    std::cout << "-- Output ppm File --" << std::endl;
-    film.outputImage("output2.ppm");
+    // デバッグビルド時の処理
+#ifdef MY_DEBUG
+    for (int i = 0; i < width * height; i++) {
+        const int x = i % width;
+        const int y = height - i / width;
+        auto ray = pinholeCamera.makePrimaryRay(x, y);
+
+
+        // Intersection
+        const auto intersect = bvh.intersect(ray, 0.0f, 1e+100);
+
+        if (!intersect) {
+            break;
+        }
+
+        nom[i] = (normalize(intersect->getNormal()) + 1.0) / 2.0 * 255;
+        auto d = intersect->getDistance();
+        depth_buffer[i] = {d, d, d};
+
+
+    }
 
     // #TODO 法線マップとデプスマップを出力するモジュールの実装または外部ライブラリの実装
     // 法線マップを出力
@@ -253,6 +184,7 @@ int main() {
                      << tonemap(i.y) << " "
                      << tonemap(i.z) << "\n";
     }
+#endif
 
     std::cout << "-- Memory release -- " << std::endl;
 

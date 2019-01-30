@@ -122,6 +122,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     # using Visual Studio C++
 endif()
 
+#デバッグ時に定義
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DMY_DEBUG")
+
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "## g++ options : ${CMAKE_CXX_FLAGS_RELEASE}")
 message(STATUS "## Using Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
