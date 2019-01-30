@@ -1,5 +1,5 @@
 //
-// Created by kiki on 2019/01/30.
+// Created by 長井亨 on 2019/01/30.
 //
 
 #ifndef PATHTRACING_CAMERA_HPP

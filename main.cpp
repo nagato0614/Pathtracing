@@ -18,6 +18,7 @@
 #include "src/material/Glass.hpp"
 #include "src/material/Mirror.hpp"
 #include "src/camera/PinholeCamera.hpp"
+#include "src/core/Timer.hpp"
 
 using namespace nagato;
 
@@ -46,7 +47,7 @@ int main() {
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 500;
+    const int samples = 50;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -116,9 +117,8 @@ int main() {
     std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
-    std::chrono::system_clock::time_point start, end;
-    start = std::chrono::system_clock::now(); // 計測開始時間
-
+    Timer timer;
+    timer.start();
     // #TODO　pathtracingクラスの作成
     for (int pass = 0; pass < samples; pass++) {
         std::cout << "\rpath : " << (pass + 1) << " / " << samples;
@@ -209,12 +209,9 @@ int main() {
             film.outputImage(outputfile);
         }
     }
-
-    end = std::chrono::system_clock::now();  // 計測終了時間
-    float elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-            end - start).count(); //処理に要した時間をミリ秒に変換
+    timer.stop();
     std::cout << "\n-- Rendering Time --" << std::endl;
-    std::cout << elapsed / 1000.0 << "[sec]" << std::endl;
+    std::cout << timer.getTime<>() << "[sec]" << std::endl;
 
     std::cout << "-- Output ppm File --" << std::endl;
     film.outputImage("output2.ppm");

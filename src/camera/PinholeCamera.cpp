@@ -1,5 +1,5 @@
 //
-// Created by kiki on 2019/01/30.
+// Created by 長井亨 on 2019/01/30.
 //
 
 #include "PinholeCamera.hpp"
