@@ -72,7 +72,10 @@ file(GLOB src
         ${PROJECT_SOURCE_DIR}/src/BSDF/*.cpp
         ${PROJECT_SOURCE_DIR}/src/BSDF/*.hpp
         ${PROJECT_SOURCE_DIR}/src/film/*.hpp
-        ${PROJECT_SOURCE_DIR}/src/film/*.cpp)
+        ${PROJECT_SOURCE_DIR}/src/film/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/camera/*.hpp
+        ${PROJECT_SOURCE_DIR}/src/camera/*.cpp
+        )
 
 # ライブラリ作成
 add_library(pathtracingLibrary STATIC ${src})
