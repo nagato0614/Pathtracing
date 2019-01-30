@@ -72,6 +72,8 @@ file(GLOB src
         ${PROJECT_SOURCE_DIR}/src/film/*.cpp
         ${PROJECT_SOURCE_DIR}/src/camera/*.hpp
         ${PROJECT_SOURCE_DIR}/src/camera/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/render/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/render/*.hpp
         )
 
 # ライブラリ作成
@@ -84,7 +86,6 @@ add_executable(nagatoTest
 target_link_libraries(pathtracing
         pathtracingLibrary
         ${OPENEXR_LIBS}
-        ${PNG_LIBRARIES}
         )
 
 target_link_libraries(
@@ -92,7 +93,6 @@ target_link_libraries(
         pathtracingLibrary
         gmock
         gtest
-        ${PNG_LIBRARIES}
         )
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

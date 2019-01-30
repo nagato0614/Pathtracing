@@ -19,6 +19,8 @@
 #include "src/material/Mirror.hpp"
 #include "src/camera/PinholeCamera.hpp"
 #include "src/core/Timer.hpp"
+#include "src/render/RenderBase.hpp"
+#include "src/render/Pathtracing.hpp"
 
 using namespace nagato;
 
@@ -116,6 +118,8 @@ int main() {
     std::cout << "nodes   : " << bvh.getNodeCount() << std::endl;
     std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
+
+    Pathtracing pathtracing(bvh, film, pinholeCamera);
 
     Timer timer;
     timer.start();
