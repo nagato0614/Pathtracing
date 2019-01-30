@@ -46,14 +46,14 @@ int main() {
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 1;
+    const int samples = 500;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
     const auto center = eye + Vector3(0, 0, -1);
 
     const Vector3 up(0, 1, 0);
-    const auto fov = 55 * M_PI / 180;
+    const float fov = 55 * M_PI / 180;
 
 
     std::cout << "-- Load Scene -- " << std::endl;

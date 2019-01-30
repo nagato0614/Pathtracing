@@ -9,7 +9,7 @@ namespace nagato {
     : eye(e),
     up(up),
     fov(f),
-    aspect(float(width) / float(height)),
+    aspect(float(width) / height),
     center(eye + Vector3(0, 0, -1)),
     width(width),
     height(height) {

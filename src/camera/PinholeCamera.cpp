@@ -22,8 +22,8 @@ namespace nagato {
 
     Ray PinholeCamera::makePrimaryRay(int x, int y) const {
         const auto tf = std::tan(fov * 0.5f);
-        const auto rpx = 2.0f * (x + 0.5) / width - 1.0f;
-        const auto rpy = 2.0f * (y + 0.5) / height - 1.0f;
+        const auto rpx = 2.0f * (x + Random::Instance().next()) / width - 1.0f;
+        const auto rpy = 2.0f * (y + Random::Instance().next()) / height - 1.0f;
         const auto ww = normalize(Vector3(aspect * tf * rpx, tf * rpy, -1.0f));
         return {eye, uE * ww.x + vE * ww.y + wE * ww.z};
     }
