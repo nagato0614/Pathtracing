@@ -34,8 +34,6 @@
    
 ## 必要なもの
 - libpng
-- png++
-  - https://www.nongnu.org/pngpp/doc/0.2.9/
 - boost-python
 - zlib
 - cmake

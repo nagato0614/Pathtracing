@@ -5,6 +5,7 @@
 #ifndef PATHTRACING_FILM_H
 #define PATHTRACING_FILM_H
 
+#include <memory>
 #include "../color/Spectrum.hpp"
 #include "../color/ColorRGB.hpp"
 

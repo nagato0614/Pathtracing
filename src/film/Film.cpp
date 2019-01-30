@@ -3,9 +3,20 @@
 //
 // Created by 長井亨 on 2019/01/14.
 //
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
+#endif
+
 #include "Film.hpp"
 #include "../core/Constant.hpp"
-#include <png++/png.hpp>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "../core/stb_image_write.h"
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 namespace nagato {
 
@@ -47,20 +58,23 @@ namespace nagato {
     void Film::outputImage(const std::string &filename) const {
         auto rgb_list = this->toRGB();
 
-        png::image<png::rgb_pixel> image{width, height};
+        std::vector<unsigned char> dst(width * height * 4);
+        for (size_t i = 0; i < width * height; i++) {
+            dst[i * 4 + 0] = static_cast<unsigned char>(rgb_list[i].r255());
+            dst[i * 4 + 1] = static_cast<unsigned char>(rgb_list[i].g255());
+            dst[i * 4 + 2] = static_cast<unsigned char>(rgb_list[i].b255());
+            dst[i * 4 + 3] = 255;
+        };
 
-        for (size_t i = 0; i < size; i++) {
-            const auto &rgbColor = rgb_list[i];
-            png::rgb_pixel pixel;
-            pixel.red = static_cast<png::byte>(rgbColor.r255());
-            pixel.green = static_cast<png::byte>(rgbColor.g255());
-            pixel.blue = static_cast<png::byte>(rgbColor.b255());
+        auto ret = stbi_write_png(filename.c_str(),
+                                 static_cast<int>(width),
+                                 static_cast<int>(height),
+                                 4,
+                                 static_cast<const void *>(dst.data()),
+                                 static_cast<int>(width * 4));
 
-            auto[x, y] = toXY(i, width, height);
-            image[y][x] = pixel;
-        }
-
-        image.write(filename.c_str());
+        if (ret < 0)
+            std::cout << "cant out put Image : " << filename << std::endl;
     }
 
     std::unique_ptr<ColorRGB[]> Film::toRGB() const {
