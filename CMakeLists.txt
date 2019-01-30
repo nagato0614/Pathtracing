@@ -25,9 +25,6 @@ if (APPLE)
     add_definitions(-D__GLIBCXX__)
 endif (APPLE)
 
-# libpng
-find_package(png)
-
 #openEXR
 find_package(zlib)
 find_package(boost)
