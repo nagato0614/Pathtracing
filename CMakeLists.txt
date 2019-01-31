@@ -78,7 +78,7 @@ file(GLOB src
 
 # ライブラリ作成
 add_library(pathtracingLibrary STATIC ${src})
-
+add_executable(progressbar src/tools/progressbar.cpp)
 add_executable(pathtracing main.cpp)
 add_executable(nagatoTest
         src/gtest/gtests.cpp)
