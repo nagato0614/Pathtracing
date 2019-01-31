@@ -3,6 +3,7 @@
 //
 
 #include "Pathtracing.hpp"
+#include "../core/Progressbar.hpp"
 
 namespace nagato {
 
@@ -18,6 +19,7 @@ namespace nagato {
     }
 
     void Pathtracing::render() {
+        Progressbar prog{spp};
         const auto width = film->getWidth();
         const auto height = film->getHeight();
         for (int pass = 0; pass < spp; pass++) {
@@ -33,6 +35,9 @@ namespace nagato {
 
                 (*film)[i] = (*film)[i] + (L / spp);
             }
+
+            prog.update();
+            prog.printBar();
         }
 
         film->outputImage("render_test.png");
