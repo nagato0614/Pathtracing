@@ -75,7 +75,5 @@ namespace nagato
     }
 
     Vector3 sampleDirectionUniformly();
-
-    std::tuple<Vector3, Vector3, Vector3> orthonormalBasis(const Vector3 &v1);
 }
 #endif //PATHTRACING_COMMON_HPP
