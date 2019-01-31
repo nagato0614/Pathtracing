@@ -1,5 +1,5 @@
 //
-// Created by kiki on 2018/07/18.
+// Created by 長井亨 on 2018/07/18.
 //
 
 #ifndef PATHTRACING_SPECTRUM_HPP

@@ -1,5 +1,5 @@
 //
-// Created by kiki on 2019/01/29.
+// Created by 長井亨 on 2019/01/29.
 //
 
 #ifndef PATHTRACING_DIFFUSE_HPP

@@ -1,5 +1,5 @@
 //
-// Created by kiki on 2018/07/19.
+// Created by 長井亨 on 2018/07/19.
 //
 
 #ifndef PATHTRACING_COLORRGB_HPP

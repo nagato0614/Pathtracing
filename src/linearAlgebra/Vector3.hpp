@@ -1,5 +1,5 @@
 //
-// Created by kiki on 2018/06/26.
+// Created by 長井亨 on 2018/06/26.
 //
 
 #ifndef PATHTRACING_VECTOR3_HPP
