@@ -47,77 +47,21 @@ namespace nagato {
         // あるポイントだけを残して他の値を0にする
         void leaveOnePoint(int index);
 
-        inline Spectrum operator+=(const Spectrum &s) {
-            Spectrum spectrum(0.0);
-            for (int i = 0; i < resolution_ + 1; i++) {
-                spectrum.spectrum[i] += s.spectrum[i];
-            }
+        Spectrum operator+=(const Spectrum &s);
 
-            return spectrum;
-        }
+        Spectrum operator+=(float s);
 
-        inline Spectrum operator+=(float s) {
-            Spectrum spectrum(0.0);
-            for (int i = 0; i < resolution_ + 1; i++) {
-                spectrum.spectrum[i] += s;
-            }
+        Spectrum operator-=(const Spectrum &s);
 
-            return spectrum;
-        }
+        Spectrum operator-=(float s);
 
-        inline Spectrum operator-=(const Spectrum &s) {
-            Spectrum spectrum(0.0);
-            for (int i = 0; i < resolution_ + 1; i++) {
-                spectrum.spectrum[i] -= s.spectrum[i];
-            }
+        Spectrum operator*=(const Spectrum &s);
 
-            return spectrum;
-        }
+        Spectrum operator*=(float s);
 
-        inline Spectrum operator-=(float s) {
-            Spectrum spectrum(0.0);
-            for (int i = 0; i < resolution_ + 1; i++) {
-                spectrum.spectrum[i] -= s;
-            }
+        Spectrum operator/=(const Spectrum &s);
 
-            return spectrum;
-        }
-
-        inline Spectrum operator*=(const Spectrum &s) {
-            Spectrum spectrum(0.0);
-            for (int i = 0; i < resolution_ + 1; i++) {
-                spectrum.spectrum[i] *= s.spectrum[i];
-            }
-
-            return spectrum;
-        }
-
-        inline Spectrum operator*=(float s) {
-            Spectrum spectrum(0.0);
-            for (int i = 0; i < resolution_ + 1; i++) {
-                spectrum.spectrum[i] *= s;
-            }
-
-            return spectrum;
-        }
-
-        inline Spectrum operator/=(const Spectrum &s) {
-            Spectrum spectrum(0.0);
-            for (int i = 0; i < resolution_ + 1; i++) {
-                spectrum.spectrum[i] /= s.spectrum[i];
-            }
-
-            return spectrum;
-        }
-
-        inline Spectrum operator/=(float s) {
-            Spectrum spectrum(0.0);
-            for (int i = 0; i < resolution_ + 1; i++) {
-                spectrum.spectrum[i] /= s;
-            }
-
-            return spectrum;
-        }
+        Spectrum operator/=(float s);
 
         size_t sample_ = SAMPLE;
         int resolution_ = RESOLUTION;
@@ -130,75 +74,19 @@ namespace nagato {
 
     void printSample(Spectrum s);
 
-    inline Spectrum operator*(const Spectrum &a, const Spectrum & b) {
-        Spectrum spectrum(0.0);
+    Spectrum operator*(const Spectrum &a, const Spectrum &b);
 
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
-            spectrum.spectrum[i] = a.spectrum[i] * b.spectrum[i];
-        }
-        return spectrum;
+    Spectrum operator+(const Spectrum &a, const Spectrum &b);
 
-    }
+    Spectrum operator-(const Spectrum &a, const Spectrum &b);
 
-    inline Spectrum operator+(const Spectrum & a, const Spectrum & b) {
-        Spectrum spectrum(0.0);
+    Spectrum operator/(const Spectrum &a, const Spectrum &b);
 
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
-            spectrum.spectrum[i] = a.spectrum[i] + b.spectrum[i];
-        }
-        return spectrum;
+    Spectrum operator/(const Spectrum &a, float b);
 
-    }
+    Spectrum operator*(const Spectrum &a, float b);
 
-    inline Spectrum operator-(const Spectrum & a, const Spectrum & b) {
-        Spectrum spectrum(0.0);
-
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
-            spectrum.spectrum[i] = a.spectrum[i] - b.spectrum[i];
-        }
-        return spectrum;
-
-    }
-
-    inline Spectrum operator/(const Spectrum & a, const Spectrum & b) {
-        Spectrum spectrum(0.0);
-
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
-            spectrum.spectrum[i] = a.spectrum[i] / b.spectrum[i];
-        }
-        return spectrum;
-
-    }
-
-    inline Spectrum operator/(const Spectrum & a, float b) {
-        Spectrum spectrum(0.0);
-
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
-            spectrum.spectrum[i] = a.spectrum[i] / b;
-        }
-
-        return spectrum;
-    }
-
-    inline Spectrum operator*(const Spectrum & a, float b) {
-        Spectrum spectrum(0.0);
-
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
-            spectrum.spectrum[i] = a.spectrum[i] * b;
-        }
-
-        return spectrum;
-    }
-
-    inline Spectrum operator*(float a, const Spectrum &b) {
-        Spectrum s(0.0);
-
-        for (int i = 0; i < b.resolution_ + 1; i++) {
-            s.spectrum[i] = a * b.spectrum[i];
-        }
-
-        return s;
-    }
+    Spectrum operator*(float a, const Spectrum &b);
 }
 
 #endif //PATHTRACING_SPECTRUM_HPP
