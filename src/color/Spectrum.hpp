@@ -12,6 +12,26 @@
 
 namespace nagato {
 
+    /**
+     * サンプリング数
+     */
+    constexpr int RESOLUTION = 40;
+
+    /**
+     * サンプル間隔
+     */
+    constexpr int SAMPLE = 1;
+
+    /**
+     * 最小波長
+     */
+    constexpr int minSpectral = 380;
+
+    /**
+     * 最大波長
+     */
+    constexpr int maxSPectral = 780;
+
     /**!
      * スペクトルを扱うデータ構造
      * 380nm ~ 780nmの可視光範囲のみ扱う前提

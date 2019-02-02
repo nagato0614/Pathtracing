@@ -110,4 +110,8 @@ namespace nagato {
                 << pixelColor.b255() << "\n";
         }
     }
+
+    float linearInterpolate(float t, float a, float b) {
+        return (1.0f - t) * a + t * b;
+    }
 }
