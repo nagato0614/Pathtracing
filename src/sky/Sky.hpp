@@ -5,9 +5,13 @@
 #ifndef PATHTRACING_SKY_HPP
 #define PATHTRACING_SKY_HPP
 
+#include "../color/Spectrum.hpp"
+#include "../core/Ray.hpp"
+
 namespace nagato {
     class Sky {
-
+     public:
+        virtual Spectrum getRadiance(const Ray &ray) const = 0;
     };
 }
 

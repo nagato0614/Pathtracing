@@ -6,4 +6,11 @@
 
 namespace nagato {
 
+    Spectrum UniformSky::getRadiance(const Ray &ray) const {
+        return skyColor;
+    }
+
+    UniformSky::UniformSky(const Spectrum &s) : skyColor(s){
+
+    }
 }

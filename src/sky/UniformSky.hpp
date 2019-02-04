@@ -6,9 +6,18 @@
 #define PATHTRACING_UNIFORMSKY_HPP
 
 
-namespace nagato {
-    class UniformSky {
+#include "Sky.hpp"
 
+namespace nagato {
+    class UniformSky : public Sky {
+     public:
+        explicit UniformSky(const Spectrum &s);
+
+        Spectrum getRadiance(const Ray &ray) const override;
+
+     private:
+
+        Spectrum skyColor;
     };
 }
 
