@@ -122,7 +122,7 @@ namespace nagato {
     }
 
     void Spectrum::leaveOnePoint(int index) {
-        for (int i = 0; i < resolution_ + 1; ++i) {
+        for (int i = 0; i < resolution_; ++i) {
             if (index != i)
                 spectrum[i] = 0.0;
             else
@@ -132,7 +132,7 @@ namespace nagato {
 
     Spectrum Spectrum::operator+=(const Spectrum &s) {
         Spectrum spectrum(0.0);
-        for (int i = 0; i < resolution_ + 1; i++) {
+        for (int i = 0; i < resolution_; i++) {
             spectrum.spectrum[i] += s.spectrum[i];
         }
 
@@ -141,7 +141,7 @@ namespace nagato {
 
     Spectrum Spectrum::operator+=(float s) {
         Spectrum spectrum(0.0);
-        for (int i = 0; i < resolution_ + 1; i++) {
+        for (int i = 0; i < resolution_; i++) {
             spectrum.spectrum[i] += s;
         }
 
@@ -150,7 +150,7 @@ namespace nagato {
 
     Spectrum Spectrum::operator-=(const Spectrum &s) {
         Spectrum spectrum(0.0);
-        for (int i = 0; i < resolution_ + 1; i++) {
+        for (int i = 0; i < resolution_; i++) {
             spectrum.spectrum[i] -= s.spectrum[i];
         }
 
@@ -159,7 +159,7 @@ namespace nagato {
 
     Spectrum Spectrum::operator-=(float s) {
         Spectrum spectrum(0.0);
-        for (int i = 0; i < resolution_ + 1; i++) {
+        for (int i = 0; i < resolution_; i++) {
             spectrum.spectrum[i] -= s;
         }
 
@@ -168,7 +168,7 @@ namespace nagato {
 
     Spectrum Spectrum::operator*=(const Spectrum &s) {
         Spectrum spectrum(0.0);
-        for (int i = 0; i < resolution_ + 1; i++) {
+        for (int i = 0; i < resolution_; i++) {
             spectrum.spectrum[i] *= s.spectrum[i];
         }
 
@@ -177,7 +177,7 @@ namespace nagato {
 
     Spectrum Spectrum::operator*=(float s) {
         Spectrum spectrum(0.0);
-        for (int i = 0; i < resolution_ + 1; i++) {
+        for (int i = 0; i < resolution_; i++) {
             spectrum.spectrum[i] *= s;
         }
 
@@ -186,7 +186,7 @@ namespace nagato {
 
     Spectrum Spectrum::operator/=(const Spectrum &s) {
         Spectrum spectrum(0.0);
-        for (int i = 0; i < resolution_ + 1; i++) {
+        for (int i = 0; i < resolution_; i++) {
             spectrum.spectrum[i] /= s.spectrum[i];
         }
 
@@ -195,11 +195,23 @@ namespace nagato {
 
     Spectrum Spectrum::operator/=(float s) {
         Spectrum spectrum(0.0);
-        for (int i = 0; i < resolution_ + 1; i++) {
+        for (int i = 0; i < resolution_; i++) {
             spectrum.spectrum[i] /= s;
         }
 
         return spectrum;
+    }
+
+    const float Spectrum::operator[](int i) const {
+        if (i < 0 || RESOLUTION <= i) {
+            fprintf(stderr, "out of bounce index\n");
+            exit(1);
+        }
+        return spectrum[i];
+    }
+
+    float &Spectrum::operator[](int i) {
+        return spectrum[i];
     }
 
     void printSpectrum(Spectrum s) {
@@ -211,7 +223,7 @@ namespace nagato {
     Spectrum nagato::operator*(const Spectrum &a, const Spectrum &b) {
         Spectrum spectrum(0.0);
 
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
+        for (int i = 0; i < a.resolution_; ++i) {
             spectrum.spectrum[i] = a.spectrum[i] * b.spectrum[i];
         }
         return spectrum;
@@ -221,7 +233,7 @@ namespace nagato {
     Spectrum nagato::operator+(const Spectrum &a, const Spectrum &b) {
         Spectrum spectrum(0.0);
 
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
+        for (int i = 0; i < a.resolution_; ++i) {
             spectrum.spectrum[i] = a.spectrum[i] + b.spectrum[i];
         }
         return spectrum;
@@ -231,7 +243,7 @@ namespace nagato {
     Spectrum nagato::operator-(const Spectrum &a, const Spectrum &b) {
         Spectrum spectrum(0.0);
 
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
+        for (int i = 0; i < a.resolution_; ++i) {
             spectrum.spectrum[i] = a.spectrum[i] - b.spectrum[i];
         }
         return spectrum;
@@ -241,7 +253,7 @@ namespace nagato {
     Spectrum nagato::operator/(const Spectrum &a, const Spectrum &b) {
         Spectrum spectrum(0.0);
 
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
+        for (int i = 0; i < a.resolution_; ++i) {
             spectrum.spectrum[i] = a.spectrum[i] / b.spectrum[i];
         }
         return spectrum;
@@ -251,7 +263,7 @@ namespace nagato {
     Spectrum nagato::operator/(const Spectrum &a, float b) {
         Spectrum spectrum(0.0);
 
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
+        for (int i = 0; i < a.resolution_; ++i) {
             spectrum.spectrum[i] = a.spectrum[i] / b;
         }
 
@@ -261,7 +273,7 @@ namespace nagato {
     Spectrum nagato::operator*(const Spectrum &a, float b) {
         Spectrum spectrum(0.0);
 
-        for (int i = 0; i < a.resolution_ + 1; ++i) {
+        for (int i = 0; i < a.resolution_; ++i) {
             spectrum.spectrum[i] = a.spectrum[i] * b;
         }
 
@@ -271,7 +283,7 @@ namespace nagato {
     Spectrum nagato::operator*(float a, const Spectrum &b) {
         Spectrum s(0.0);
 
-        for (int i = 0; i < b.resolution_ + 1; i++) {
+        for (int i = 0; i < b.resolution_; i++) {
             s.spectrum[i] = a * b.spectrum[i];
         }
 

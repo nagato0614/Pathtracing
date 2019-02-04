@@ -67,6 +67,10 @@ namespace nagato {
         // あるポイントだけを残して他の値を0にする
         void leaveOnePoint(int index);
 
+        const float operator[](int i) const;
+
+        float &operator[](int i) ;
+
         Spectrum operator+=(const Spectrum &s);
 
         Spectrum operator+=(float s);
