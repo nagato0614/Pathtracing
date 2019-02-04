@@ -32,7 +32,7 @@ namespace nagato {
     /**
      * サンプル間隔
      */
-    constexpr float resolution = (maxSpectral - minSpectral) / nSamples;
+    constexpr float resolution = float(maxSpectral - minSpectral) / nSamples;
 
     /**!
      * スペクトルを扱うデータ構造

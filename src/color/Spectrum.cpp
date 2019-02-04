@@ -17,76 +17,25 @@ namespace nagato {
     Spectrum::Spectrum(std::string filename) {
         io::CSVReader<2> in(filename);
         in.read_header(io::ignore_extra_column, "Wavelength", "Intensity");
-        int wave;
+        float wave;
         float intensity;
-        std::vector<std::tuple<int, float>> spectrumData;
-        std::vector<float> s;
+        std::vector<float> lambda;
+        std::vector<float> v;
+        int n = 0;
 
         // 波長データを取得
         while (in.read_row(wave, intensity)) {
-            spectrumData.emplace_back(wave, intensity);
+            lambda.push_back(wave);
+            v.push_back(intensity);
+            n++;
         }
 
-        // データが一つの場合はすべての波長をその値に置き換える
-        // データは380~780のカバーしていると仮定している
-        if (spectrumData.size() == 1) {
-            for (int i = 0; i < 401; i++) {
-                s.push_back(std::get<1>(spectrumData[0]));
-            }
-        } else if (spectrumData.size() > 1) {
-            int diff = std::get<0>(spectrumData[1]) - std::get<0>(spectrumData[0]);
-
-            // resolutionが1の場合は380~780すべてをカバーしていると仮定して
-            // csvファイルからデータを読み取る
-            if (diff == 1) {
-
-                // 380nmのインデックスを調べる
-                int index = 0;
-                for (int i = 0; i < spectrumData.size(); ++i) {
-                    if (std::get<0>(spectrumData[i]) == 380) {
-                        index = i;
-                        break;
-                    }
-                }
-
-                for (int i = 0; i < 401; i++) {
-                    s.push_back(std::get<1>(spectrumData[i + index]));
-                }
-
-            } else if (diff == 5) {
-                // 380nmのインデックスを調べる
-                int index = 0;
-                for (int i = 0; i < spectrumData.size(); ++i) {
-                    if (std::get<0>(spectrumData[i]) == 380) {
-                        index = i;
-                        break;
-                    }
-                }
-
-                for (int i = 0; i < 401; i++) {
-                    float rate = (380 + i) % 5;
-                    if (rate == 0) {
-                        s.push_back(std::get<1>(spectrumData[(i / 5) + index]));
-                    } else {
-                        int nowSpec = i / 5;
-                        auto a = std::get<1>(spectrumData[(nowSpec) + index]);
-                        auto b = std::get<1>(spectrumData[(nowSpec + 1) + index]);
-                        float spec = (1.0 - rate / 5.0) * a + (rate / 5.0) * b;
-                        s.push_back(spec);
-                    }
-
-
-                }
-
-            }
-
-            assert((400 % nSamples) == 0);
-            for (int i = 0; i < nSamples; i++) {
-                spectrum[i] = s[(400 / nSamples) * i];
-            }
-        } else {
-            std::cerr << "スペクトルデータがありません : "
-                      << filename << std::endl;
+        for (int i = 0; i < nSamples; i++) {
+            auto start = lerp(float(i) / nSamples,
+                              minSpectral, maxSpectral);
+            auto end = lerp(float(i + 1) / nSamples,
+                            minSpectral, maxSpectral);
+            spectrum[i] = averageSpectrumSamples(lambda, v, n, start, end);
         }
     }
 
@@ -378,9 +327,7 @@ namespace nagato {
             v.push_back(intensity);
         }
 
-        auto s = makeSpectrum(lambda, v, n);
-        printSpectrum(s);
-        return s;
+        return makeSpectrum(lambda, v, n);
     }
 
 }
