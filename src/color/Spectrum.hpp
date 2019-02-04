@@ -16,7 +16,7 @@ namespace nagato {
     /**
      * サンプリング数
      */
-    constexpr int nSamples = 40;
+    constexpr int nSamples = 10;
 
     /**
      * 最小波長
@@ -144,6 +144,11 @@ namespace nagato {
                                  float lambdaStart,
                                  float lambdaEnd);
 
+    /**
+     * 指定したファイルからspdを読み込みサンプリングを行う
+     * @param filename
+     * @return
+     */
     Spectrum loadSPDFile(std::string filename);
 }
 

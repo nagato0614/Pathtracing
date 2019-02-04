@@ -15,6 +15,7 @@ namespace nagato {
     }
 
     Spectrum::Spectrum(std::string filename) {
+        // #TODO : エラー処理の追加
         io::CSVReader<2> in(filename);
         in.read_header(io::ignore_extra_column, "Wavelength", "Intensity");
         float wave;
