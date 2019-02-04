@@ -114,4 +114,8 @@ namespace nagato {
     float linearInterpolate(float t, float a, float b) {
         return (1.0f - t) * a + t * b;
     }
+
+    float lerp(float t, float a, float b) {
+        return (1 - t) * a + t * b;
+    }
 }

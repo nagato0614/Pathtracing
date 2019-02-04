@@ -83,5 +83,7 @@ namespace nagato
     }
 
     Vector3 sampleDirectionUniformly();
+
+    float lerp(float t, float a, float b);
 }
 #endif //PATHTRACING_COMMON_HPP

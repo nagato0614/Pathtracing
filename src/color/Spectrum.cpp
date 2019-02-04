@@ -80,9 +80,9 @@ namespace nagato {
 
             }
 
-            assert((400 % RESOLUTION) == 0);
-            for (int i = 0; i < RESOLUTION; i++) {
-                spectrum[i] = s[(400 / RESOLUTION) * i];
+            assert((400 % nSamples) == 0);
+            for (int i = 0; i < nSamples; i++) {
+                spectrum[i] = s[(400 / nSamples) * i];
             }
         } else {
             std::cerr << "スペクトルデータがありません : "
@@ -126,7 +126,7 @@ namespace nagato {
             if (index != i)
                 spectrum[i] = 0.0;
             else
-                spectrum[i] *= RESOLUTION;
+                spectrum[i] *= nSamples;
         }
     }
 
@@ -203,7 +203,7 @@ namespace nagato {
     }
 
     const float Spectrum::operator[](int i) const {
-        if (i < 0 || RESOLUTION <= i) {
+        if (i < 0 || nSamples <= i) {
             fprintf(stderr, "out of bounce index\n");
             exit(1);
         }
@@ -215,8 +215,8 @@ namespace nagato {
     }
 
     void printSpectrum(Spectrum s) {
-        for (int i = 0; i < 401; i++) {
-            printf("%3d \t : %10.5f\n", 380 + i, s.spectrum[i]);
+        for (int i = 0; i < nSamples; i++) {
+            printf("%3f \t : %10.5f\n", 380 + i * resolution, s.spectrum[i]);
         }
     }
 
@@ -287,6 +287,99 @@ namespace nagato {
             s.spectrum[i] = a * b.spectrum[i];
         }
 
+        return s;
+    }
+
+    Spectrum makeSpectrum(const std::vector<float> &lambda,
+                          const std::vector<float> &v,
+                          int size) {
+
+        Spectrum spectrum(0.0f);
+
+        for (int i = 0; i < nSamples; i++) {
+            auto start = lerp(float(i) / nSamples,
+                              minSpectral, maxSpectral);
+            auto end = lerp(float(i + 1) / nSamples,
+                            minSpectral, maxSpectral);
+            spectrum[i] = averageSpectrumSamples(lambda, v, size, start, end);
+        }
+        return spectrum;
+    }
+
+    float averageSpectrumSamples(const std::vector<float> &lambda,
+                                 const std::vector<float> &v,
+                                 int n,
+                                 float lambdaStart,
+                                 float lambdaEnd) {
+
+        // Handle cases with out-of-bounds range or single sample only
+
+        // サンプル点がspdの最短波長よりも短い場合はspdの最短波長の寄与を返す
+        if (lambdaEnd <= lambda[0])
+            return v[0];
+
+        // サンプル点がspdの最長波長よりも長い場合はspdの最長波長の寄与を返す.
+        if (lambdaStart >= lambda[n - 1])
+            return v[n - 1];
+
+        // サンプル数が１つだけの場合
+        if (n == 1)
+            return v[0];
+
+        float sum = 0;
+        // Add contributions of constant segments before/after samples
+
+        // lambdaStartがspdの最短波長よりも短い場合
+        if (lambdaStart < lambda[0])
+            sum += v[0] * (lambda[0] - lambdaStart);
+
+        // lambdaEndがspdの最長波長よりも長い場合
+        if (lambdaEnd > lambda[n - 1])
+            sum += v[n - 1] * (lambdaEnd - lambda[n - 1]);
+
+        // Advance to first relevant wavelength segment
+
+        // lambdaStartよりも短く近い波長を探す
+        int i = 0;
+        while (lambdaStart > lambda[i + 1])
+            i++;
+
+        // Loop over wavelength sample segments and add contributions
+        // lambdaStartからlambdaStart内にある波長の寄与を取得し平均化する
+
+        auto interp = [lambda, v](float w, int i) {
+            return lerp((w - lambda[i]) / (lambda[i + 1] - lambda[i]),
+                        v[i], v[i + 1]);
+        };
+
+        for (; i + 1 < n && lambdaEnd >= lambda[i]; i++) {
+            auto segLambdaStart = std::max(lambdaStart, lambda[i]);
+            auto segLambdaEnd = std::min(lambdaEnd, lambda[i + 1]);
+
+            sum += 0.5 * (interp(segLambdaStart, i) + interp(segLambdaEnd, i))
+                   * (segLambdaEnd - segLambdaStart);
+        }
+
+        return sum / (lambdaEnd - lambdaStart);
+    }
+
+    Spectrum loadSPDFile(std::string filename) {
+        io::CSVReader<2> in(filename);
+        in.read_header(io::ignore_extra_column, "Wavelength", "Intensity");
+        float wave;
+        float intensity;
+        std::vector<float> lambda;
+        std::vector<float> v;
+        int n = 0;
+
+        while (in.read_row(wave, intensity)) {
+            n++;
+            lambda.push_back(wave);
+            v.push_back(intensity);
+        }
+
+        auto s = makeSpectrum(lambda, v, n);
+        printSpectrum(s);
         return s;
     }
 

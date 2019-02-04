@@ -9,18 +9,14 @@
 #include <iostream>
 #include "../core/Random.hpp"
 #include "../core/Common.hpp"
+#include "../core/csv.h"
 
 namespace nagato {
 
     /**
      * サンプリング数
      */
-    constexpr int RESOLUTION = 40;
-
-    /**
-     * サンプル間隔
-     */
-    constexpr int SAMPLE = 1;
+    constexpr int nSamples = 40;
 
     /**
      * 最小波長
@@ -30,14 +26,20 @@ namespace nagato {
     /**
      * 最大波長
      */
-    constexpr int maxSPectral = 780;
+    constexpr int maxSpectral = 780;
+
+
+    /**
+     * サンプル間隔
+     */
+    constexpr float resolution = (maxSpectral - minSpectral) / nSamples;
 
     /**!
      * スペクトルを扱うデータ構造
      * 380nm ~ 780nmの可視光範囲のみ扱う前提
      */
     class Spectrum {
-    public:
+     public:
 
 
         // すべての波長をinit_numの値で初期化する
@@ -69,7 +71,7 @@ namespace nagato {
 
         const float operator[](int i) const;
 
-        float &operator[](int i) ;
+        float &operator[](int i);
 
         Spectrum operator+=(const Spectrum &s);
 
@@ -87,11 +89,11 @@ namespace nagato {
 
         Spectrum operator/=(float s);
 
-        size_t sample_ = SAMPLE;
-        int resolution_ = RESOLUTION;
+        size_t sample_ = resolution;
+        int resolution_ = nSamples;
 
         // 実際の波長を保存する
-        float spectrum[RESOLUTION];
+        float spectrum[nSamples];
     };
 
     void printSpectrum(Spectrum s);
@@ -111,6 +113,38 @@ namespace nagato {
     Spectrum operator*(const Spectrum &a, float b);
 
     Spectrum operator*(float a, const Spectrum &b);
+
+    /**
+     * PBRTより
+     * http://www.pbr-book.org/3ed-2018/Color_and_Radiometry/The_SampledSpectrum_Class.html#fragment-Advancetofirstrelevantwavelengthsegment-0
+     * SPDからSpectrumを作成する
+     * 区分線形関数を平均化しサンプルを行う
+     * @param lambda    サンプルされた波長
+     * @param v         サンプルされた波長の値
+     * @param size      サンプル数
+     * @return
+     */
+    Spectrum makeSpectrum(const std::vector<float> &lambda,
+                          const std::vector<float> &v,
+                          int size);
+
+    /**
+     * PBRTより
+     * 指定した範囲の波長の寄与をspdから抽出し平均化する
+     * @param lambda
+     * @param v
+     * @param n
+     * @param lambdaStart
+     * @param lambdaEnd
+     * @return
+     */
+    float averageSpectrumSamples(const std::vector<float> &lambda,
+                                 const std::vector<float> &v,
+                                 int n,
+                                 float lambdaStart,
+                                 float lambdaEnd);
+
+    Spectrum loadSPDFile(std::string filename);
 }
 
 #endif //PATHTRACING_SPECTRUM_HPP
