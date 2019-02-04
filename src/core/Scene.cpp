@@ -172,4 +172,19 @@ namespace nagato {
 
         return Ld / lightPdf;
     }
+
+    void Scene::setSky(Sky *sky) {
+        this->sky = sky;
+    }
+
+    const Sky &Scene::getSky() {
+        return *sky;
+    }
+
+    bool Scene::hasSky() {
+        if (sky == nullptr)
+            return false;
+        else
+            return true;
+    }
 }

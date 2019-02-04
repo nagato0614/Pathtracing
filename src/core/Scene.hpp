@@ -8,6 +8,7 @@
 #include <optional>
 #include <vector>
 #include "../object/Object.hpp"
+#include "../sky/Sky.hpp"
 
 namespace nagato {
     class Scene {
@@ -30,10 +31,21 @@ namespace nagato {
 
         Spectrum directLight(Ray &ray, Hit info);
 
+        /**
+         * レイとオブジェクトの衝突が発生しない場合空の輝度を取得する
+         * skyは唯一つだけ設定できる
+         * @param sky
+         */
+        void setSky(Sky *sky);
+
+        const Sky &getSky();
+
+        bool hasSky();
 
     protected:
-
         std::vector<Object *> lights;
+
+        Sky *sky = nullptr;
 
         int objectCount = 0;
     };
