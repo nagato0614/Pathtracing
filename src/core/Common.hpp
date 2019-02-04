@@ -5,8 +5,7 @@
 #ifndef PATHTRACING_COMMON_HPP
 #define PATHTRACING_COMMON_HPP
 
-#define RESOLUTION 40
-#define SAMPLE 1
+
 
 #define BVH_NODE 200000
 
@@ -40,6 +39,15 @@ namespace nagato
     int clamp(float v);
 
     float clamp(const float min, const float max, const float x);
+
+    /**
+     * 線形補間を行う関数
+     * @param t
+     * @param a
+     * @param b
+     * @return
+     */
+    float linearInterpolate(float t, float a, float b);
 
     std::vector<int> make_rand_array_unique(size_t size, int rand_min, int rand_max, int seed);
 
@@ -75,5 +83,7 @@ namespace nagato
     }
 
     Vector3 sampleDirectionUniformly();
+
+    float lerp(float t, float a, float b);
 }
 #endif //PATHTRACING_COMMON_HPP

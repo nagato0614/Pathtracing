@@ -49,7 +49,7 @@ int main() {
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 1000;
+    const int samples = 100;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -61,12 +61,14 @@ int main() {
 
     std::cout << "-- Load Scene -- " << std::endl;
 
+    auto d65_spd = loadSPDFile("../property/cie_si_d65.csv");
+
     // マテリアルの読み込み
     Diffuse redMaterial(Spectrum("../property/macbeth_15_red.csv"));
     Diffuse blueMateral(Spectrum("../property/macbeth_13_blue.csv"));
     Diffuse whiteMaterial(Spectrum("../property/macbeth_19_white.csv"));
     Diffuse purpleMaterial(Spectrum("../property/macbeth_10_purple.csv"));
-    DiffuseLight d65(Spectrum("../property/cie_si_d65.csv"), 10);
+    DiffuseLight d65(d65_spd, 10);
     Mirror mirror(Spectrum(0.99));
     Glass fresnel(Spectrum(0.99), 1.5);
 
