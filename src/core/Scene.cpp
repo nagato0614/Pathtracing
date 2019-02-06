@@ -127,7 +127,7 @@ namespace nagato {
     Spectrum Scene::directLight(Ray &ray, Hit info) {
         // 光源がない場合はエラーで終了
         if (lights.empty()) {
-            exit(EXIT_CODE::EMPTY_LIGHT);
+            return Spectrum(0);
         }
 
         // 接続を行う光源の選択
@@ -182,9 +182,6 @@ namespace nagato {
     }
 
     bool Scene::hasSky() {
-        if (sky == nullptr)
-            return false;
-        else
-            return true;
+        return sky != nullptr;
     }
 }

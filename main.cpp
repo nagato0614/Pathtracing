@@ -21,6 +21,7 @@
 #include "src/core/Timer.hpp"
 #include "src/render/RenderBase.hpp"
 #include "src/render/Pathtracing.hpp"
+#include "src/sky/UniformSky.hpp"
 
 using namespace nagato;
 
@@ -66,11 +67,12 @@ int main() {
     // マテリアルの読み込み
     Diffuse redMaterial(Spectrum("../property/macbeth_15_red.csv"));
     Diffuse blueMateral(Spectrum("../property/macbeth_13_blue.csv"));
-    Diffuse whiteMaterial(Spectrum("../property/macbeth_19_white.csv"));
+    Diffuse whiteMaterial(Spectrum("../property/macbeth_18_cyan.csv"));
     Diffuse purpleMaterial(Spectrum("../property/macbeth_10_purple.csv"));
     DiffuseLight d65(d65_spd, 10);
     Mirror mirror(Spectrum(0.99));
     Glass fresnel(Spectrum(0.99), 1.5);
+    UniformSky sky(Spectrum("../property/macbeth_03_blue_sky.csv"));
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
@@ -78,17 +80,18 @@ int main() {
     bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &mirror});
     bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &fresnel});
 
-    bvh.loadObject("../models/left.obj",
-                   "../models/left.mtl", &redMaterial);
-    bvh.loadObject("../models/right.obj",
-                   "../models/right.mtl", &blueMateral);
-    bvh.loadObject("../models/back_ceil_floor_plane.obj",
+//    bvh.loadObject("../models/left.obj",
+//                   "../models/left.mtl", &redMaterial);
+//    bvh.loadObject("../models/right.obj",
+//                   "../models/right.mtl", &blueMateral);
+    bvh.loadObject("../models/floor.obj",
                    "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
-    bvh.loadObject("../models/light_plane.obj",
-                   "../models/light_plane.mtl", &d65);
+//    bvh.loadObject("../models/light_plane.obj",
+//                   "../models/light_plane.mtl", &d65);
 //    bvh.loadObject("../models/low_poly_bunny.obj",
 //                   "../models/low_poly_bunny.mtl", &Fresnel);
 
+    bvh.setSky(&sky);
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
 
