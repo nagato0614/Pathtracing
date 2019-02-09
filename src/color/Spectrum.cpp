@@ -362,8 +362,6 @@ namespace nagato {
                 r += (rgb[0] - rgb[1]) * rgb2specRed;
             }
         }
-
-        printSpectrum(r);
         return r;
     }
 
