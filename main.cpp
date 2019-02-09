@@ -46,12 +46,14 @@ int main() {
     std::cout << "OpenMP : OFF" << std::endl;
 #endif
 
+    Spectrum::initSpectrum();
+
     // Image size
     const int width = 400;
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 100;
+    const int samples = 10;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -65,6 +67,8 @@ int main() {
 
     auto d65_spd = loadSPDFile("../property/cie_si_d65.csv");
 
+    Spectrum skyColor = Spectrum::rgb2Spectrum({0.5, 0.7, 1});
+
     // マテリアルの読み込み
     Diffuse redMaterial(Spectrum("../property/macbeth_15_red.csv"));
     Diffuse blueMateral(Spectrum("../property/macbeth_13_blue.csv"));
@@ -73,7 +77,7 @@ int main() {
     DiffuseLight d65(d65_spd, 10);
     Mirror mirror(Spectrum(0.99));
     Glass fresnel(Spectrum(0.99), 1.5);
-    SimpleSky sky(Spectrum("../property/macbeth_03_blue_sky.csv"));
+    SimpleSky sky(skyColor);
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
@@ -96,7 +100,7 @@ int main() {
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
 
-    // #TODO 屈折率と反射率で異なるスペクトルクラスの実装
+    // #TODO 屈折率と反射率で異なるスペクトルを扱えるクラスの実装
     // 屈折率
     Spectrum refraction("../property/SiO2.csv");
 
