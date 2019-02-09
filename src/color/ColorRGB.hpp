@@ -18,6 +18,9 @@ namespace nagato
 
         ColorRGB(float r, float g, float b);
 
+        const float operator[](int i) const;
+
+        float &operator[](int i);
 
         void spectrum2rgb(Spectrum s, Spectrum xbar, Spectrum y, Spectrum z);
 

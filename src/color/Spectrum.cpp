@@ -7,6 +7,13 @@
 
 namespace nagato {
 
+    Spectrum Spectrum::rgb2specWhite;
+    Spectrum Spectrum::rgb2specCyan;
+    Spectrum Spectrum::rgb2specMagenta;
+    Spectrum Spectrum::rgb2specYellow;
+    Spectrum Spectrum::rgb2specRed;
+    Spectrum Spectrum::rgb2specGreen;
+    Spectrum Spectrum::rgb2specBlue;
 
     Spectrum::Spectrum(float init_num) {
         for (auto &s : spectrum) {
@@ -36,7 +43,7 @@ namespace nagato {
                               minSpectral, maxSpectral);
             auto end = lerp(float(i + 1) / nSamples,
                             minSpectral, maxSpectral);
-            spectrum[i] = averageSpectrumSamples(lambda, v, n, start, end);
+            spectrum[i] = averageSpectrumSamples(lambda.data(), v.data(), n, start, end);
         }
     }
 
@@ -80,76 +87,68 @@ namespace nagato {
         }
     }
 
-    Spectrum Spectrum::operator+=(const Spectrum &s) {
-        Spectrum spectrum(0.0);
+    Spectrum & Spectrum::operator+=(const Spectrum &s) {
         for (int i = 0; i < resolution_; i++) {
-            spectrum.spectrum[i] += s.spectrum[i];
+            spectrum[i] += s[i];
         }
 
-        return spectrum;
+        return *this;
     }
 
-    Spectrum Spectrum::operator+=(float s) {
-        Spectrum spectrum(0.0);
+    Spectrum &Spectrum::operator+=(float s) {
         for (int i = 0; i < resolution_; i++) {
-            spectrum.spectrum[i] += s;
+            spectrum[i] += s;
         }
 
-        return spectrum;
+        return *this;
     }
 
-    Spectrum Spectrum::operator-=(const Spectrum &s) {
-        Spectrum spectrum(0.0);
+    Spectrum &Spectrum::operator-=(const Spectrum &s) {
         for (int i = 0; i < resolution_; i++) {
-            spectrum.spectrum[i] -= s.spectrum[i];
+            spectrum[i] -= s[i];
         }
 
-        return spectrum;
+        return *this;
     }
 
-    Spectrum Spectrum::operator-=(float s) {
-        Spectrum spectrum(0.0);
+    Spectrum &Spectrum::operator-=(float s) {
         for (int i = 0; i < resolution_; i++) {
-            spectrum.spectrum[i] -= s;
+            spectrum[i] -= s;
         }
 
-        return spectrum;
+        return *this;
     }
 
-    Spectrum Spectrum::operator*=(const Spectrum &s) {
-        Spectrum spectrum(0.0);
+    Spectrum &Spectrum::operator*=(const Spectrum &s) {
         for (int i = 0; i < resolution_; i++) {
-            spectrum.spectrum[i] *= s.spectrum[i];
+            spectrum[i] *= s[i];
         }
 
-        return spectrum;
+        return *this;
     }
 
-    Spectrum Spectrum::operator*=(float s) {
-        Spectrum spectrum(0.0);
+    Spectrum &Spectrum::operator*=(float s) {
         for (int i = 0; i < resolution_; i++) {
-            spectrum.spectrum[i] *= s;
+            spectrum[i] *= s;
         }
 
-        return spectrum;
+        return *this;
     }
 
-    Spectrum Spectrum::operator/=(const Spectrum &s) {
-        Spectrum spectrum(0.0);
+    Spectrum &Spectrum::operator/=(const Spectrum &s) {
         for (int i = 0; i < resolution_; i++) {
-            spectrum.spectrum[i] /= s.spectrum[i];
+            spectrum[i] /= s[i];
         }
 
-        return spectrum;
+        return *this;
     }
 
-    Spectrum Spectrum::operator/=(float s) {
-        Spectrum spectrum(0.0);
+    Spectrum &Spectrum::operator/=(float s) {
         for (int i = 0; i < resolution_; i++) {
-            spectrum.spectrum[i] /= s;
+            spectrum[i] /= s;
         }
 
-        return spectrum;
+        return *this;
     }
 
     const float Spectrum::operator[](int i) const {
@@ -163,6 +162,8 @@ namespace nagato {
     float &Spectrum::operator[](int i) {
         return spectrum[i];
     }
+
+
 
     void printSpectrum(Spectrum s) {
         for (int i = 0; i < nSamples; i++) {
@@ -240,8 +241,8 @@ namespace nagato {
         return s;
     }
 
-    Spectrum makeSpectrum(const std::vector<float> &lambda,
-                          const std::vector<float> &v,
+    Spectrum makeSpectrum(const float *lambda,
+                          const float *v,
                           int size) {
 
         Spectrum spectrum(0.0f);
@@ -256,8 +257,8 @@ namespace nagato {
         return spectrum;
     }
 
-    float averageSpectrumSamples(const std::vector<float> &lambda,
-                                 const std::vector<float> &v,
+    float averageSpectrumSamples(const float *lambda,
+                                 const float *v,
                                  int n,
                                  float lambdaStart,
                                  float lambdaEnd) {
@@ -328,7 +329,42 @@ namespace nagato {
             v.push_back(intensity);
         }
 
-        return makeSpectrum(lambda, v, n);
+        return makeSpectrum(lambda.data(), v.data(), n);
+    }
+
+    Spectrum Spectrum::rgb2Spectrum(const ColorRGB &rgb) {
+        Spectrum r;
+        if (rgb[0] <= rgb[1] && rgb[0] <= rgb[2]) {
+            r += rgb[0] * rgb2specWhite;
+            if (rgb[1] <= rgb[2]) {
+                r += (rgb[1] - rgb[0]) * rgb2specCyan;
+                r += (rgb[2] - rgb[1]) * rgb2specBlue;
+            } else {
+                r += (rgb[2] - rgb[0]) * rgb2specCyan;
+                r += (rgb[1] - rgb[2]) * rgb2specGreen;
+            }
+        } else if (rgb[1] <= rgb[0] && rgb[1] <= rgb[2]) {
+            r += rgb[1] * rgb2specWhite;
+            if (rgb[0] <= rgb[2]) {
+                r += (rgb[0] - rgb[1]) * rgb2specMagenta;
+                r += (rgb[2] - rgb[0]) * rgb2specBlue;
+            } else {
+                r += (rgb[2] - rgb[1]) * rgb2specMagenta;
+                r += (rgb[0] - rgb[2]) * rgb2specRed;
+            }
+        } else {
+            r += rgb[2] * rgb2specWhite;
+            if (rgb[0] <= rgb[1]) {
+                r += (rgb[0] - rgb[2]) * rgb2specYellow;
+                r += (rgb[1] - rgb[0]) * rgb2specGreen;
+            } else {
+                r += (rgb[1] - rgb[2]) * rgb2specYellow;
+                r += (rgb[0] - rgb[1]) * rgb2specRed;
+            }
+        }
+
+        printSpectrum(r);
+        return r;
     }
 
 }

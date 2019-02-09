@@ -126,4 +126,31 @@ namespace nagato
         return r + g + b;
     }
 
+    const float ColorRGB::operator[](int i) const {
+        if (i == 0)
+            return r;
+        else if (i == 1)
+            return  g;
+        else if (i == 2)
+            return  b;
+        else {
+            fprintf(stderr, "ERROR : [Vector3]0~2の範囲で指定\n");
+            exit(-1);
+        }
+
+    }
+
+    float &ColorRGB::operator[](int i) {
+        if (i == 0)
+            return r;
+        else if (i == 1)
+            return  g;
+        else if (i == 2)
+            return  b;
+        else {
+            fprintf(stderr, "ERROR : [Vector3]0~2の範囲で指定\n");
+            exit(-1);
+        }
+    }
+
 }

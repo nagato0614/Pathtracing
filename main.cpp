@@ -44,12 +44,14 @@ int main() {
     std::cout << "OpenMP : OFF" << std::endl;
 #endif
 
+    Spectrum::initSpectrum();
+
     // Image size
     const int width = 400;
     const int height = 400;
 
     // Samples per pixel
-    const int samples = 100;
+    const int samples = 10;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -63,6 +65,8 @@ int main() {
 
     auto d65_spd = loadSPDFile("../property/cie_si_d65.csv");
 
+    Spectrum red = Spectrum::rgb2Spectrum({1.0, 0.1, 0.1});
+
     // マテリアルの読み込み
     Diffuse redMaterial(Spectrum("../property/macbeth_15_red.csv"));
     Diffuse blueMateral(Spectrum("../property/macbeth_13_blue.csv"));
@@ -71,6 +75,9 @@ int main() {
     DiffuseLight d65(d65_spd, 10);
     Mirror mirror(Spectrum(0.99));
     Glass fresnel(Spectrum(0.99), 1.5);
+    Diffuse rgbRedMaterial(red);
+
+    printSpectrum(red);
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
@@ -79,7 +86,7 @@ int main() {
     bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &fresnel});
 
     bvh.loadObject("../models/left.obj",
-                   "../models/left.mtl", &redMaterial);
+                   "../models/left.mtl", &rgbRedMaterial);
     bvh.loadObject("../models/right.obj",
                    "../models/right.mtl", &blueMateral);
     bvh.loadObject("../models/back_ceil_floor_plane.obj",
