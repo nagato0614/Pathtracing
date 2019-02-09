@@ -59,6 +59,7 @@ namespace nagato {
             const auto &intersect = scene->intersect(ray, 0.0f, 1e+100);
 
             if (!intersect) {
+                L = L + weight * scene->getSky().getRadiance(ray);
                 break;
             }
 

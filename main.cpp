@@ -22,6 +22,7 @@
 #include "src/render/RenderBase.hpp"
 #include "src/render/Pathtracing.hpp"
 #include "src/sky/UniformSky.hpp"
+#include "src/sky/SimpleSky.hpp"
 
 using namespace nagato;
 
@@ -67,17 +68,17 @@ int main() {
     // マテリアルの読み込み
     Diffuse redMaterial(Spectrum("../property/macbeth_15_red.csv"));
     Diffuse blueMateral(Spectrum("../property/macbeth_13_blue.csv"));
-    Diffuse whiteMaterial(Spectrum("../property/macbeth_18_cyan.csv"));
-    Diffuse purpleMaterial(Spectrum("../property/macbeth_10_purple.csv"));
+    Diffuse whiteMaterial(Spectrum("../property/macbeth_22_neutral_5.csv"));
+    Diffuse purpleMaterial(Spectrum("../property/macbeth_14_green.csv"));
     DiffuseLight d65(d65_spd, 10);
     Mirror mirror(Spectrum(0.99));
     Glass fresnel(Spectrum(0.99), 1.5);
-    UniformSky sky(Spectrum("../property/macbeth_03_blue_sky.csv"));
+    SimpleSky sky(Spectrum("../property/macbeth_03_blue_sky.csv"));
 
     // #TODO シーンファイルの読み込みモジュールの追加
     // シーンの読み込み
     BVH bvh;
-    bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &mirror});
+    bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &purpleMaterial});
     bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &fresnel});
 
 //    bvh.loadObject("../models/left.obj",
