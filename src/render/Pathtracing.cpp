@@ -40,7 +40,7 @@ namespace nagato {
             prog.printBar();
         }
 
-        film->outputImage("render_test.png");
+        film->outputImage("output.png");
     }
 
     Spectrum Pathtracing::Li(size_t x, size_t y) {
@@ -59,7 +59,8 @@ namespace nagato {
             const auto &intersect = scene->intersect(ray, 0.0f, 1e+100);
 
             if (!intersect) {
-                L = L + weight * scene->getSky().getRadiance(ray);
+                if (scene->hasSky())
+                    L = L + weight * scene->getSky().getRadiance(ray);
                 break;
             }
 

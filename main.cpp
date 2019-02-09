@@ -23,6 +23,7 @@
 #include "src/render/Pathtracing.hpp"
 #include "src/sky/UniformSky.hpp"
 #include "src/sky/SimpleSky.hpp"
+#include "src/sky/ImageBasedLighting.hpp"
 
 using namespace nagato;
 
@@ -69,6 +70,7 @@ int main() {
 
     Spectrum skyColor = Spectrum::rgb2Spectrum({0.5, 0.7, 1});
 
+
     // マテリアルの読み込み
     Diffuse redMaterial(Spectrum("../property/macbeth_15_red.csv"));
     Diffuse blueMateral(Spectrum("../property/macbeth_13_blue.csv"));
@@ -77,26 +79,60 @@ int main() {
     DiffuseLight d65(d65_spd, 10);
     Mirror mirror(Spectrum(0.99));
     Glass fresnel(Spectrum(0.99), 1.5);
-    SimpleSky sky(skyColor);
+    ImageBasedLighting sky("../texture/playa.exr");
 
-    // #TODO シーンファイルの読み込みモジュールの追加
-    // シーンの読み込み
+
     BVH bvh;
-    bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &purpleMaterial});
-    bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &fresnel});
+
+    /**
+     * シーンの読み込み
+     * レンダリングするシーンのみコメントアウトする
+     * #TODO シーンファイルの読み込みモジュールの追加
+     */
+
+    // IBL playa うさぎ  ==================================================
+//    bvh.loadObject("../models/floor.obj",
+//                   "../models/floor.mtl", &whiteMaterial);
+//    bvh.loadObject("../models/low_poly_bunny.obj",
+//                   "../models/low_poly_bunny.mtl", &fresnel);
+//    bvh.setSky(&sky);
+
+    // IBL playa 球  ==================================================
+//    bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &purpleMaterial});
+//    bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &fresnel});
+//    bvh.loadObject("../models/floor.obj",
+//                   "../models/floor.mtl", &whiteMaterial);
+//    bvh.setSky(&sky);
+
+    // コーネルボックス　うさぎ　==================================================
 
 //    bvh.loadObject("../models/left.obj",
 //                   "../models/left.mtl", &redMaterial);
 //    bvh.loadObject("../models/right.obj",
 //                   "../models/right.mtl", &blueMateral);
-    bvh.loadObject("../models/floor.obj",
-                   "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
+//    bvh.loadObject("../models/back_ceil_floor_plane.obj",
+//                   "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
 //    bvh.loadObject("../models/light_plane.obj",
 //                   "../models/light_plane.mtl", &d65);
 //    bvh.loadObject("../models/low_poly_bunny.obj",
-//                   "../models/low_poly_bunny.mtl", &Fresnel);
+//                   "../models/low_poly_bunny.mtl", &fresnel);
 
-    bvh.setSky(&sky);
+    // コーネルボックス　球   ==================================================
+
+    bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &mirror});
+    bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &fresnel});
+
+    bvh.loadObject("../models/left.obj",
+                   "../models/left.mtl", &redMaterial);
+    bvh.loadObject("../models/right.obj",
+                   "../models/right.mtl", &blueMateral);
+    bvh.loadObject("../models/back_ceil_floor_plane.obj",
+                   "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
+    bvh.loadObject("../models/light_plane.obj",
+                   "../models/light_plane.mtl", &d65);
+
+    // ======================================================================
+
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
 
