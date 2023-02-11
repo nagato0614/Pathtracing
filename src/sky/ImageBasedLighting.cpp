@@ -4,8 +4,6 @@
 // Created by 長井亨 on 2019-02-09.
 //
 
-#include <ImfRgbaFile.h>
-#include <ImfArray.h>
 #include "ImageBasedLighting.hpp"
 
 namespace nagato {
@@ -28,20 +26,20 @@ namespace nagato {
     }
 
     void ImageBasedLighting::open(const std::string &filename) {
-        Imf::RgbaInputFile file(filename.c_str());
-        Imath::Box2i dw = file.dataWindow();
-
-        width = dw.max.x - dw.min.x + 1;
-        height = dw.max.y - dw.min.y + 1;
-
-        std::vector<Imf::Rgba> pixels(width * height);
-        file.setFrameBuffer(&pixels[0] - dw.min.x - dw.min.y * width, 1, width);
-        file.readPixels(dw.min.y, dw.max.y);
+//        Imf::RgbaInputFile file(filename.c_str());
+//        Imath::Box2i dw = file.dataWindow();
+//
+//        width = dw.max.x - dw.min.x + 1;
+//        height = dw.max.y - dw.min.y + 1;
+//
+//        std::vector<Imf::Rgba> pixels(width * height);
+//        file.setFrameBuffer(&pixels[0] - dw.min.x - dw.min.y * width, 1, width);
+//        file.readPixels(dw.min.y, dw.max.y);
 
         image = std::make_unique<Spectrum[]>(width * height);
 
         for (int i = 0; i < height * width; i++) {
-            image.get()[i] = Spectrum::rgb2Spectrum({pixels[i].r, pixels[i].g, pixels[i].b});
+//            image.get()[i] = Spectrum::rgb2Spectrum({pixels[i].r, pixels[i].g, pixels[i].b});
         }
     }
 }

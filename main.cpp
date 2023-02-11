@@ -136,6 +136,7 @@ int main() {
     std::cout << "-- Construct BVH --" << std::endl;
     bvh.constructBVH();
 
+    std::cout << "-- Read refraction Param --" << std::endl;
     // #TODO 屈折率と反射率で異なるスペクトルを扱えるクラスの実装
     // 屈折率
     Spectrum refraction("../property/SiO2.csv");

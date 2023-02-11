@@ -9,7 +9,7 @@
 #include <iostream>
 #include "../core/Random.hpp"
 #include "../core/Common.hpp"
-#include "../core/csv.h"
+#include "../core/csv.hpp"
 #include "ColorRGB.hpp"
 
 namespace nagato {

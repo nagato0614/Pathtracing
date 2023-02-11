@@ -4,3 +4,6 @@
 [submodule "src/openEXR"]
 	path = src/openEXR
 	url = https://github.com/openexr/openexr.git
+[submodule "src/tinyexr"]
+	path = src/tinyexr
+	url = https://github.com/syoyo/tinyexr.git

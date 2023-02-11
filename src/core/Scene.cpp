@@ -3,10 +3,11 @@
 //
 
 #include <fstream>
+#include <sstream>
 #include "Hit.hpp"
 #include "Ray.hpp"
 #include "Scene.hpp"
-#include "tiny_obj_loader.h"
+#include "tiny_obj_loader.hpp"
 #include "../object/Triangle.hpp"
 
 namespace nagato {
@@ -54,10 +55,7 @@ namespace nagato {
         cornellob_material.close();
         std::string materialFileString(strstream.str());
 
-        // マテリアルローダを初期化
-        tinyobj::MaterialStringStreamReader
-                materialStringStreamReader(materialFileString);
-
+        std::string warn;
         std::string err;
 
         tinyobj::attrib_t attrib;
@@ -67,9 +65,10 @@ namespace nagato {
         tinyobj::LoadObj(&attrib,
                          &shapes,
                          &materials,
+                         &warn,
                          &err,
-                         &objectFileStream,
-                         &materialStringStreamReader);
+                         objfilename.c_str(),
+                         materialFileString.c_str());
         if (!err.empty()) {
             std::cerr << "error : " << err << std::endl;
         }
