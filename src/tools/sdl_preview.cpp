@@ -247,9 +247,8 @@ int main(int argc, char *argv[])
 
   // 統計情報の同期用
   std::atomic<double> shared_last_pass_time{0};
-  std::chrono::high_resolution_clock::time_point shared_start_time =
-    std::chrono::high_resolution_clock::now();
-  std::mutex timeMutex;
+  std::atomic<double> shared_total_render_time{0};
+  std::mutex statsMutex;
 
   // レンダリング用スレッドの関数定義
   auto renderFunc = [&]()
@@ -382,10 +381,8 @@ int main(int argc, char *argv[])
 
         current_pass = 0;
         newDataAvailable = false;
-        {
-          std::lock_guard<std::mutex> lock(timeMutex);
-          shared_start_time = std::chrono::high_resolution_clock::now();
-        }
+        shared_last_pass_time = 0;
+        shared_total_render_time = 0;
         last_pass_finish_time = std::chrono::high_resolution_clock::now();
 
         quitRender = false;
@@ -409,7 +406,9 @@ int main(int argc, char *argv[])
       if (newDataAvailable && appState == AppState::Running)
       {
         auto now = std::chrono::high_resolution_clock::now();
-        shared_last_pass_time = std::chrono::duration<double>(now - last_pass_finish_time).count();
+        double pass_time = std::chrono::duration<double>(now - last_pass_finish_time).count();
+        shared_last_pass_time = pass_time;
+        shared_total_render_time = shared_total_render_time + pass_time;
         last_pass_finish_time = now;
       }
 
@@ -431,12 +430,6 @@ int main(int argc, char *argv[])
   int displayHeight = height;
 
   SDL_Event event;
-  double last_pass_time_display = 0;
-
-  // マウス操作状態の管理
-  // bool isMouseDown = false;
-  // float lastMouseX = 0;
-  // float lastMouseY = 0;
 
   while (appState != AppState::Quitting)
   {
@@ -713,7 +706,6 @@ int main(int argc, char *argv[])
           newDataAvailable = false;
         }
       }
-      last_pass_time_display = shared_last_pass_time.load();
       SDL_UpdateTexture(texture, nullptr, pixels.data(), displayWidth * 3);
     }
 
@@ -739,28 +731,25 @@ int main(int argc, char *argv[])
     SDL_RenderFillRect(renderer, &statusRect);
 
     // ステータス情報の描画
-    auto current_time = std::chrono::high_resolution_clock::now();
-    std::chrono::high_resolution_clock::time_point s_time;
     int polygon_count_display = 0;
     Vector3 eye_display;
     Vector3 target_display;
-    {
-      std::lock_guard<std::mutex> lock(timeMutex);
-      s_time = shared_start_time;
-    }
+    double total_render_time = 0;
     {
       std::lock_guard<std::mutex> lock(paramsMutex);
       polygon_count_display = sharedParams.polygonCount;
       eye_display = sharedParams.eye;
       target_display = sharedParams.target;
     }
-    std::chrono::duration<double> elapsed = current_time - s_time;
+    total_render_time = shared_total_render_time.load();
+
     int pass = current_pass;
-    double sps = (double) pass / (elapsed.count() > 0 ? elapsed.count() : 1.0);
+    double avg_pass_time = (pass > 0) ? (total_render_time / pass) : 0.0;
+    double sps = (total_render_time > 0) ? ((double) pass / total_render_time) : 0.0;
 
     std::string line1 = "Pass: " + std::to_string(pass);
-    std::string line2 = std::to_string(sps) + " SPS";
-    std::string line3 = std::to_string(last_pass_time_display) + " s/pass";
+    std::string line2 = std::to_string(sps).substr(0, 6) + " SPS (Avg)";
+    std::string line3 = std::to_string(avg_pass_time).substr(0, 6) + " s/pass (Avg)";
     std::string line4 = std::to_string(displayWidth) + "x" + std::to_string(displayHeight);
     std::string line5 = "Polygons: " + std::to_string(polygon_count_display);
     std::string line6 = "Eye: (" + std::to_string(eye_display.x).substr(0, 5) + ", " +
