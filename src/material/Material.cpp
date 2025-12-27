@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/23.
 //
 
-#include "Material.hpp"
+#include "material/Material.hpp"
 #include <utility>
 
 namespace nagato

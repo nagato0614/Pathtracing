@@ -2,12 +2,12 @@
 // Created by 長井亨 on 2018/07/18.
 //
 
-#include "Scene.hpp"
+#include "core/Scene.hpp"
 #include <fstream>
-#include "../object/Triangle.hpp"
-#include "Hit.hpp"
-#include "Ray.hpp"
-#include "tiny_obj_loader.h"
+#include "object/Triangle.hpp"
+#include "core/Hit.hpp"
+#include "core/Ray.hpp"
+#include "core/tiny_obj_loader.h"
 
 namespace nagato
 {

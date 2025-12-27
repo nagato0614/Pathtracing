@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/09/06.
 //
 
-#include "Lambert.hpp"
+#include "BSDF/Lambert.hpp"
 
 namespace nagato
 {

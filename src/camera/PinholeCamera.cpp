@@ -2,8 +2,8 @@
 // Created by 長井亨 on 2019/01/30.
 //
 
-#include "PinholeCamera.hpp"
-#include "../core/Random.hpp"
+#include "camera/PinholeCamera.hpp"
+#include "core/Random.hpp"
 
 namespace nagato
 {

@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2019/01/30.
 //
 
-#include "Camera.hpp"
+#include "camera/Camera.hpp"
 
 namespace nagato
 {

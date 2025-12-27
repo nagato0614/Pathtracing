@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/28.
 //
 
-#include "Triangle.hpp"
+#include "object/Triangle.hpp"
 #include <cmath>
 #include <utility>
 

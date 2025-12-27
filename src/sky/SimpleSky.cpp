@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2019-02-06.
 //
 
-#include "SimpleSky.hpp"
+#include "sky/SimpleSky.hpp"
 
 namespace nagato
 {

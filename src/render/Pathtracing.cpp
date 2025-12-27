@@ -2,8 +2,8 @@
 // Created by 長井亨 on 2019-01-30.
 //
 
-#include "Pathtracing.hpp"
-#include "../core/Progressbar.hpp"
+#include "render/Pathtracing.hpp"
+#include "core/Progressbar.hpp"
 
 namespace nagato
 {

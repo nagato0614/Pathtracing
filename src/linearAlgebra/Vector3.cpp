@@ -2,10 +2,10 @@
 // Created by 長井亨 on 2018/07/18.
 //
 
-#include "Vector3.hpp"
+#include "linearAlgebra/Vector3.hpp"
 #include <cmath>
 #include <iostream>
-#include "Vector4.hpp"
+#include "linearAlgebra/Vector4.hpp"
 
 namespace nagato
 {

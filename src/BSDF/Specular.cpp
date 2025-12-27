@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/09/06.
 //
 
-#include "Specular.hpp"
+#include "BSDF/Specular.hpp"
 
 namespace nagato
 {

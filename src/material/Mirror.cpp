@@ -2,8 +2,8 @@
 // Created by 長井亨 on 2019/01/29.
 //
 
-#include "Mirror.hpp"
-#include "../BSDF/Specular.hpp"
+#include "material/Mirror.hpp"
+#include "BSDF/Specular.hpp"
 
 namespace nagato
 {

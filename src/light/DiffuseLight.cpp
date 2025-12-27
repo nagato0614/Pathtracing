@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/09/05.
 //
 
-#include "DiffuseLight.hpp"
+#include "light/DiffuseLight.hpp"
 
 namespace nagato
 {

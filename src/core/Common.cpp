@@ -2,12 +2,12 @@
 // Created by 長井亨 on 2018/07/18.
 //
 
-#include "Common.hpp"
+#include "core/Common.hpp"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <random>
-#include "../color/ColorRGB.hpp"
+#include "color/ColorRGB.hpp"
 
 namespace nagato
 {

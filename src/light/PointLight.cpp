@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/09/04.
 //
 
-#include "PointLight.hpp"
+#include "light/PointLight.hpp"
 
 namespace nagato
 {

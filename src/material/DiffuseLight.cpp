@@ -2,8 +2,8 @@
 // Created by 長井亨 on 2019/01/29.
 //
 
-#include "DiffuseLight.hpp"
-#include "../BSDF/Lambert.hpp"
+#include "material/DiffuseLight.hpp"
+#include "BSDF/Lambert.hpp"
 
 namespace nagato
 {

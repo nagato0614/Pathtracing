@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/28.
 //
 
-#include "BVH.hpp"
+#include "structure/BVH.hpp"
 #include <algorithm>
 #include <queue>
 

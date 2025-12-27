@@ -35,6 +35,7 @@ find_package(Imath REQUIRED)
 find_package(OpenEXR REQUIRED)
 
 include_directories(
+        include
         /opt/homebrew/include
         /opt/homebrew/include/OpenEXR
         /opt/homebrew/include/Imath
@@ -46,31 +47,35 @@ file(GLOB src
         ${PROJECT_SOURCE_DIR}/src/core/*.cc
         ${PROJECT_SOURCE_DIR}/src/core/*.h
         ${PROJECT_SOURCE_DIR}/src/core/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/core/*.hpp
         ${PROJECT_SOURCE_DIR}/src/color/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/color/*.hpp
         ${PROJECT_SOURCE_DIR}/src/linearAlgebra/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/linearAlgebra/*.hpp
         ${PROJECT_SOURCE_DIR}/src/material/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/material/*.hpp
         ${PROJECT_SOURCE_DIR}/src/object/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/object/*.hpp
         ${PROJECT_SOURCE_DIR}/src/structure/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/structure/*.hpp
         ${PROJECT_SOURCE_DIR}/src/BSDF/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/BSDF/*.hpp
-        ${PROJECT_SOURCE_DIR}/src/film/*.hpp
         ${PROJECT_SOURCE_DIR}/src/film/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/camera/*.hpp
         ${PROJECT_SOURCE_DIR}/src/camera/*.cpp
         ${PROJECT_SOURCE_DIR}/src/render/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/render/*.hpp
         ${PROJECT_SOURCE_DIR}/src/sky/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/sky/*.hpp
+        )
+
+file(GLOB hpp
+        ${PROJECT_SOURCE_DIR}/include/core/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/color/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/linearAlgebra/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/material/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/object/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/structure/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/BSDF/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/film/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/camera/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/render/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/sky/*.hpp
         )
 
 # ライブラリ作成
-add_library(pathtracingLibrary STATIC ${src})
+add_library(pathtracingLibrary STATIC ${src} ${hpp})
+target_include_directories(pathtracingLibrary PUBLIC include)
 add_executable(progressbar src/tools/progressbar.cpp)
 add_executable(pathtracing main.cpp)
 add_executable(nagatoTest

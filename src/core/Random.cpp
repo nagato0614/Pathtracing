@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/18.
 //
 
-#include "Random.hpp"
+#include "core/Random.hpp"
 
 namespace nagato
 {

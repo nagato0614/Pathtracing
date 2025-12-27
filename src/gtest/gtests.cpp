@@ -4,14 +4,14 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "../BSDF/Lambert.hpp"
-#include "../color/ColorRGB.hpp"
-#include "../core/Common.hpp"
-#include "../core/Scene.hpp"
-#include "../film/Film.hpp"
-#include "../material/Material.hpp"
-#include "../object/Sphere.hpp"
-#include "../structure/BVH.hpp"
+#include "BSDF/Lambert.hpp"
+#include "color/ColorRGB.hpp"
+#include "core/Common.hpp"
+#include "core/Scene.hpp"
+#include "film/Film.hpp"
+#include "material/Material.hpp"
+#include "object/Sphere.hpp"
+#include "structure/BVH.hpp"
 
 namespace nagato
 {

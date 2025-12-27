@@ -2,8 +2,8 @@
 // Created by 長井亨 on 2018/07/18.
 //
 
-#include "Spectrum.hpp"
-#include "../core/csv.h"
+#include "color/Spectrum.hpp"
+#include "core/csv.h"
 
 namespace nagato
 {

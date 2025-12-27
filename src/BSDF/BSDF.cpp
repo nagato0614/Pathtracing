@@ -2,10 +2,10 @@
 // Created by 長井亨 on 2018/09/06.
 //
 
-#include "BSDF.hpp"
-#include "Fresnel.hpp"
-#include "Lambert.hpp"
-#include "Specular.hpp"
+#include "BSDF/BSDF.hpp"
+#include "BSDF/Fresnel.hpp"
+#include "BSDF/Lambert.hpp"
+#include "BSDF/Specular.hpp"
 
 namespace nagato
 {

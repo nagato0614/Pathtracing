@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/19.
 //
 
-#include "ColorRGB.hpp"
+#include "color/ColorRGB.hpp"
 
 namespace nagato
 {

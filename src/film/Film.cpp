@@ -8,11 +8,11 @@
 #pragma clang diagnostic ignored "-Weverything"
 #endif
 
-#include "../core/Constant.hpp"
-#include "Film.hpp"
+#include "core/Constant.hpp"
+#include "film/Film.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "../core/stb_image_write.h"
+#include "core/stb_image_write.h"
 
 #ifdef __clang__
 #pragma clang diagnostic pop

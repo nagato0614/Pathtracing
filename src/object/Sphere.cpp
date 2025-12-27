@@ -1,7 +1,7 @@
 //
 // Created by 長井亨 on 2018/07/18.
 //
-#include "Sphere.hpp"
+#include "object/Sphere.hpp"
 #include <cmath>
 
 namespace nagato

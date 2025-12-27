@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/18.
 //
 
-#include "Matrix4.hpp"
+#include "linearAlgebra/Matrix4.hpp"
 #include <cmath>
 #include <iostream>
 

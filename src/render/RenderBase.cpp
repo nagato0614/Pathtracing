@@ -2,8 +2,8 @@
 // Created by 長井亨 on 2019-01-30.
 //
 
-#include "RenderBase.hpp"
-#include "../camera/Camera.hpp"
+#include "render/RenderBase.hpp"
+#include "camera/Camera.hpp"
 
 namespace nagato
 {

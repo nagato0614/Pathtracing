@@ -2,7 +2,7 @@
 // Created by 長井亨 on 2018/07/18.
 //
 
-#include "Object.hpp"
+#include "object/Object.hpp"
 
 namespace nagato
 {

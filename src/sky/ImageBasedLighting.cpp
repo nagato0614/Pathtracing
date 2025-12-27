@@ -6,7 +6,7 @@
 
 #include <ImfArray.h>
 #include <ImfRgbaFile.h>
-#include "ImageBasedLighting.hpp"
+#include "sky/ImageBasedLighting.hpp"
 
 namespace nagato
 {

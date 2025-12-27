@@ -1,4 +1,4 @@
-#include "tiny_obj_loader.h"
+#include "core/tiny_obj_loader.h"
 
 #include <cassert>
 #include <cctype>
