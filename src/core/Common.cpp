@@ -73,7 +73,7 @@ namespace nagato {
     }
 
     std::string getNowTimeString() {
-        char buff[] = "";
+        char buff[256];
         time_t now = time(nullptr);
         struct tm *pnow = localtime(&now);
         sprintf(buff, "%04d%02d%02d%02d%02d", pnow->tm_year + 1900, pnow->tm_mon + 1, pnow->tm_mday,

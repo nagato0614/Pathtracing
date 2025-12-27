@@ -33,7 +33,7 @@ namespace nagato {
     void Progressbar::printBar() {
         // 6列未満のときはbarを表示できないため数字のみ表示させる.
         if (columns < 7) {
-            printBar();
+            printPercent();
             return;
         }
 
