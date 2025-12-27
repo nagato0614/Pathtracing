@@ -161,15 +161,46 @@ int main(int argc, char* argv[]) {
     loadScene(currentSceneIdx);
 
     auto eye = scenes[currentSceneIdx].eye;
+    auto target = Vector3(0, 0, 0); // 初期ターゲット（原点）
     auto up = Vector3(0, 1, 0);
     auto fov = scenes[currentSceneIdx].fov;
 
-    std::unique_ptr<PinholeCamera> camera = std::make_unique<PinholeCamera>(eye, up, fov, width, height);
+    // カメラ回転制御用
+    float orbitRadius = (eye - target).norm();
+    float orbitTheta = std::acos((eye.y - target.y) / orbitRadius); // ピッチ (0 to PI)
+    float orbitPhi = std::atan2(eye.z - target.z, eye.x - target.x);  // ヨー (-PI to PI)
+
+    std::unique_ptr<PinholeCamera> camera = std::make_unique<PinholeCamera>(eye, target, up, fov, width, height);
     std::unique_ptr<Film> film = std::make_unique<Film>(width, height);
     std::unique_ptr<Pathtracing> pathtracing = std::make_unique<Pathtracing>(bvh.get(), film.get(), camera.get(), samples);
 
     std::vector<uint8_t> pixels(width * height * 3);
     std::vector<uint8_t> shared_pixels(width * height * 3);
+
+    enum class AppState {
+        Running,
+        ResetRequested,
+        SceneChangeRequested,
+        Quitting
+    };
+
+    std::atomic<AppState> appState{AppState::Running};
+    std::atomic<bool> textureUpdateNeeded{false};
+    
+    // カメラ位置や設定を管理スレッドへ渡すための共有変数
+    struct RenderParams {
+        int width, height;
+        Vector3 eye, target, up;
+        float fov;
+        int sceneIdx;
+    };
+    RenderParams sharedParams = {width, height, eye, target, up, fov, currentSceneIdx};
+    std::mutex paramsMutex;
+
+    // 統計情報の同期用
+    std::atomic<double> shared_last_pass_time{0};
+    std::chrono::high_resolution_clock::time_point shared_start_time = std::chrono::high_resolution_clock::now();
+    std::mutex timeMutex;
 
     // レンダリング用スレッドの関数定義
     auto renderFunc = [&]() {
@@ -191,12 +222,14 @@ int main(int argc, char* argv[]) {
                 {
                     // 表示用共有バッファへコピー（排他制御）
                     std::lock_guard<std::mutex> lock(filmMutex);
-                    for (int i = 0; i < width * height; ++i) {
-                        shared_pixels[i * 3 + 0] = rgb_data[i].r255();
-                        shared_pixels[i * 3 + 1] = rgb_data[i].g255();
-                        shared_pixels[i * 3 + 2] = rgb_data[i].b255();
+                    if (shared_pixels.size() == (size_t)width * height * 3) {
+                        for (int i = 0; i < width * height; ++i) {
+                            shared_pixels[i * 3 + 0] = rgb_data[i].r255();
+                            shared_pixels[i * 3 + 1] = rgb_data[i].g255();
+                            shared_pixels[i * 3 + 2] = rgb_data[i].b255();
+                        }
+                        newDataAvailable = true;
                     }
-                    newDataAvailable = true;
                 }
 
                 // 1パス終了した時点で停止要求があればループを抜ける
@@ -208,38 +241,107 @@ int main(int argc, char* argv[]) {
         }
     };
 
-    // レンダリングスレッドの開始
-    std::thread renderThread(renderFunc);
+    // 管理スレッド: レンダリングスレッドのライフサイクルを管理する
+    auto managerFunc = [&]() {
+        std::thread renderThread;
+        auto last_pass_finish_time = std::chrono::high_resolution_clock::now();
+        
+        while (appState != AppState::Quitting) {
+            AppState currentState = appState.load();
+            
+            if (currentState == AppState::ResetRequested || currentState == AppState::SceneChangeRequested) {
+                bool isSceneChange = (currentState == AppState::SceneChangeRequested);
+                
+                // 実行中のスレッドがあれば停止を待機
+                quitRender = true;
+                if (renderThread.joinable()) {
+                    renderThread.join();
+                }
+                
+                // パラメータの取得
+                RenderParams p;
+                {
+                    std::lock_guard<std::mutex> lock(paramsMutex);
+                    p = sharedParams;
+                }
+                
+                // 解像度の更新
+                width = p.width;
+                height = p.height;
+                
+                if (isSceneChange) {
+                    loadScene(p.sceneIdx);
+                    currentSceneIdx = p.sceneIdx;
+                    eye = p.eye;
+                    target = p.target;
+                    fov = p.fov;
+                } else {
+                    eye = p.eye;
+                    target = p.target;
+                    fov = p.fov;
+                }
+                
+                // リソースの再構築
+                camera = std::make_unique<PinholeCamera>(eye, target, up, fov, width, height);
+                film = std::make_unique<Film>(width, height);
+                pathtracing = std::make_unique<Pathtracing>(bvh.get(), film.get(), camera.get(), samples);
+                
+                {
+                    std::lock_guard<std::mutex> lock(filmMutex);
+                    shared_pixels.resize((size_t)width * height * 3);
+                    textureUpdateNeeded = true;
+                }
+                
+                current_pass = 0;
+                newDataAvailable = false;
+                {
+                    std::lock_guard<std::mutex> lock(timeMutex);
+                    shared_start_time = std::chrono::high_resolution_clock::now();
+                }
+                last_pass_finish_time = std::chrono::high_resolution_clock::now();
+                
+                quitRender = false;
+                appState = AppState::Running;
+                renderThread = std::thread(renderFunc);
+            }
+            
+            if (newDataAvailable && appState == AppState::Running) {
+                auto now = std::chrono::high_resolution_clock::now();
+                shared_last_pass_time = std::chrono::duration<double>(now - last_pass_finish_time).count();
+                last_pass_finish_time = now;
+            }
 
-    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width, height);
-
-    enum class AppState {
-        Running,
-        ResetRequested,
-        SceneChangeRequested,
-        Quitting
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+        
+        quitRender = true;
+        if (renderThread.joinable()) {
+            renderThread.join();
+        }
     };
 
-    AppState state = AppState::Running;
+    std::thread managerThread(managerFunc);
+
+    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width, height);
+    int displayWidth = width;
+    int displayHeight = height;
+
     SDL_Event event;
-    auto start_time = std::chrono::high_resolution_clock::now();
-    double last_pass_time = 0;
-    auto last_pass_finish_time = std::chrono::high_resolution_clock::now();
+    double last_pass_time_display = 0;
 
-    int nextWidth = width;
-    int nextHeight = height;
+    // マウス操作状態の管理
+    bool isMouseDown = false;
+    float lastMouseX = 0;
+    float lastMouseY = 0;
 
-    while (state != AppState::Quitting) {
+    while (appState != AppState::Quitting) {
         auto frame_start = std::chrono::high_resolution_clock::now();
 
         // SDLイベントのポーリング（UI操作の処理）
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) {
-                state = AppState::Quitting;
+                appState = AppState::Quitting;
             } else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-                // ウィンドウサイズ変更時のリセット
-                // ウィンドウサイズが異常な値（ディスプレイサイズ超など）を取得することがあるため、
-                // ディスプレイの境界サイズでクランプする
                 SDL_Rect displayBounds;
                 int windowWidth = event.window.data1;
                 int windowHeight = event.window.data2;
@@ -249,92 +351,100 @@ int main(int argc, char* argv[]) {
                     windowHeight = std::min(windowHeight, displayBounds.h);
                 }
                 
-                nextWidth = windowWidth;
-                nextHeight = windowHeight;
-                if (state != AppState::Quitting) {
-                    state = AppState::ResetRequested;
+                {
+                    std::lock_guard<std::mutex> lock(paramsMutex);
+                    sharedParams.width = windowWidth;
+                    sharedParams.height = windowHeight;
+                }
+                if (appState != AppState::Quitting) {
+                    appState = AppState::ResetRequested;
+                }
+            } else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    isMouseDown = true;
+                    lastMouseX = event.button.x;
+                    lastMouseY = event.button.y;
                 }
             } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-                // シーン切り替えボタンの判定（ボタンを離した時に確定）
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    isMouseDown = false;
+                }
                 float x = event.button.x;
                 float y = event.button.y;
-                if (x >= width - 120 && x <= width - 10 && y >= 10 && y <= 10 + (int)scenes.size() * 40) {
+                if (x >= (float)displayWidth - 120 && x <= (float)displayWidth - 10 && y >= 10 && y <= 10 + (int)scenes.size() * 40) {
                     int clickedIdx = (y - 10) / 40;
                     if (clickedIdx >= 0 && clickedIdx < (int)scenes.size() && clickedIdx != currentSceneIdx) {
-                        currentSceneIdx = clickedIdx;
-                        if (state != AppState::Quitting) {
-                            state = AppState::SceneChangeRequested;
+                        {
+                            std::lock_guard<std::mutex> lock(paramsMutex);
+                            sharedParams.sceneIdx = clickedIdx;
+                        }
+                        if (appState != AppState::Quitting) {
+                            appState = AppState::SceneChangeRequested;
                         }
                     }
+                }
+            } else if (event.type == SDL_EVENT_MOUSE_MOTION) {
+                if (isMouseDown) {
+                    float dx = event.motion.x - lastMouseX;
+                    float dy = event.motion.y - lastMouseY;
+                    lastMouseX = event.motion.x;
+                    lastMouseY = event.motion.y;
+
+                    orbitPhi -= dx * 0.01f;
+                    orbitTheta -= dy * 0.01f;
+                    orbitTheta = std::clamp(orbitTheta, 0.01f, (float)M_PI - 0.01f);
+
+                    eye.x = target.x + orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi);
+                    eye.y = target.y + orbitRadius * std::cos(orbitTheta);
+                    eye.z = target.z + orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi);
+
+                    {
+                        std::lock_guard<std::mutex> lock(paramsMutex);
+                        sharedParams.eye = eye;
+                    }
+                    if (appState != AppState::Quitting) {
+                        appState = AppState::ResetRequested;
+                    }
+                }
+            } else if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+                orbitRadius -= event.wheel.y * 0.5f;
+                orbitRadius = std::max(0.1f, orbitRadius);
+
+                eye.x = target.x + orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi);
+                eye.y = target.y + orbitRadius * std::cos(orbitTheta);
+                eye.z = target.z + orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi);
+
+                {
+                    std::lock_guard<std::mutex> lock(paramsMutex);
+                    sharedParams.eye = eye;
+                }
+                if (appState != AppState::Quitting) {
+                    appState = AppState::ResetRequested;
                 }
             }
         }
 
-        // レンダリングのリセット処理（サイズ変更やシーン切り替え時）
-        if (state == AppState::ResetRequested || state == AppState::SceneChangeRequested) {
-            bool isSceneChange = (state == AppState::SceneChangeRequested);
-            
-            // 1. まず実行中のレンダリングスレッドを停止要求し、完全に終了するのを待機する
-            quitRender = true;
-            if (renderThread.joinable()) {
-                renderThread.join();
-            }
-
-            // スレッド停止後に安全にサイズを更新する
-            width = nextWidth;
-            height = nextHeight;
-
-            // 2. スレッド停止後に最新の完了サンプルがあれば反映させる
-            if (newDataAvailable) {
-                std::lock_guard<std::mutex> lock(filmMutex);
-                pixels = shared_pixels;
-                newDataAvailable = false;
-                SDL_UpdateTexture(texture, nullptr, pixels.data(), width * 3);
-            }
-
-            // 3. シーンやフィルム、カメラなどのリソースを安全に変更・再構築する
-            if (isSceneChange) {
-                loadScene(currentSceneIdx);
-                eye = scenes[currentSceneIdx].eye;
-                fov = scenes[currentSceneIdx].fov;
-            }
-
-            // カメラ、Film、パストレーサーを再構築
-            camera = std::make_unique<PinholeCamera>(eye, up, fov, width, height);
-            film = std::make_unique<Film>(width, height);
-            pathtracing = std::make_unique<Pathtracing>(bvh.get(), film.get(), camera.get(), samples);
-            
-            // SDLテクスチャとバッファの更新
+        if (textureUpdateNeeded) {
+            std::lock_guard<std::mutex> lock(filmMutex);
             if (texture) SDL_DestroyTexture(texture);
             texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width, height);
-            pixels.resize(width * height * 3);
-            shared_pixels.resize(width * height * 3);
-            current_pass = 0;
-            newDataAvailable = false;
-            start_time = std::chrono::high_resolution_clock::now();
-            
-            // 4. すべての準備が整った後で、新しいスレッドを開始する
-            quitRender = false;
-            state = AppState::Running;
-            renderThread = std::thread(renderFunc);
+            displayWidth = width;
+            displayHeight = height;
+            pixels.resize((size_t)displayWidth * displayHeight * 3);
+            textureUpdateNeeded = false;
         }
 
         // 新しいレンダリング結果があれば反映
         if (newDataAvailable) {
-            int pass = current_pass;
-            if (pass > 0) {
-                auto now = std::chrono::high_resolution_clock::now();
-                last_pass_time = std::chrono::duration<double>(now - last_pass_finish_time).count();
-                last_pass_finish_time = now;
-
-                {
-                    // 共有バッファから表示用バッファへコピー
-                    std::lock_guard<std::mutex> lock(filmMutex);
+            {
+                std::lock_guard<std::mutex> lock(filmMutex);
+                if (pixels.size() == shared_pixels.size()) {
                     pixels = shared_pixels;
                     newDataAvailable = false;
                 }
-                SDL_UpdateTexture(texture, nullptr, pixels.data(), width * 3);
             }
+            last_pass_time_display = shared_last_pass_time.load();
+            SDL_UpdateTexture(texture, nullptr, pixels.data(), displayWidth * 3);
         }
 
         // 画面描画処理
@@ -343,34 +453,39 @@ int main(int argc, char* argv[]) {
 
         // シーン切り替えボタンの描画
         for (int i = 0; i < (int)scenes.size(); ++i) {
-            SDL_FRect rect = {(float)width - 120, 10.0f + i * 40.0f, 110.0f, 30.0f};
+            SDL_FRect rect = {(float)displayWidth - 120, 10.0f + i * 40.0f, 110.0f, 30.0f};
             if (i == currentSceneIdx) SDL_SetRenderDrawColor(renderer, 100, 255, 100, 255);
             else SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
             SDL_RenderFillRect(renderer, &rect);
         }
 
         // ステータス表示エリアの描画
-        SDL_FRect statusRect = {(float)width - 250, (float)height - 80, 240.0f, 70.0f};
+        SDL_FRect statusRect = {(float)displayWidth - 250, (float)displayHeight - 80, 240.0f, 70.0f};
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_RenderFillRect(renderer, &statusRect);
 
         // ステータス情報の描画
         auto current_time = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = current_time - start_time;
+        std::chrono::high_resolution_clock::time_point s_time;
+        {
+            std::lock_guard<std::mutex> lock(timeMutex);
+            s_time = shared_start_time;
+        }
+        std::chrono::duration<double> elapsed = current_time - s_time;
         int pass = current_pass;
-        double sps = (double)pass / elapsed.count();
+        double sps = (double)pass / (elapsed.count() > 0 ? elapsed.count() : 1.0);
         
         std::string line1 = "Pass: " + std::to_string(pass);
         std::string line2 = std::to_string(sps) + " SPS";
-        std::string line3 = std::to_string(last_pass_time) + " s/pass";
-        std::string line4 = std::to_string(width) + "x" + std::to_string(height);
+        std::string line3 = std::to_string(last_pass_time_display) + " s/pass";
+        std::string line4 = std::to_string(displayWidth) + "x" + std::to_string(displayHeight);
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDLTest_DrawString(renderer, (float)width - 240, (float)height - 75, line1.data());
-        SDLTest_DrawString(renderer, (float)width - 240, (float)height - 60, line2.data());
-        SDLTest_DrawString(renderer, (float)width - 240, (float)height - 45, line3.data());
-        SDLTest_DrawString(renderer, (float)width - 240, (float)height - 30, line4.data());
+        SDLTest_DrawString(renderer, (float)displayWidth - 240, (float)displayHeight - 75, line1.data());
+        SDLTest_DrawString(renderer, (float)displayWidth - 240, (float)displayHeight - 60, line2.data());
+        SDLTest_DrawString(renderer, (float)displayWidth - 240, (float)displayHeight - 45, line3.data());
+        SDLTest_DrawString(renderer, (float)displayWidth - 240, (float)displayHeight - 30, line4.data());
 
         SDL_RenderPresent(renderer);
 
@@ -382,9 +497,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    quitRender = true;
-    if (renderThread.joinable()) {
-        renderThread.join();
+    appState = AppState::Quitting;
+    if (managerThread.joinable()) {
+        managerThread.join();
     }
 
     bvh->freeObject();

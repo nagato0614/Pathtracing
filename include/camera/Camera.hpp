@@ -22,7 +22,7 @@ class Camera
      * @param width     スクリーンの横幅
      * @param height    スクリーンの高さ
      */
-    Camera(const Vector3 &e, const Vector3 &up, float f, int width, int height);
+    Camera(const Vector3 &e, const Vector3 &target, const Vector3 &up, float f, int width, int height);
 
     /**
      * 指定したピクセル座標に対する一次レイを生成する

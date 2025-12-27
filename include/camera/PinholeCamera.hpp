@@ -12,7 +12,7 @@ namespace nagato
 class PinholeCamera : public Camera
 {
   public:
-    PinholeCamera(const Vector3 &eye, const Vector3 &up, float f, int width, int height);
+    PinholeCamera(const Vector3 &eye, const Vector3 &target, const Vector3 &up, float f, int width, int height);
 
     Ray makePrimaryRay(int x, int y) const override;
 

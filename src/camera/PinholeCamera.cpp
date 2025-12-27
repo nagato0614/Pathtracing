@@ -9,10 +9,11 @@ namespace nagato
 {
 
 PinholeCamera::PinholeCamera(const Vector3 &eye,
+                             const Vector3 &target,
                              const Vector3 &up,
                              float f,
                              int width,
-                             int height) : Camera(eye, up, f, width, height)
+                             int height) : Camera(eye, target, up, f, width, height)
 {
   this->wE = normalize(eye - center);
   this->uE = normalize(cross(up, wE));
