@@ -17,6 +17,12 @@ class Pathtracing : public RenderBase
 
     void render() override;
 
+    /**
+     * @brief 1パス分（1サンプリング分）のレンダリングを行う
+     * @param current_pass 現在のパス数（0オリジン）
+     */
+    void render(int current_pass);
+
   private:
     Spectrum Li(size_t x, size_t y);
 

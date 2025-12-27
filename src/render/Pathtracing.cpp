@@ -18,55 +18,73 @@ Pathtracing::Pathtracing(Scene *scene, Film *film, Camera *camera, int spp, int 
 void Pathtracing::render()
 {
   Progressbar prog{spp};
-  const auto width = film->getWidth();
-  const auto height = film->getHeight();
-
-#ifndef _OPENMP
-  const auto thread_num = std::thread::hardware_concurrency() - 1;
-  ThreadPool pool(thread_num, thread_num);
-#endif
 
   for (int pass = 0; pass < spp; pass++)
   {
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1)
-    for (int i = 0; i < width * height; i++)
-    {
-      const size_t x = i % width;
-      const size_t y = height - i / width;
+    render(pass);
 
-      const auto L = Li(x, y);
-
-      (*film)[i] = (*film)[i] + (L / spp);
-    }
-#else
-    std::vector<std::future<void>> futures;
-    int current_spp = this->spp;
-    for (int y_idx = 0; y_idx < height; y_idx++)
+    // 平均化して出力
+    Film temp_film(film->getWidth(), film->getHeight());
+    for (int i = 0; i < film->getWidth() * film->getHeight(); i++)
     {
-      futures.emplace_back(pool.enqueue_task(
-        [this, y_idx, width, height, current_spp]()
-        {
-          const size_t y = height - y_idx;
-          for (size_t x = 0; x < width; x++)
-          {
-            const auto L = Li(x, y);
-            const size_t i = y_idx * width + x;
-            (*film)[i] = (*film)[i] + (L / current_spp);
-          }
-        }));
+      temp_film[i] = (*film)[i] / (float) (pass + 1);
     }
-    for (auto &f : futures)
-    {
-      f.get();
-    }
-#endif
+    temp_film.outputImage("output.png");
 
     prog.update();
     prog.printBar();
   }
 
+  // Final average for last output
+  for (int i = 0; i < film->getWidth() * film->getHeight(); i++)
+  {
+    (*film)[i] = (*film)[i] / (float) spp;
+  }
   film->outputImage("output.png");
+}
+
+void Pathtracing::render(int current_pass)
+{
+  const auto width = film->getWidth();
+  const auto height = film->getHeight();
+
+#ifndef _OPENMP
+  const auto thread_num = std::thread::hardware_concurrency() - 4;
+  ThreadPool pool(thread_num, thread_num);
+#endif
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1)
+  for (int i = 0; i < width * height; i++)
+  {
+    const size_t x = i % width;
+    const size_t y = height - i / width;
+
+    const auto L = Li(x, y);
+
+    (*film)[i] = (*film)[i] + L;
+  }
+#else
+  std::vector<std::future<void>> futures;
+  for (int y_idx = 0; y_idx < height; y_idx++)
+  {
+    futures.emplace_back(pool.enqueue_task(
+      [this, y_idx, width, height]()
+      {
+        const size_t y = height - y_idx;
+        for (size_t x = 0; x < width; x++)
+        {
+          const auto L = Li(x, y);
+          const size_t i = y_idx * width + x;
+          (*film)[i] = (*film)[i] + L;
+        }
+      }));
+  }
+  for (auto &f : futures)
+  {
+    f.get();
+  }
+#endif
 }
 
 Spectrum Pathtracing::Li(size_t x, size_t y)

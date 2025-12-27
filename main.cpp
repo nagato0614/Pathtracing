@@ -63,7 +63,8 @@ int main() {
     const int samples = 100;
 
     // Camera parameters
-    const Vector3 eye(0, 5, 14);
+    // const Vector3 eye(0, 5, 14);
+    const Vector3 eye(0, 1.5, 4);
     const auto center = eye + Vector3(0, 0, -1);
 
     const Vector3 up(0, 1, 0);
