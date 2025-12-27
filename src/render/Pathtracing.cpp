@@ -20,6 +20,12 @@ void Pathtracing::render()
   Progressbar prog{spp};
   const auto width = film->getWidth();
   const auto height = film->getHeight();
+
+#ifndef _OPENMP
+  const auto thread_num = std::thread::hardware_concurrency() - 1;
+  ThreadPool pool(thread_num, thread_num);
+#endif
+
   for (int pass = 0; pass < spp; pass++)
   {
 #ifdef _OPENMP
@@ -34,18 +40,20 @@ void Pathtracing::render()
       (*film)[i] = (*film)[i] + (L / spp);
     }
 #else
-    ThreadPool pool(std::thread::hardware_concurrency(), std::thread::hardware_concurrency());
     std::vector<std::future<void>> futures;
     int current_spp = this->spp;
-    for (int i = 0; i < width * height; i++)
+    for (int y_idx = 0; y_idx < height; y_idx++)
     {
       futures.emplace_back(pool.enqueue_task(
-        [this, i, width, height, current_spp]()
+        [this, y_idx, width, height, current_spp]()
         {
-          const size_t x = i % width;
-          const size_t y = height - i / width;
-          const auto L = Li(x, y);
-          (*film)[i] = (*film)[i] + (L / current_spp);
+          const size_t y = height - y_idx;
+          for (size_t x = 0; x < width; x++)
+          {
+            const auto L = Li(x, y);
+            const size_t i = y_idx * width + x;
+            (*film)[i] = (*film)[i] + (L / current_spp);
+          }
         }));
     }
     for (auto &f : futures)
