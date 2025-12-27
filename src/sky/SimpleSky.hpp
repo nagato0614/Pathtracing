@@ -7,16 +7,18 @@
 
 #include "Sky.hpp"
 
-namespace nagato {
-    class SimpleSky : public Sky {
-     public :
-        explicit SimpleSky(const Spectrum &s);
+namespace nagato
+{
+class SimpleSky : public Sky
+{
+  public:
+    explicit SimpleSky(const Spectrum &s);
 
-        Spectrum getRadiance(const Ray &ray) const override;
+    Spectrum getRadiance(const Ray &ray) const override;
 
-     private:
-        Spectrum skyColor;
-    };
-}
+  private:
+    Spectrum skyColor;
+};
+} // namespace nagato
 
-#endif //PATHTRACING_SIMPLESKY_HPP
+#endif // PATHTRACING_SIMPLESKY_HPP

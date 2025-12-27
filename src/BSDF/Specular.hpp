@@ -9,15 +9,19 @@
 
 namespace nagato
 {
-    class Specular : public BSDF
-    {
-     public:
-        explicit Specular(Spectrum c);
+class Specular : public BSDF
+{
+  public:
+    explicit Specular(Spectrum c);
 
-        Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const override;
-    };
+    Spectrum makeNewDirection(int *wavelengthIndex,
+                              Vector3 *newDirection,
+                              Ray &ray,
+                              const Hit &surfaceInfo,
+                              float *pdf) const override;
+};
 
-    std::shared_ptr<Specular> createSpecular(Spectrum c);
-}
+std::shared_ptr<Specular> createSpecular(Spectrum c);
+} // namespace nagato
 
-#endif //PATHTRACING_SPECULAR_HPP
+#endif // PATHTRACING_SPECULAR_HPP

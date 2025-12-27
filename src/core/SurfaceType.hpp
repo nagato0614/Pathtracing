@@ -4,15 +4,17 @@
 
 #ifndef PATHTRACING_SURFACETYPE_HPP
 #define PATHTRACING_SURFACETYPE_HPP
-namespace nagato {
+namespace nagato
+{
 
-    enum class SurfaceType : int {
-        Diffuse,
-        Mirror,
-        Fresnel,
-        RoughSpecular,
-        Emitter,
-    };
+enum class SurfaceType : int
+{
+  Diffuse,
+  Mirror,
+  Fresnel,
+  RoughSpecular,
+  Emitter,
+};
 
 }
-#endif //PATHTRACING_SURFACETYPE_HPP
+#endif // PATHTRACING_SURFACETYPE_HPP

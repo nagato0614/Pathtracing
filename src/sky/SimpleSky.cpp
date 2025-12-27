@@ -4,14 +4,14 @@
 
 #include "SimpleSky.hpp"
 
-namespace nagato {
+namespace nagato
+{
 
-    Spectrum SimpleSky::getRadiance(const Ray &ray) const {
-        float t = (ray.getDirection().y + 1 ) / 2.0f;
-        return (1 - t) * Spectrum(1) + t * skyColor;
-    }
-
-    SimpleSky::SimpleSky(const Spectrum &s) : skyColor(s) {
-
-    }
+Spectrum SimpleSky::getRadiance(const Ray &ray) const
+{
+  float t = (ray.getDirection().y + 1) / 2.0f;
+  return (1 - t) * Spectrum(1) + t * skyColor;
 }
+
+SimpleSky::SimpleSky(const Spectrum &s) : skyColor(s) {}
+} // namespace nagato

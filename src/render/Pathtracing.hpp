@@ -7,20 +7,22 @@
 
 #include "RenderBase.hpp"
 
-namespace nagato {
-    class Pathtracing : public RenderBase {
+namespace nagato
+{
+class Pathtracing : public RenderBase
+{
 
-     public:
-        Pathtracing(Scene *scene, Film *film, Camera *camera, int spp, int depth = 5);
+  public:
+    Pathtracing(Scene *scene, Film *film, Camera *camera, int spp, int depth = 5);
 
-        void render() override;
+    void render() override;
 
-     private:
-        Spectrum Li(size_t x, size_t y);
+  private:
+    Spectrum Li(size_t x, size_t y);
 
-        int spp;
-        int maxDepth;
-    };
-}
+    int spp;
+    int maxDepth;
+};
+} // namespace nagato
 
-#endif //PATHTRACING_PATHTRACING_HPP
+#endif // PATHTRACING_PATHTRACING_HPP

@@ -4,22 +4,20 @@
 
 #include "Specular.hpp"
 
+namespace nagato
+{
 
-namespace nagato {
+Specular::Specular(Spectrum c) : BSDF(c) {}
 
-    Specular::Specular(Spectrum c) : BSDF(c) {
-
-    }
-
-    Spectrum Specular::makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const {
-        const auto wi = -ray.getDirection();
-        *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
-        *pdf = 1.0;
-        return this->color;
-    }
-
-    std::shared_ptr<Specular> createSpecular(Spectrum c) {
-        return std::make_shared<Specular>(c);
-    }
-
+Spectrum Specular::makeNewDirection(
+  int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const
+{
+  const auto wi = -ray.getDirection();
+  *newDirection = surfaceInfo.getNormal() * 2 * dot(wi, surfaceInfo.getNormal()) - wi;
+  *pdf = 1.0;
+  return this->color;
 }
+
+std::shared_ptr<Specular> createSpecular(Spectrum c) { return std::make_shared<Specular>(c); }
+
+} // namespace nagato

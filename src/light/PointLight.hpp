@@ -5,22 +5,20 @@
 #ifndef PATHTRACING_POINTLIGHT_HPP
 #define PATHTRACING_POINTLIGHT_HPP
 
-
 #include "Light.hpp"
 
 namespace nagato
 {
-    class PointLight : Light
-    {
-     public:
-        PointLight(Spectrum I, LightType type, Vector3 point);
+class PointLight : Light
+{
+  public:
+    PointLight(Spectrum I, LightType type, Vector3 point);
 
-        Spectrum samplePoint(Hit hit, Vector3 *sampledPoint, float *pdf) override;
+    Spectrum samplePoint(Hit hit, Vector3 *sampledPoint, float *pdf) override;
 
-     private:
-        Vector3 point;
-    };
-}
+  private:
+    Vector3 point;
+};
+} // namespace nagato
 
-
-#endif //PATHTRACING_POINTLIGHT_HPP
+#endif // PATHTRACING_POINTLIGHT_HPP

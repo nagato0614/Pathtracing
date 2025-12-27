@@ -7,24 +7,26 @@
 
 #include "BSDF.hpp"
 
-namespace nagato {
-    class Fresnel : public BSDF {
-     public:
-        explicit Fresnel(Spectrum c);
+namespace nagato
+{
+class Fresnel : public BSDF
+{
+  public:
+    explicit Fresnel(Spectrum c);
 
-        Fresnel(Spectrum c, float ior);
+    Fresnel(Spectrum c, float ior);
 
-        Spectrum makeNewDirection(int *wavelengthIndex,
-                                  Vector3 *newDirection,
-                                  Ray &ray,
-                                  const Hit &surfaceInfo,
-                                  float *pdf) const override;
+    Spectrum makeNewDirection(int *wavelengthIndex,
+                              Vector3 *newDirection,
+                              Ray &ray,
+                              const Hit &surfaceInfo,
+                              float *pdf) const override;
 
-     private:
-        float ior;
-    };
+  private:
+    float ior;
+};
 
-    std::shared_ptr<Fresnel> createFresnel(Spectrum c, float ior);
-}
+std::shared_ptr<Fresnel> createFresnel(Spectrum c, float ior);
+} // namespace nagato
 
-#endif //PATHTRACING_FRESNEL_HPP
+#endif // PATHTRACING_FRESNEL_HPP

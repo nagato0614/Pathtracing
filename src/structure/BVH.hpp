@@ -6,74 +6,72 @@
 #define PATHTRACING_BVH_HPP
 
 #include "../core/Scene.hpp"
-#include "Aabb.hpp"
 #include "../object/Triangle.hpp"
+#include "Aabb.hpp"
 
 namespace nagato
 {
-    // BVHを構築するノード
-    struct BVHNode
-    {
-        Aabb bbox;
-        Object *object = nullptr;
-        int left = -1;
-        int right = -1;
-    };
+// BVHを構築するノード
+struct BVHNode
+{
+    Aabb bbox;
+    Object *object = nullptr;
+    int left = -1;
+    int right = -1;
+};
 
-    class Scene;
+class Scene;
 
-    // BVHを扱うクラス
-    class BVH : public Scene
-    {
-     public:
-        BVH();
+// BVHを扱うクラス
+class BVH : public Scene
+{
+  public:
+    BVH();
 
-        explicit BVH(std::vector<Object *> objects);
+    explicit BVH(std::vector<Object *> objects);
 
-        // BVHの構築を始める
-        void constructBVH();
+    // BVHの構築を始める
+    void constructBVH();
 
-        // BVHとレイの交差判定
-        std::optional<Hit> intersect(Ray &ray, float min, float max) override;
+    // BVHとレイの交差判定
+    std::optional<Hit> intersect(Ray &ray, float min, float max) override;
 
-        // BVHのノード数を返す
-        int getNodeCount();
+    // BVHのノード数を返す
+    int getNodeCount();
 
-        // BVHで使用しているメモリサイズを返す[MB]
-        size_t getMemorySize();
+    // BVHで使用しているメモリサイズを返す[MB]
+    size_t getMemorySize();
 
-        // デバッグ用
-        void showBVH();
+    // デバッグ用
+    void showBVH();
 
-        // デバッグ用 : ノード内にあるオブジェクトが正しいか比較する
-        std::optional<Hit> testIntersect(Ray &ray, float min, float max);
+    // デバッグ用 : ノード内にあるオブジェクトが正しいか比較する
+    std::optional<Hit> testIntersect(Ray &ray, float min, float max);
 
-        BVHNode *getRoot() const;
+    BVHNode *getRoot() const;
 
-        const std::vector<Object *> &getObjects() const;
+    const std::vector<Object *> &getObjects() const;
 
-        const BVHNode *getNodes() const;
+    const BVHNode *getNodes() const;
 
-     private:
+  private:
+    // BVH構築を再帰的に行う
+    void constructBVH_internal(std::vector<Object *> objects, int splitAxis, int nodeIndex);
 
-        // BVH構築を再帰的に行う
-        void constructBVH_internal(std::vector<Object *> objects, int splitAxis, int nodeIndex);
+    // BVHとレイの交差判定を再帰的に行う
+    std::optional<Hit> intersect_internal(Ray &ray, float min, float max, int nodeIndex);
 
-        // BVHとレイの交差判定を再帰的に行う
-        std::optional<Hit> intersect_internal(Ray &ray, float min, float max, int nodeIndex);
+    // 新しいノードを作成する
+    int makeNewNode();
 
-        // 新しいノードを作成する
-        int makeNewNode();
+    float surfaceArea(Aabb bbox);
 
-        float surfaceArea(Aabb bbox);
+    Aabb mergeAABB(Aabb a, Aabb b);
 
-        Aabb mergeAABB(Aabb a, Aabb b);
+    BVHNode *root = nullptr;
+    int nodeCount = 0;
+    BVHNode nodes[BVH_NODE];
+};
+} // namespace nagato
 
-        BVHNode *root = nullptr;
-        int nodeCount = 0;
-        BVHNode nodes[BVH_NODE];
-    };
-}
-
-
-#endif //PATHTRACING_BVH_HPP
+#endif // PATHTRACING_BVH_HPP

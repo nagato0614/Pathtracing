@@ -4,15 +4,11 @@
 
 #include "Timer.hpp"
 
-namespace nagato {
-    Timer::Timer() {
-    }
+namespace nagato
+{
+Timer::Timer() {}
 
-    void Timer::start() {
-        startTime = sys::now();
-    }
+void Timer::start() { startTime = sys::now(); }
 
-    void Timer::stop() {
-        endTime = sys::now();
-    }
-}
+void Timer::stop() { endTime = sys::now(); }
+} // namespace nagato

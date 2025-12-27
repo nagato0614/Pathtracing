@@ -5,27 +5,28 @@
 #ifndef PATHTRACING_TRIANGLE_HPP
 #define PATHTRACING_TRIANGLE_HPP
 
-
 #include "Object.hpp"
 
-namespace nagato {
-    class Triangle : public Object {
-    public:
-        Triangle(Material *m, std::vector<Vector3> p);
+namespace nagato
+{
+class Triangle : public Object
+{
+  public:
+    Triangle(Material *m, std::vector<Vector3> p);
 
-        std::optional<Hit> intersect(Ray &ray, float tmin, float tmax) override;
+    std::optional<Hit> intersect(Ray &ray, float tmin, float tmax) override;
 
-        Aabb getAABB() const override;
+    Aabb getAABB() const override;
 
-        Hit pointSampling(Hit surfaceInfo) override;
+    Hit pointSampling(Hit surfaceInfo) override;
 
-        std::string toString() const override;
+    std::string toString() const override;
 
-        float area() const override;
+    float area() const override;
 
-    private:
-        std::vector<Vector3> points;
-    };
-}
+  private:
+    std::vector<Vector3> points;
+};
+} // namespace nagato
 
-#endif //PATHTRACING_TRIANGLE_HPP
+#endif // PATHTRACING_TRIANGLE_HPP

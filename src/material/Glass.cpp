@@ -5,10 +5,11 @@
 #include "Glass.hpp"
 #include "../BSDF/Fresnel.hpp"
 
-namespace nagato {
+namespace nagato
+{
 
-    Glass::Glass(Spectrum c, float ior)
-    : Material(SurfaceType::Fresnel, c, Spectrum(), 0), ior(ior) {
-        this->bsdf = createFresnel(c, ior);
-    }
+Glass::Glass(Spectrum c, float ior) : Material(SurfaceType::Fresnel, c, Spectrum(), 0), ior(ior)
+{
+  this->bsdf = createFresnel(c, ior);
 }
+} // namespace nagato

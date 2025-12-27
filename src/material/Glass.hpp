@@ -5,18 +5,19 @@
 #ifndef PATHTRACING_GLASS_HPP
 #define PATHTRACING_GLASS_HPP
 
-
-#include "Material.hpp"
 #include "../BSDF/Fresnel.hpp"
+#include "Material.hpp"
 
+namespace nagato
+{
+class Glass : public Material
+{
+  public:
+    explicit Glass(Spectrum c, float ior);
 
-namespace nagato {
-    class Glass : public Material {
-     public:
-        explicit Glass(Spectrum c, float ior);
-     private:
-        float ior;
-    };
-}
+  private:
+    float ior;
+};
+} // namespace nagato
 
-#endif //PATHTRACING_GLASS_HPP
+#endif // PATHTRACING_GLASS_HPP

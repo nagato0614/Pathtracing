@@ -4,6 +4,7 @@
 
 #include "Sky.hpp"
 
-namespace nagato {
+namespace nagato
+{
 
 }

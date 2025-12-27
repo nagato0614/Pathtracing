@@ -5,24 +5,24 @@
 #ifndef PATHTRACING_IMAGEBASEDLIGHTING_HPP
 #define PATHTRACING_IMAGEBASEDLIGHTING_HPP
 
-
 #include "Sky.hpp"
 
-namespace nagato {
-    class ImageBasedLighting : public Sky {
-     public:
-        explicit ImageBasedLighting(const std::string &filename);
+namespace nagato
+{
+class ImageBasedLighting : public Sky
+{
+  public:
+    explicit ImageBasedLighting(const std::string &filename);
 
-        Spectrum getRadiance(const Ray &ray) const override;
+    Spectrum getRadiance(const Ray &ray) const override;
 
-     private:
+  private:
+    void open(const std::string &filename);
 
-        void open(const std::string &filename);
+    int width;
+    int height;
+    std::unique_ptr<Spectrum[]> image;
+};
+} // namespace nagato
 
-        int width;
-        int height;
-        std::unique_ptr<Spectrum[]> image;
-    };
-}
-
-#endif //PATHTRACING_IMAGEBASEDLIGHTING_HPP
+#endif // PATHTRACING_IMAGEBASEDLIGHTING_HPP

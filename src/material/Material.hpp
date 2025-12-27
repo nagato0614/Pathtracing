@@ -5,36 +5,36 @@
 #ifndef PATHTRACING_MATERIAL_HPP
 #define PATHTRACING_MATERIAL_HPP
 
-#include "../core/SurfaceType.hpp"
-#include "../color/Spectrum.hpp"
 #include "../BSDF/BSDF.hpp"
+#include "../color/Spectrum.hpp"
+#include "../core/SurfaceType.hpp"
 
-namespace nagato {
-    class BSDF;
+namespace nagato
+{
+class BSDF;
 
-    class Material {
-    public:
+class Material
+{
+  public:
+    Material(SurfaceType t, Spectrum c, Spectrum e = Spectrum(), float emitterL = 1.0);
 
+    ~Material();
 
-        Material(SurfaceType t, Spectrum c, Spectrum e = Spectrum(), float emitterL = 1.0);
+    BSDF &getBSDF() const;
 
-        ~Material();
+    SurfaceType type() const;
 
-        BSDF &getBSDF() const ;
+    std::string typeName();
 
-        SurfaceType type() const;
+    const Spectrum &getColor() const;
 
-        std::string typeName();
+    const Spectrum &getEmitter() const;
 
-        const Spectrum &getColor() const;
-
-        const Spectrum &getEmitter() const;
-
-    protected :
-        Spectrum color;
-        Spectrum emitter;
-        std::shared_ptr<BSDF> bsdf;
-        SurfaceType surfaceType;
-    };
-}
-#endif //PATHTRACING_MATERIAL_HPP
+  protected:
+    Spectrum color;
+    Spectrum emitter;
+    std::shared_ptr<BSDF> bsdf;
+    SurfaceType surfaceType;
+};
+} // namespace nagato
+#endif // PATHTRACING_MATERIAL_HPP

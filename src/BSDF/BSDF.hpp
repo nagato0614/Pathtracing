@@ -12,43 +12,46 @@
 
 namespace nagato
 {
-    class Material;
+class Material;
 
-    class Hit;
+class Hit;
+
+/**
+ * BSDFを扱う大本となるクラス
+ */
+class BSDF
+{
+  public:
+    BSDF(Spectrum color);
 
     /**
-     * BSDFを扱う大本となるクラス
+     * 現在のrayから反射方向とweightを計算する関数
+     * #TODO : 構造化束縛で値を返すようにする
+     * @param wavelengthIndex
+     * @param newDirection
+     * @param ray
+     * @param surfaceInfo
+     * @return materialが持つ反射率
      */
-    class BSDF
-    {
-     public:
-        BSDF(Spectrum color);
+    virtual Spectrum makeNewDirection(int *wavelengthIndex,
+                                      Vector3 *newDirection,
+                                      Ray &ray,
+                                      const Hit &surfaceInfo,
+                                      float *pdf) const = 0;
 
-        /**
-         * 現在のrayから反射方向とweightを計算する関数
-         * #TODO : 構造化束縛で値を返すようにする
-         * @param wavelengthIndex
-         * @param newDirection
-         * @param ray
-         * @param surfaceInfo
-         * @return materialが持つ反射率
-         */
-        virtual Spectrum makeNewDirection(int *wavelengthIndex, Vector3 *newDirection, Ray &ray, const Hit &surfaceInfo, float *pdf) const = 0;
+    // 反射率を返す
+    virtual Spectrum f_r(const Vector3 &wi, const Vector3 &wo) const;
 
+    // wi方向に反射する確率
+    virtual float pdf(const Vector3 &wi, const Vector3 &wo, const Hit &hitPoint) const;
 
-        // 反射率を返す
-        virtual Spectrum f_r(const Vector3 &wi, const Vector3 &wo) const ;
+    virtual float f(const Vector3 &wi, const Vector3 &wo) const;
 
-        // wi方向に反射する確率
-        virtual float pdf(const Vector3 &wi, const Vector3 &wo, const Hit &hitPoint) const ;
+  protected:
+    Spectrum color;
+};
 
-        virtual float f(const Vector3 &wi, const Vector3 &wo) const ;
+BSDF *createBSDF(const Material &material);
+} // namespace nagato
 
-     protected:
-        Spectrum color;
-    };
-
-    BSDF *createBSDF(const Material &material);
-}
-
-#endif //PATHTRACING_BSDF_HPP
+#endif // PATHTRACING_BSDF_HPP

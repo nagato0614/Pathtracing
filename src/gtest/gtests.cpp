@@ -2,16 +2,16 @@
 // Created by 長井亨 on 2018/09/13.
 //
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "../core/Common.hpp"
-#include "../material/Material.hpp"
-#include "../core/Scene.hpp"
-#include "../structure/BVH.hpp"
-#include "../object/Sphere.hpp"
-#include "../film/Film.hpp"
-#include "../color/ColorRGB.hpp"
+#include <gtest/gtest.h>
 #include "../BSDF/Lambert.hpp"
+#include "../color/ColorRGB.hpp"
+#include "../core/Common.hpp"
+#include "../core/Scene.hpp"
+#include "../film/Film.hpp"
+#include "../material/Material.hpp"
+#include "../object/Sphere.hpp"
+#include "../structure/BVH.hpp"
 
 namespace nagato
 {
@@ -36,37 +36,22 @@ class BVHTest : public ::testing::Test
       // シーンの読み込み
       bvh.setObject(new Sphere{Vector3(-2, 1, 0), 1.1, &mirror});
       bvh.setObject(new Sphere{Vector3(2, 1, 0), 1.1, &Fresnel});
-      bvh.loadObject("../models/left.obj",
-                     "../models/left.mtl",
-                     &redMaterial);
-      bvh.loadObject("../models/right.obj",
-                     "../models/right.mtl",
-                     &blueMateral);
+      bvh.loadObject("../models/left.obj", "../models/left.mtl", &redMaterial);
+      bvh.loadObject("../models/right.obj", "../models/right.mtl", &blueMateral);
       bvh.loadObject("../models/back_ceil_floor_plane.obj",
                      "../models/back_ceil_floor_plane.mtl",
                      &whiteMaterial);
-      bvh.loadObject("../models/light_plane.obj",
-                     "../models/light_plane.mtl",
-                     &d65);
-      bvh.loadObject("../models/suzanne.obj",
-                     "../models/suzanne.mtl",
-                     &whiteMaterial);
+      bvh.loadObject("../models/light_plane.obj", "../models/light_plane.mtl", &d65);
+      bvh.loadObject("../models/suzanne.obj", "../models/suzanne.mtl", &whiteMaterial);
 
       bvh.constructBVH();
     }
 
-    ~BVHTest()
-    {
-      bvh.freeObject();
-    }
+    ~BVHTest() { bvh.freeObject(); }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-    }
+    virtual void TearDown() {}
 
     BVH bvh;
 };
@@ -104,8 +89,7 @@ TEST_F(BVHTest, intersection)
         const auto tf = std::tan(fov * 0.5f);
         const auto rpx = 2.0f * (x + Random::Instance().next()) / width - 1.0f;
         const auto rpy = 2.0f * (y + Random::Instance().next()) / height - 1.0f;
-        const Vector3 ww = normalize(
-          Vector3(aspect * tf * rpx, tf * rpy, -1));
+        const Vector3 ww = normalize(Vector3(aspect * tf * rpx, tf * rpy, -1));
         return uE * ww.x + vE * ww.y + wE * ww.z;
       }();
       ray.setDirection(firstDir);
@@ -122,17 +106,17 @@ TEST_F(BVHTest, intersection)
         // 線形探索とBVHの判定が正しいばいい
         ASSERT_FLOAT_EQ(intersect->getDistance(), intersectBVH->getDistance());
         ASSERT_FLOAT_EQ(intersect->getNormal().x, intersectBVH->getNormal().x)
-                                                    << "[x, y] : " << x << ", " << y;
+          << "[x, y] : " << x << ", " << y;
         ASSERT_FLOAT_EQ(intersect->getNormal().y, intersectBVH->getNormal().y)
-                                                    << "[x, y] : " << x << ", " << y;
+          << "[x, y] : " << x << ", " << y;
         ASSERT_FLOAT_EQ(intersect->getNormal().z, intersectBVH->getNormal().z)
-                                                    << "[x, y] : " << x << ", " << y;
+          << "[x, y] : " << x << ", " << y;
         ASSERT_FLOAT_EQ(intersect->getPoint().x, intersectBVH->getPoint().x)
-                                                    << "[x, y] : " << x << ", " << y;
+          << "[x, y] : " << x << ", " << y;
         ASSERT_FLOAT_EQ(intersect->getPoint().y, intersectBVH->getPoint().y)
-                                                    << "[x, y] : " << x << ", " << y;
+          << "[x, y] : " << x << ", " << y;
         ASSERT_FLOAT_EQ(intersect->getPoint().z, intersectBVH->getPoint().z)
-                                                    << "[x, y] : " << x << ", " << y;
+          << "[x, y] : " << x << ", " << y;
       }
     }
   }
@@ -179,25 +163,17 @@ TEST_F(BVHTest, HasObjectAtLeaf)
     auto *node = &nodes[i];
 
     // オブジェクトがない時片方だけでも子を保つ必要がある
-    if ((node->object == nullptr)
-      && (node->left == -1)
-      && (node->right == -1))
+    if ((node->object == nullptr) && (node->left == -1) && (node->right == -1))
       FAIL() << "Index : " << i;
 
-      // オブジェクトを持つ時必ず子を持っては行けない
-    else if ((node->object != nullptr)
-      && (node->left != -1)
-      && (node->right != -1))
+    // オブジェクトを持つ時必ず子を持っては行けない
+    else if ((node->object != nullptr) && (node->left != -1) && (node->right != -1))
       FAIL() << "Index : " << i;
 
-    else if ((node->object != nullptr)
-      && (node->left == -1)
-      && (node->right != -1))
+    else if ((node->object != nullptr) && (node->left == -1) && (node->right != -1))
       FAIL() << "Index : " << i;
 
-    else if ((node->object != nullptr)
-      && (node->left != -1)
-      && (node->right == -1))
+    else if ((node->object != nullptr) && (node->left != -1) && (node->right == -1))
       FAIL() << "Index : " << i;
   }
 }
@@ -222,14 +198,10 @@ TEST_F(BVHTest, ObjectHasMaterial)
  */
 class BSDFTest : public ::testing::Test
 {
-  protected :
-    BSDFTest()
-    {
-    }
+  protected:
+    BSDFTest() {}
 
-    ~BSDFTest()
-    {
-    }
+    ~BSDFTest() {}
 };
 
 /**
@@ -281,8 +253,7 @@ TEST(Random, nextFloatTest)
   for (int i = 0; i < 10000; i++)
   {
     auto randNum = random.nextFloat(0.0, 1.0);
-    ASSERT_TRUE((0 <= randNum)
-      && (randNum <= 1.0));
+    ASSERT_TRUE((0 <= randNum) && (randNum <= 1.0));
   }
 }
 
@@ -393,12 +364,11 @@ TEST(LambertTest, PdfTest)
     }
 
     const auto pdf = pdfSum * inv_N;
-    ASSERT_NEAR(1.0f, pdf, error) << "pdf : " << pdf
-                                             << "\nerror : " << error;
+    ASSERT_NEAR(1.0f, pdf, error) << "pdf : " << pdf << "\nerror : " << error;
   }
 }
-}
-}
+} // namespace nagatoTest
+} // namespace nagato
 
 int main(int argc, char **argv)
 {

@@ -7,28 +7,31 @@
 
 #include "../object/Object.hpp"
 
-namespace nagato {
-    class Object;
+namespace nagato
+{
+class Object;
 
-    class Hit {
-    public:
-        Hit();
+class Hit
+{
+  public:
+    Hit();
 
-        Hit(float d, Vector3 p, Vector3 n, Object *sphere);
+    Hit(float d, Vector3 p, Vector3 n, Object *sphere);
 
-        const float getDistance() const ;
+    const float getDistance() const;
 
-        const Vector3 &getPoint() const ;
+    const Vector3 &getPoint() const;
 
-        const Vector3 &getNormal() const ;
+    const Vector3 &getNormal() const;
 
-        const Object & getObject() const ;
-    private:
-        float distance;
-        Vector3 point;
-        Vector3 normal;
-        Object *object;
-    };
-}
+    const Object &getObject() const;
 
-#endif //PATHTRACING_HIT_HPP
+  private:
+    float distance;
+    Vector3 point;
+    Vector3 normal;
+    Object *object;
+};
+} // namespace nagato
+
+#endif // PATHTRACING_HIT_HPP

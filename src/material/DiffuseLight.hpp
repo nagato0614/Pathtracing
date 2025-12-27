@@ -5,15 +5,17 @@
 #ifndef PATHTRACING_DIFFUSELIGHT_HPP
 #define PATHTRACING_DIFFUSELIGHT_HPP
 
-
 #include "Material.hpp"
 
-namespace nagato {
-    class DiffuseLight : public Material {
-     public:
-        explicit DiffuseLight(Spectrum e, float l);
-     private:
-    };
-}
+namespace nagato
+{
+class DiffuseLight : public Material
+{
+  public:
+    explicit DiffuseLight(Spectrum e, float l);
 
-#endif //PATHTRACING_DIFFUSELIGHT_HPP
+  private:
+};
+} // namespace nagato
+
+#endif // PATHTRACING_DIFFUSELIGHT_HPP

@@ -5,24 +5,26 @@
 #ifndef PATHTRACING_RENDERBASE_HPP
 #define PATHTRACING_RENDERBASE_HPP
 
+#include "../camera/Camera.hpp"
 #include "../core/Scene.hpp"
 #include "../film/Film.hpp"
-#include "../camera/Camera.hpp"
 
-namespace nagato {
-    class RenderBase {
-     public:
-        RenderBase(Scene *scene, Film *film, Camera *camera);
+namespace nagato
+{
+class RenderBase
+{
+  public:
+    RenderBase(Scene *scene, Film *film, Camera *camera);
 
-        virtual void render() = 0;
+    virtual void render() = 0;
 
-        const Film &getFilm() const;
+    const Film &getFilm() const;
 
-     protected:
-        Scene *scene;
-        Film *film;
-        Camera *camera;
-    };
-}
+  protected:
+    Scene *scene;
+    Film *film;
+    Camera *camera;
+};
+} // namespace nagato
 
-#endif //PATHTRACING_RENDERBASE_HPP
+#endif // PATHTRACING_RENDERBASE_HPP

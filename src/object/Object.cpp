@@ -7,27 +7,13 @@
 namespace nagato
 {
 
-    std::optional<Hit> Object::intersect(Ray &ray, float tmin, float tmax)
-    {
-        return std::nullopt;
-    }
+std::optional<Hit> Object::intersect(Ray &ray, float tmin, float tmax) { return std::nullopt; }
 
-    Object::Object(Material *m) : material(m)
-    {
+Object::Object(Material *m) : material(m) {}
 
-    }
+Aabb Object::getAABB() const { return Aabb(nagato::Vector3(), nagato::Vector3()); }
 
-    Aabb Object::getAABB() const
-    {
-        return Aabb(nagato::Vector3(), nagato::Vector3());
-    }
+std::string Object::toString() const { return "Object : " + material->typeName(); }
 
-    std::string Object::toString() const
-    {
-        return "Object : " + material->typeName();
-    }
-
-    const Material &Object::getMaterial() const {
-        return *material;
-    }
-}
+const Material &Object::getMaterial() const { return *material; }
+} // namespace nagato

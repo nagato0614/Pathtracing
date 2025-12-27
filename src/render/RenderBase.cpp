@@ -5,14 +5,13 @@
 #include "RenderBase.hpp"
 #include "../camera/Camera.hpp"
 
-namespace nagato {
+namespace nagato
+{
 
-    RenderBase::RenderBase(Scene *scene, Film *film, Camera *camera)
-            : scene(scene), film(film), camera(camera) {
-
-    }
-
-    const Film &RenderBase::getFilm() const {
-        return *film;
-    }
+RenderBase::RenderBase(Scene *scene, Film *film, Camera *camera) :
+    scene(scene), film(film), camera(camera)
+{
 }
+
+const Film &RenderBase::getFilm() const { return *film; }
+} // namespace nagato

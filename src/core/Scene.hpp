@@ -10,45 +10,45 @@
 #include "../object/Object.hpp"
 #include "../sky/Sky.hpp"
 
-namespace nagato {
-    class Scene {
-    public:
-        Scene();
+namespace nagato
+{
+class Scene
+{
+  public:
+    Scene();
 
-        std::vector<Object *> objects;
+    std::vector<Object *> objects;
 
-        virtual std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
+    virtual std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
 
-        void setObject(Object *object);
+    void setObject(Object *object);
 
-        void loadObject(const std::string &objfilename,
-                        const std::string &mtlfilename,
-                        Material *m);
+    void loadObject(const std::string &objfilename, const std::string &mtlfilename, Material *m);
 
-        void freeObject();
+    void freeObject();
 
-        int getObjectCount() const;
+    int getObjectCount() const;
 
-        Spectrum directLight(Ray &ray, Hit info);
+    Spectrum directLight(Ray &ray, Hit info);
 
-        /**
-         * レイとオブジェクトの衝突が発生しない場合空の輝度を取得する
-         * skyは唯一つだけ設定できる
-         * @param sky
-         */
-        void setSky(Sky *sky);
+    /**
+     * レイとオブジェクトの衝突が発生しない場合空の輝度を取得する
+     * skyは唯一つだけ設定できる
+     * @param sky
+     */
+    void setSky(Sky *sky);
 
-        const Sky &getSky();
+    const Sky &getSky();
 
-        bool hasSky();
+    bool hasSky();
 
-    protected:
-        std::vector<Object *> lights;
+  protected:
+    std::vector<Object *> lights;
 
-        Sky *sky = nullptr;
+    Sky *sky = nullptr;
 
-        int objectCount = 0;
-    };
-}
+    int objectCount = 0;
+};
+} // namespace nagato
 
-#endif //PATHTRACING_SCENE_HPP
+#endif // PATHTRACING_SCENE_HPP

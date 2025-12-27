@@ -4,17 +4,14 @@
 
 #include "PointLight.hpp"
 
-namespace nagato {
-    PointLight::PointLight(Spectrum I, LightType type, Vector3 point)
-    : Light(I, type), point(point)
-    {
+namespace nagato
+{
+PointLight::PointLight(Spectrum I, LightType type, Vector3 point) : Light(I, type), point(point) {}
 
-    }
-
-    Spectrum PointLight::samplePoint(Hit hit, Vector3 *sampledPoint, float *pdf)
-    {
-        *sampledPoint = point - hit.getPoint();
-        *pdf = 1.f;
-        return I;
-    }
+Spectrum PointLight::samplePoint(Hit hit, Vector3 *sampledPoint, float *pdf)
+{
+  *sampledPoint = point - hit.getPoint();
+  *pdf = 1.f;
+  return I;
 }
+} // namespace nagato

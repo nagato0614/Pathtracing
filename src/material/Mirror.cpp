@@ -5,10 +5,11 @@
 #include "Mirror.hpp"
 #include "../BSDF/Specular.hpp"
 
-namespace nagato{
+namespace nagato
+{
 
-    Mirror::Mirror(Spectrum c)
-    : Material(SurfaceType::Mirror, c, Spectrum(), 0) {
-        this->bsdf = createSpecular(c);
-    }
+Mirror::Mirror(Spectrum c) : Material(SurfaceType::Mirror, c, Spectrum(), 0)
+{
+  this->bsdf = createSpecular(c);
 }
+} // namespace nagato

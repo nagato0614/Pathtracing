@@ -5,25 +5,25 @@
 #ifndef PATHTRACING_AABB_HPP
 #define PATHTRACING_AABB_HPP
 
-#include "../linearAlgebra/Vector3.hpp"
 #include "../core/Ray.hpp"
+#include "../linearAlgebra/Vector3.hpp"
 
 namespace nagato
 {
-    class Aabb
-    {
-     public:
-        Aabb();
+class Aabb
+{
+  public:
+    Aabb();
 
-        Aabb(Vector3 min, Vector3 max);
+    Aabb(Vector3 min, Vector3 max);
 
-        bool intersect(Ray &ray);
+    bool intersect(Ray &ray);
 
-        Vector3 getCenter();
+    Vector3 getCenter();
 
-        Vector3 min;
-        Vector3 max;
-    };
-}
+    Vector3 min;
+    Vector3 max;
+};
+} // namespace nagato
 
-#endif //PATHTRACING_AABB_HPP
+#endif // PATHTRACING_AABB_HPP

@@ -9,15 +9,15 @@
 
 namespace nagato
 {
-    class DiffuseLight : Light
-    {
-     public:
-        DiffuseLight(Spectrum I, LightType type, Object *o);
-        Spectrum samplePoint(Hit hit, Vector3 *sampledPoint, float *pdf) override;
-     private:
-        Object *object;
-    };
-}
+class DiffuseLight : Light
+{
+  public:
+    DiffuseLight(Spectrum I, LightType type, Object *o);
+    Spectrum samplePoint(Hit hit, Vector3 *sampledPoint, float *pdf) override;
 
+  private:
+    Object *object;
+};
+} // namespace nagato
 
-#endif //PATHTRACING_DIFFUSELIGHT_HPP
+#endif // PATHTRACING_DIFFUSELIGHT_HPP

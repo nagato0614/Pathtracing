@@ -7,14 +7,15 @@
 
 #include "Material.hpp"
 
-namespace nagato {
-    class Diffuse : public Material {
-     public:
-        explicit Diffuse(Spectrum c);
+namespace nagato
+{
+class Diffuse : public Material
+{
+  public:
+    explicit Diffuse(Spectrum c);
 
+  private:
+};
+} // namespace nagato
 
-     private:
-    };
-}
-
-#endif //PATHTRACING_DIFFUSE_HPP
+#endif // PATHTRACING_DIFFUSE_HPP

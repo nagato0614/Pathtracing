@@ -5,33 +5,34 @@
 #ifndef PATHTRACING_PROGRESSBAR_HPP
 #define PATHTRACING_PROGRESSBAR_HPP
 
+#include <cmath>
 #include <iostream>
-#include <zconf.h>
 #include <sys/ioctl.h>
 #include <thread>
-#include <cmath>
+#include <zconf.h>
 
-namespace nagato {
-    class Progressbar {
-     public:
-        explicit Progressbar(int max);
+namespace nagato
+{
+class Progressbar
+{
+  public:
+    explicit Progressbar(int max);
 
-        void reset(int max);
+    void reset(int max);
 
-        void update();
+    void update();
 
-        void update(int prog);
+    void update(int prog);
 
-        void printBar();
+    void printBar();
 
-        void printPercent();
+    void printPercent();
 
-     private:
+  private:
+    float max;
+    float progress;
+    int columns;
+};
+} // namespace nagato
 
-        float max;
-        float progress;
-        int columns;
-    };
-}
-
-#endif //PATHTRACING_PROGRESSBAR_HPP
+#endif // PATHTRACING_PROGRESSBAR_HPP

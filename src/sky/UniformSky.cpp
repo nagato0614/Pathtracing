@@ -4,13 +4,10 @@
 
 #include "UniformSky.hpp"
 
-namespace nagato {
+namespace nagato
+{
 
-    Spectrum UniformSky::getRadiance(const Ray &ray) const {
-        return skyColor;
-    }
+Spectrum UniformSky::getRadiance(const Ray &ray) const { return skyColor; }
 
-    UniformSky::UniformSky(const Spectrum &s) : skyColor(s){
-
-    }
-}
+UniformSky::UniformSky(const Spectrum &s) : skyColor(s) {}
+} // namespace nagato
