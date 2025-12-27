@@ -13,14 +13,26 @@ bool Aabb::intersect(Ray &ray)
   float t_max = FLT_MAX; // AABB からレイが外に出る時刻
   float t_min = -FLT_MAX; // AABB にレイが侵入する時刻
 
+  const Vector3 &origin = ray.getOrigin();
+  const Vector3 &direction = ray.getDirection();
+
   for (int i = 0; i < 3; i++)
   {
-    float t1 = (min[i] - ray.getOrigin()[i]) / ray.getDirection()[i];
-    float t2 = (max[i] - ray.getOrigin()[i]) / ray.getDirection()[i];
-    float t_near = std::min(t1, t2);
-    float t_far = std::max(t1, t2);
-    t_max = std::min(t_max, t_far);
-    t_min = std::max(t_min, t_near);
+    if (std::abs(direction[i]) < 1e-8f)
+    {
+      if (origin[i] < min[i] || origin[i] > max[i])
+        return false;
+    }
+    else
+    {
+      float invDir = 1.0f / direction[i];
+      float t1 = (min[i] - origin[i]) * invDir;
+      float t2 = (max[i] - origin[i]) * invDir;
+      float t_near = std::min(t1, t2);
+      float t_far = std::max(t1, t2);
+      t_max = std::min(t_max, t_far);
+      t_min = std::max(t_min, t_near);
+    }
 
     // レイが外に出る時刻と侵入する時刻が逆転している => 交差していない
     if (t_min > t_max)

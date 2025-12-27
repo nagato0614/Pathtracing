@@ -81,6 +81,15 @@ Aabb Triangle::getAABB() const
     }
   }
 
+  // 非常に薄いAABBによる交差判定の失敗を防ぐため、微小な厚みを持たせる
+  constexpr float epsilon = 1e-4f;
+  min.x -= epsilon;
+  min.y -= epsilon;
+  min.z -= epsilon;
+  max.x += epsilon;
+  max.y += epsilon;
+  max.z += epsilon;
+
   return Aabb(min, max);
 }
 

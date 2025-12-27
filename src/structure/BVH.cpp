@@ -147,29 +147,44 @@ std::optional<Hit> BVH::intersect_internal(Ray &ray, float min, float max, int n
     {
       // 中間ノードなので更に探索
 
-      std::optional<Hit> right = std::nullopt;
-      std::optional<Hit> left = std::nullopt;
-      if (node->right != -1)
-      {
-        right = intersect_internal(ray, min, max, node->right);
-      }
+      std::optional<Hit> leftHit = std::nullopt;
+      std::optional<Hit> rightHit = std::nullopt;
+
       if (node->left != -1)
       {
-        left = intersect_internal(ray, min, max, node->left);
+        leftHit = intersect_internal(ray, min, max, node->left);
       }
 
-      if (!right && !left)
+      // 左側でヒットがあった場合、その距離を新しい最大距離(max)として右側を探索する
+      // これにより、より遠いオブジェクトの探索をスキップできる可能性がある
+      float currentMax = max;
+      if (leftHit)
+      {
+        currentMax = leftHit->getDistance();
+      }
+
+      if (node->right != -1)
+      {
+        rightHit = intersect_internal(ray, min, currentMax, node->right);
+      }
+
+      if (!leftHit && !rightHit)
         return std::nullopt;
-      else if (!right && left)
-        return left;
-      else if (right && !left)
-        return right;
+      else if (!leftHit)
+        return rightHit;
+      else if (!rightHit)
+        return leftHit;
       else
-        return right->getDistance() > left->getDistance() ? left : right;
+        return (leftHit->getDistance() < rightHit->getDistance()) ? leftHit : rightHit;
     }
     else
     {
-      return node->object->intersect(ray, min, max);
+      auto hit = node->object->intersect(ray, min, max);
+      if (hit && hit->getDistance() >= min && hit->getDistance() <= max)
+      {
+        return hit;
+      }
+      return std::nullopt;
     }
   }
   else
