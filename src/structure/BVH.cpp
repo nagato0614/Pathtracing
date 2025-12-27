@@ -41,10 +41,11 @@ void BVH::constructBVH()
     fprintf(stderr, "[ERROR] オブジェクトがないためBVH構築できません");
     exit(CANNOT_CONSTRUCT_BVH);
   }
+  nodeCount = 0;
   constructBVH_internal(objects, 0, 0);
 }
 
-void BVH::constructBVH_internal(std::vector<Object *> objects, int splitAxis, int nodeIndex)
+void BVH::constructBVH_internal(const std::vector<Object *> &objects, int splitAxis, int nodeIndex)
 {
   // オブジェクトが１つだけの場合それを葉する
   if (objects.size() == 1)
@@ -61,6 +62,7 @@ void BVH::constructBVH_internal(std::vector<Object *> objects, int splitAxis, in
   }
 
   auto *node = &nodes[nodeIndex];
+  node->object = nullptr;
 
   // 大きなAABBの構築
   Aabb aabb;
@@ -70,12 +72,11 @@ void BVH::constructBVH_internal(std::vector<Object *> objects, int splitAxis, in
   }
   node->bbox = aabb;
 
-  std::vector<Object *> left(0);
-  std::vector<Object *> right(0);
+  std::vector<Object *> sorted_objects = objects;
 
   // オブジェクトをsplitAxisで指定する軸についてソートする
-  std::sort(objects.begin(),
-            objects.end(),
+  std::sort(sorted_objects.begin(),
+            sorted_objects.end(),
             [splitAxis](const Object *a, const Object *b)
             {
               auto aCenter = a->getAABB().getCenter();
@@ -83,13 +84,16 @@ void BVH::constructBVH_internal(std::vector<Object *> objects, int splitAxis, in
               return aCenter[splitAxis] < bCenter[splitAxis];
             });
 
+  std::vector<Object *> left(0);
+  std::vector<Object *> right(0);
+
   // オブジェクトの分割
-  for (int i = 0; i < objects.size(); i++)
+  for (int i = 0; i < sorted_objects.size(); i++)
   {
-    if (i < objects.size() / 2)
-      left.push_back(objects[i]);
+    if (i < sorted_objects.size() / 2)
+      left.push_back(sorted_objects[i]);
     else
-      right.push_back(objects[i]);
+      right.push_back(sorted_objects[i]);
   }
 
   // 子を作成
@@ -177,11 +181,11 @@ std::optional<Hit> BVH::intersect_internal(Ray &ray, float min, float max, int n
 
 int BVH::getNodeCount() { return nodeCount; }
 
-size_t BVH::getMemorySize() { return static_cast<size_t>(sizeof(BVHNode) * BVH_NODE * 10e-6); }
+size_t BVH::getMemorySize() { return static_cast<size_t>(sizeof(BVHNode) * nodeCount * 1e-6); }
 
 int BVH::makeNewNode()
 {
-  if (nodeCount >= BVH_NODE)
+  if (nodeCount + 1 >= BVH_NODE)
   {
     fprintf(stderr, "[ERROR] BVHノードが足りません");
     exit(EMPTY_NODE);

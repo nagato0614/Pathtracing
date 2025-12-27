@@ -13,6 +13,7 @@ namespace nagato
 class Camera
 {
   public:
+    virtual ~Camera() = default;
     /**
      *
      * @param e         カメラの位置

@@ -13,6 +13,7 @@ namespace nagato
 class Sky
 {
   public:
+    virtual ~Sky() = default;
     virtual Spectrum getRadiance(const Ray &ray) const = 0;
 };
 } // namespace nagato

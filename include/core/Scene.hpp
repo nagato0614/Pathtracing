@@ -16,6 +16,7 @@ class Scene
 {
   public:
     Scene();
+    virtual ~Scene() = default;
 
     std::vector<Object *> objects;
 

@@ -95,6 +95,9 @@ target_link_libraries(pathtracing
 target_link_libraries(sdl_preview
         pathtracingLibrary
         SDL3::SDL3
+        OpenEXR
+        Iex
+        Imath
         )
 
 target_link_libraries(

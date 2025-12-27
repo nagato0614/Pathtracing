@@ -108,6 +108,9 @@ void Scene::freeObject()
   {
     delete i;
   }
+  objects.clear();
+  lights.clear();
+  objectCount = 0;
 }
 
 Scene::Scene() { objects.clear(); }

@@ -15,6 +15,7 @@ class RenderBase
 {
   public:
     RenderBase(Scene *scene, Film *film, Camera *camera);
+    virtual ~RenderBase() = default;
 
     virtual void render() = 0;
 

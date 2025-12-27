@@ -22,6 +22,7 @@ class Object
 {
   public:
     explicit Object(Material *m);
+    virtual ~Object() = default;
 
     virtual std::optional<Hit> intersect(Ray &ray, float tmin, float tmax);
 
