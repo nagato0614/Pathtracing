@@ -7,8 +7,28 @@
 
 #include <cmath>
 
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
+#endif
+
 namespace nagato
 {
+#if defined(__ARM_NEON)
+namespace simd
+{
+inline float horizontalAdd(float32x4_t v)
+{
+#if defined(__aarch64__)
+  return vaddvq_f32(v);
+#else
+  auto sum = vadd_f32(vget_low_f32(v), vget_high_f32(v));
+  sum = vpadd_f32(sum, sum);
+  return vget_lane_f32(sum, 0);
+#endif
+}
+} // namespace simd
+#endif
+
 class Matrix4
 {
   public:
@@ -23,6 +43,15 @@ class Matrix4
     friend inline Matrix4 operator+(Matrix4 a, Matrix4 b)
     {
       Matrix4 m;
+#if defined(__ARM_NEON)
+      for (int i = 0; i < 4; i++)
+      {
+        auto rowA = vld1q_f32(a.data[i]);
+        auto rowB = vld1q_f32(b.data[i]);
+        auto sum = vaddq_f32(rowA, rowB);
+        vst1q_f32(m.data[i], sum);
+      }
+#else
       for (int i = 0; i < 4; i++)
       {
         for (int j = 0; j < 4; j++)
@@ -30,12 +59,22 @@ class Matrix4
           m.data[i][j] = a.data[i][j] + b.data[i][j];
         }
       }
+#endif
       return m;
     }
 
     friend inline Matrix4 operator-(Matrix4 a, Matrix4 b)
     {
       Matrix4 m;
+#if defined(__ARM_NEON)
+      for (int i = 0; i < 4; i++)
+      {
+        auto rowA = vld1q_f32(a.data[i]);
+        auto rowB = vld1q_f32(b.data[i]);
+        auto diff = vsubq_f32(rowA, rowB);
+        vst1q_f32(m.data[i], diff);
+      }
+#else
       for (int i = 0; i < 4; i++)
       {
         for (int j = 0; j < 4; j++)
@@ -43,6 +82,7 @@ class Matrix4
           m.data[i][j] = a.data[i][j] - b.data[i][j];
         }
       }
+#endif
       return m;
     }
 
@@ -50,6 +90,21 @@ class Matrix4
     {
       Matrix4 m;
 
+#if defined(__ARM_NEON)
+      float32x4_t rowsA[4];
+      for (int i = 0; i < 4; ++i)
+        rowsA[i] = vld1q_f32(a.data[i]);
+
+      for (int j = 0; j < 4; ++j)
+      {
+        float columnData[4] = {b.data[0][j], b.data[1][j], b.data[2][j], b.data[3][j]};
+        auto column = vld1q_f32(columnData);
+        for (int i = 0; i < 4; ++i)
+        {
+          m.data[i][j] = simd::horizontalAdd(vmulq_f32(rowsA[i], column));
+        }
+      }
+#else
       for (int i = 0; i < 4; i++)
       {
         for (int j = 0; j < 4; j++)
@@ -60,6 +115,7 @@ class Matrix4
           }
         }
       }
+#endif
       return m;
     }
 
