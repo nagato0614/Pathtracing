@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(pathtracing)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 cmake_policy(SET CMP0074 NEW)
 list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew")

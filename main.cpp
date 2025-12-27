@@ -25,9 +25,16 @@
 #include "sky/SimpleSky.hpp"
 #include "sky/ImageBasedLighting.hpp"
 
+#include "core/ThreadPool.hpp"
+
 using namespace nagato;
 
 int main() {
+#ifdef _OPENMP
+    std::cout << "-- openMP --" << std::endl;
+#else
+    std::cout << "-- ThreadPool --" << std::endl;
+#endif
 
 #ifdef MY_DEBUG
     std::cout << "-- DEBUF MODE --" << std::endl;
@@ -39,22 +46,21 @@ int main() {
 
     // スレッド数の表示
 #ifdef _OPENMP
-    std::cout << "-- openMP --" << std::endl;
     std::cout << "The number of processors is " << omp_get_num_procs() << std::endl;
     std::cout << "OpenMP : Enabled (Max # of threads = " << omp_get_max_threads() << ")" << std::endl;
     omp_set_num_threads(omp_get_max_threads());
 #else
-    std::cout << "OpenMP : OFF" << std::endl;
+    std::cout << "OpenMP : OFF (Using ThreadPool)" << std::endl;
 #endif
 
     Spectrum::initSpectrum();
 
     // Image size
-    const int width = 400;
-    const int height = 400;
+    const int width = 1000;
+    const int height = 1000;
 
     // Samples per pixel
-    const int samples = 10;
+    const int samples = 100;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -106,22 +112,6 @@ int main() {
 
     // コーネルボックス　うさぎ　==================================================
 
-//    bvh.loadObject("../models/left.obj",
-//                   "../models/left.mtl", &redMaterial);
-//    bvh.loadObject("../models/right.obj",
-//                   "../models/right.mtl", &blueMateral);
-//    bvh.loadObject("../models/back_ceil_floor_plane.obj",
-//                   "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
-//    bvh.loadObject("../models/light_plane.obj",
-//                   "../models/light_plane.mtl", &d65);
-//    bvh.loadObject("../models/low_poly_bunny.obj",
-//                   "../models/low_poly_bunny.mtl", &fresnel);
-
-    // コーネルボックス　球   ==================================================
-
-    bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &mirror});
-    bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &fresnel});
-
     bvh.loadObject("../models/left.obj",
                    "../models/left.mtl", &redMaterial);
     bvh.loadObject("../models/right.obj",
@@ -130,6 +120,22 @@ int main() {
                    "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
     bvh.loadObject("../models/light_plane.obj",
                    "../models/light_plane.mtl", &d65);
+    bvh.loadObject("../models/low_poly_bunny.obj",
+                   "../models/low_poly_bunny.mtl", &fresnel);
+
+    // コーネルボックス　球   ==================================================
+
+    // bvh.setObject(new Sphere{Vector3(-2, 2, -1), 1.1, &mirror});
+    // bvh.setObject(new Sphere{Vector3(2, 2, -1), 1.5, &fresnel});
+    //
+    // bvh.loadObject("../models/left.obj",
+    //                "../models/left.mtl", &redMaterial);
+    // bvh.loadObject("../models/right.obj",
+    //                "../models/right.mtl", &blueMateral);
+    // bvh.loadObject("../models/back_ceil_floor_plane.obj",
+    //                "../models/back_ceil_floor_plane.mtl", &whiteMaterial);
+    // bvh.loadObject("../models/light_plane.obj",
+    //                "../models/light_plane.mtl", &d65);
 
     // ======================================================================
 

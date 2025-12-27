@@ -3,7 +3,9 @@
 //
 
 #include "render/Pathtracing.hpp"
+#include <future>
 #include "core/Progressbar.hpp"
+#include "core/ThreadPool.hpp"
 
 namespace nagato
 {
@@ -22,7 +24,6 @@ void Pathtracing::render()
   {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1)
-#endif
     for (int i = 0; i < width * height; i++)
     {
       const size_t x = i % width;
@@ -32,6 +33,26 @@ void Pathtracing::render()
 
       (*film)[i] = (*film)[i] + (L / spp);
     }
+#else
+    ThreadPool pool(std::thread::hardware_concurrency(), std::thread::hardware_concurrency());
+    std::vector<std::future<void>> futures;
+    int current_spp = this->spp;
+    for (int i = 0; i < width * height; i++)
+    {
+      futures.emplace_back(pool.enqueue_task(
+        [this, i, width, height, current_spp]()
+        {
+          const size_t x = i % width;
+          const size_t y = height - i / width;
+          const auto L = Li(x, y);
+          (*film)[i] = (*film)[i] + (L / current_spp);
+        }));
+    }
+    for (auto &f : futures)
+    {
+      f.get();
+    }
+#endif
 
     prog.update();
     prog.printBar();
