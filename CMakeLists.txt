@@ -73,6 +73,9 @@ file(GLOB hpp
         ${PROJECT_SOURCE_DIR}/include/sky/*.hpp
         )
 
+# SDL3
+add_subdirectory(third_party/SDL)
+
 # ライブラリ作成
 add_library(pathtracingLibrary STATIC ${src} ${hpp})
 target_include_directories(pathtracingLibrary PUBLIC include)
@@ -80,12 +83,18 @@ add_executable(progressbar src/tools/progressbar.cpp)
 add_executable(pathtracing main.cpp)
 add_executable(nagatoTest
         src/gtest/gtests.cpp)
+add_executable(sdl_preview src/tools/sdl_preview.cpp)
 
 target_link_libraries(pathtracing
         pathtracingLibrary
         OpenEXR
         Iex
         Imath
+        )
+
+target_link_libraries(sdl_preview
+        pathtracingLibrary
+        SDL3::SDL3
         )
 
 target_link_libraries(
