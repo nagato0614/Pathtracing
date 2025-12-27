@@ -1,4 +1,5 @@
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_test_font.h>
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -98,8 +99,8 @@ void setupScene3(BVH* bvh, std::vector<Material*>& materials) {
 }
 
 int main(int argc, char* argv[]) {
-    int width = 1000;
-    int height = 1000;
+    int width = 500;
+    int height = 500;
     const int samples = 10000;
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -212,21 +213,29 @@ int main(int argc, char* argv[]) {
 
     SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width, height);
 
-    bool quit = false;
+    enum class AppState {
+        Running,
+        ResetRequested,
+        SceneChangeRequested,
+        Quitting
+    };
+
+    AppState state = AppState::Running;
     SDL_Event event;
     auto start_time = std::chrono::high_resolution_clock::now();
     double last_pass_time = 0;
     auto last_pass_finish_time = std::chrono::high_resolution_clock::now();
 
-    while (!quit) {
+    int nextWidth = width;
+    int nextHeight = height;
+
+    while (state != AppState::Quitting) {
         auto frame_start = std::chrono::high_resolution_clock::now();
-        bool resetRender = false;
-        bool sceneChanged = false;
 
         // SDLイベントのポーリング（UI操作の処理）
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) {
-                quit = true;
+                state = AppState::Quitting;
             } else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 // ウィンドウサイズ変更時のリセット
                 // ウィンドウサイズが異常な値（ディスプレイサイズ超など）を取得することがあるため、
@@ -240,33 +249,42 @@ int main(int argc, char* argv[]) {
                     windowHeight = std::min(windowHeight, displayBounds.h);
                 }
                 
-                width = windowWidth;
-                height = windowHeight;
-                resetRender = true;
-            } else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                // シーン切り替えボタンの判定
+                nextWidth = windowWidth;
+                nextHeight = windowHeight;
+                if (state != AppState::Quitting) {
+                    state = AppState::ResetRequested;
+                }
+            } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
+                // シーン切り替えボタンの判定（ボタンを離した時に確定）
                 float x = event.button.x;
                 float y = event.button.y;
                 if (x >= width - 120 && x <= width - 10 && y >= 10 && y <= 10 + (int)scenes.size() * 40) {
                     int clickedIdx = (y - 10) / 40;
                     if (clickedIdx >= 0 && clickedIdx < (int)scenes.size() && clickedIdx != currentSceneIdx) {
                         currentSceneIdx = clickedIdx;
-                        sceneChanged = true;
-                        resetRender = true;
+                        if (state != AppState::Quitting) {
+                            state = AppState::SceneChangeRequested;
+                        }
                     }
                 }
             }
         }
 
         // レンダリングのリセット処理（サイズ変更やシーン切り替え時）
-        if (resetRender) {
-            // 実行中のレンダリングスレッドを安全に停止させる
+        if (state == AppState::ResetRequested || state == AppState::SceneChangeRequested) {
+            bool isSceneChange = (state == AppState::SceneChangeRequested);
+            
+            // 1. まず実行中のレンダリングスレッドを停止要求し、完全に終了するのを待機する
             quitRender = true;
             if (renderThread.joinable()) {
                 renderThread.join();
             }
 
-            // 最後のサンプルが完了していれば反映させる
+            // スレッド停止後に安全にサイズを更新する
+            width = nextWidth;
+            height = nextHeight;
+
+            // 2. スレッド停止後に最新の完了サンプルがあれば反映させる
             if (newDataAvailable) {
                 std::lock_guard<std::mutex> lock(filmMutex);
                 pixels = shared_pixels;
@@ -274,8 +292,8 @@ int main(int argc, char* argv[]) {
                 SDL_UpdateTexture(texture, nullptr, pixels.data(), width * 3);
             }
 
-            // 必要に応じてシーンを再ロード
-            if (sceneChanged) {
+            // 3. シーンやフィルム、カメラなどのリソースを安全に変更・再構築する
+            if (isSceneChange) {
                 loadScene(currentSceneIdx);
                 eye = scenes[currentSceneIdx].eye;
                 fov = scenes[currentSceneIdx].fov;
@@ -295,8 +313,9 @@ int main(int argc, char* argv[]) {
             newDataAvailable = false;
             start_time = std::chrono::high_resolution_clock::now();
             
-            // レンダリングスレッドを再開
+            // 4. すべての準備が整った後で、新しいスレッドを開始する
             quitRender = false;
+            state = AppState::Running;
             renderThread = std::thread(renderFunc);
         }
 
@@ -336,6 +355,23 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_RenderFillRect(renderer, &statusRect);
 
+        // ステータス情報の描画
+        auto current_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = current_time - start_time;
+        int pass = current_pass;
+        double sps = (double)pass / elapsed.count();
+        
+        std::string line1 = "Pass: " + std::to_string(pass);
+        std::string line2 = std::to_string(sps) + " SPS";
+        std::string line3 = std::to_string(last_pass_time) + " s/pass";
+        std::string line4 = std::to_string(width) + "x" + std::to_string(height);
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDLTest_DrawString(renderer, (float)width - 240, (float)height - 75, line1.data());
+        SDLTest_DrawString(renderer, (float)width - 240, (float)height - 60, line2.data());
+        SDLTest_DrawString(renderer, (float)width - 240, (float)height - 45, line3.data());
+        SDLTest_DrawString(renderer, (float)width - 240, (float)height - 30, line4.data());
+
         SDL_RenderPresent(renderer);
 
         // 約60fpsを維持するための待機処理
@@ -344,15 +380,6 @@ int main(int argc, char* argv[]) {
         if (frame_duration.count() < 16.666) {
             SDL_Delay(16.666 - frame_duration.count());
         }
-
-        // ウィンドウタイトルにステータスを表示
-        auto current_time = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = current_time - start_time;
-        int pass = current_pass;
-        double sps = (double)pass / elapsed.count();
-        std::string title = "Pass: " + std::to_string(pass) + " | " + std::to_string(sps) + " SPS | " +
-                            std::to_string(last_pass_time) + " s/pass | " + std::to_string(width) + "x" + std::to_string(height);
-        SDL_SetWindowTitle(window, title.c_str());
     }
 
     quitRender = true;
