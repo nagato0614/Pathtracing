@@ -139,21 +139,21 @@ int main(int argc, char *argv[])
   std::vector<SceneConfig> scenes = {
     {"Simple", Vector3(0, 0, 2), Vector3(0, 0, 0), 45 * M_PI / 180, false, "", setupScene0},
     {"Bunny IBL",
-     Vector3(0, 1.5, 4),
+     Vector3(0, 5, 14),
      Vector3(0, 0, 0),
      55 * M_PI / 180,
      true,
      "../texture/playa.exr",
      setupScene1},
     {"Spheres IBL",
-     Vector3(0, 1.5, 4),
+     Vector3(0, 5, 14),
      Vector3(0, 0, 0),
      55 * M_PI / 180,
      true,
      "../texture/playa.exr",
      setupScene2},
     {"Cornell Bunny",
-     Vector3(0, 1.5, 4),
+     Vector3(0, 5, 14),
      Vector3(0, 0, 0),
      55 * M_PI / 180,
      false,
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
     Quitting
   };
 
-  std::atomic<AppState> appState{AppState::Running};
+  std::atomic<AppState> appState{AppState::SceneChangeRequested};
   std::atomic<bool> textureUpdateNeeded{false};
 
   // カメラ位置や設定を管理スレッドへ渡すための共有変数
@@ -230,9 +230,19 @@ int main(int argc, char *argv[])
       float fov;
       int sceneIdx;
       int polygonCount;
+      float orbitRadius, orbitTheta, orbitPhi;
   };
-  RenderParams sharedParams = {
-    width, height, eye, target, up, fov, currentSceneIdx, bvh->getObjectCount()};
+  RenderParams sharedParams = {width,
+                               height,
+                               eye,
+                               target,
+                               up,
+                               fov,
+                               currentSceneIdx,
+                               bvh->getObjectCount(),
+                               orbitRadius,
+                               orbitTheta,
+                               orbitPhi};
   std::mutex paramsMutex;
 
   // 統計情報の同期用
@@ -318,49 +328,57 @@ int main(int argc, char *argv[])
           p = sharedParams;
         }
 
-        // 解像度の更新
-        width = p.width;
-        height = p.height;
+        // 管理スレッド内部の作業用変数を更新
+        int localWidth = p.width;
+        int localHeight = p.height;
+        Vector3 localEye = p.eye;
+        Vector3 localTarget = p.target;
+        float localFov = p.fov;
 
         if (isSceneChange)
         {
           loadScene(p.sceneIdx);
-          currentSceneIdx = p.sceneIdx;
-          eye = scenes[currentSceneIdx].eye;
-          target = scenes[currentSceneIdx].target;
-          fov = scenes[currentSceneIdx].fov;
+
+          // 新しいシーンの初期カメラ設定を反映
+          localEye = scenes[p.sceneIdx].eye;
+          localTarget = scenes[p.sceneIdx].target;
+          localFov = scenes[p.sceneIdx].fov;
 
           // カメラ回転制御用のパラメータをリセット
-          orbitRadius = (eye - target).norm();
-          orbitTheta = std::acos(std::clamp((eye.y - target.y) / orbitRadius, -1.0f, 1.0f));
-          orbitPhi = std::atan2(eye.z - target.z, eye.x - target.x);
+          float localOrbitRadius = (localEye - localTarget).norm();
+          float localOrbitTheta =
+            std::acos(std::clamp((localEye.y - localTarget.y) / localOrbitRadius, -1.0f, 1.0f));
+          float localOrbitPhi = std::atan2(localEye.z - localTarget.z, localEye.x - localTarget.x);
 
-          // ポリゴン数を更新
+          // メインスレッドと共有するために sharedParams を更新
           {
             std::lock_guard<std::mutex> lock(paramsMutex);
             sharedParams.polygonCount = bvh->getObjectCount();
-            sharedParams.eye = eye;
-            sharedParams.target = target;
-            sharedParams.fov = fov;
+            sharedParams.eye = localEye;
+            sharedParams.target = localTarget;
+            sharedParams.fov = localFov;
+            sharedParams.orbitRadius = localOrbitRadius;
+            sharedParams.orbitTheta = localOrbitTheta;
+            sharedParams.orbitPhi = localOrbitPhi;
+            sharedParams.sceneIdx = p.sceneIdx;
           }
-        }
-        else
-        {
-          eye = p.eye;
-          target = p.target;
-          fov = p.fov;
         }
 
         // リソースの再構築
-        camera = std::make_unique<PinholeCamera>(eye, target, up, fov, width, height);
-        film = std::make_unique<Film>(width, height);
+        camera = std::make_unique<PinholeCamera>(
+          localEye, localTarget, up, localFov, localWidth, localHeight);
+        film = std::make_unique<Film>(localWidth, localHeight);
         pathtracing = std::make_unique<Pathtracing>(bvh.get(), film.get(), camera.get(), samples);
 
         {
           std::lock_guard<std::mutex> lock(filmMutex);
-          shared_pixels.resize((size_t) width * height * 3);
+          shared_pixels.resize((size_t) localWidth * localHeight * 3);
           textureUpdateNeeded = true;
         }
+
+        // メインスレッド側で使用する解像度変数を更新
+        width = localWidth;
+        height = localHeight;
 
         current_pass = 0;
         newDataAvailable = false;
@@ -410,6 +428,19 @@ int main(int argc, char *argv[])
   while (appState != AppState::Quitting)
   {
     auto frame_start = std::chrono::high_resolution_clock::now();
+
+    // 管理スレッドがシーン切り替えなどでパラメータを更新した可能性があるため同期
+    if (appState == AppState::Running)
+    {
+      std::lock_guard<std::mutex> lock(paramsMutex);
+      currentSceneIdx = sharedParams.sceneIdx;
+      eye = sharedParams.eye;
+      target = sharedParams.target;
+      fov = sharedParams.fov;
+      orbitRadius = sharedParams.orbitRadius;
+      orbitTheta = sharedParams.orbitTheta;
+      orbitPhi = sharedParams.orbitPhi;
+    }
 
     // SDLイベントのポーリング（UI操作の処理）
     while (SDL_PollEvent(&event))
@@ -494,6 +525,8 @@ int main(int argc, char *argv[])
           {
             std::lock_guard<std::mutex> lock(paramsMutex);
             sharedParams.eye = eye;
+            sharedParams.orbitTheta = orbitTheta;
+            sharedParams.orbitPhi = orbitPhi;
           }
           if (appState != AppState::Quitting)
           {
@@ -503,20 +536,26 @@ int main(int argc, char *argv[])
       }
       else if (event.type == SDL_EVENT_MOUSE_WHEEL)
       {
-        orbitRadius -= event.wheel.y * 0.5f;
-        orbitRadius = std::max(0.1f, orbitRadius);
-
-        eye.x = target.x + orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi);
-        eye.y = target.y + orbitRadius * std::cos(orbitTheta);
-        eye.z = target.z + orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi);
-
+        float scrollAmount = event.wheel.y;
+        // SDL3ではyがfloatで、慣性スクロールなどで非常に小さい値が来ることがある
+        if (std::abs(scrollAmount) > 0.01f)
         {
-          std::lock_guard<std::mutex> lock(paramsMutex);
-          sharedParams.eye = eye;
-        }
-        if (appState != AppState::Quitting)
-        {
-          appState = AppState::ResetRequested;
+          orbitRadius -= scrollAmount * 0.5f;
+          orbitRadius = std::max(0.1f, orbitRadius);
+
+          eye.x = target.x + orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi);
+          eye.y = target.y + orbitRadius * std::cos(orbitTheta);
+          eye.z = target.z + orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi);
+
+          {
+            std::lock_guard<std::mutex> lock(paramsMutex);
+            sharedParams.eye = eye;
+            sharedParams.orbitRadius = orbitRadius;
+          }
+          if (appState != AppState::Quitting)
+          {
+            appState = AppState::ResetRequested;
+          }
         }
       }
     }
