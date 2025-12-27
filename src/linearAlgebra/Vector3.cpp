@@ -21,7 +21,7 @@ float Vector3::operator[](int i) const
   else if (i == 1)
     return y;
   else if (i == 2)
-    return x;
+    return z;
   else
   {
     fprintf(stderr, "ERROR : [Vector3]0~2の範囲で指定\n");

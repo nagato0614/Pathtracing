@@ -74,7 +74,7 @@ class Vector4
     inline Vector4 operator-() const { return Vector4(-x, -y, -z, -w); }
 };
 
-inline float dot(Vector4 a, Vector4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * a.w; }
+inline float dot(Vector4 a, Vector4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
 
 //	inline Vector4 cross(Vector4 a, Vector4 b)
 //	{

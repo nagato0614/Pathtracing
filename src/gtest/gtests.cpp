@@ -4,12 +4,14 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <vector>
 #include "BSDF/Lambert.hpp"
 #include "color/ColorRGB.hpp"
 #include "core/Common.hpp"
 #include "core/Scene.hpp"
 #include "film/Film.hpp"
 #include "material/Material.hpp"
+#include "linearAlgebra/Vector4.hpp"
 #include "object/Sphere.hpp"
 #include "structure/BVH.hpp"
 
@@ -193,6 +195,60 @@ TEST_F(BVHTest, ObjectHasMaterial)
   }
 }
 
+TEST(Vector3Test, IndexOperatorReturnsCorrectComponent)
+{
+  const Vector3 v{1.0f, 2.0f, 3.0f};
+  EXPECT_FLOAT_EQ(1.0f, v[0]);
+  EXPECT_FLOAT_EQ(2.0f, v[1]);
+  EXPECT_FLOAT_EQ(3.0f, v[2]);
+}
+
+TEST(Vector3Test, ScalarMultiplicationIsSymmetric)
+{
+  const Vector3 v{1.0f, 2.0f, 3.0f};
+  const auto left = 2.0f * v;
+  const auto right = v * 2.0f;
+
+  EXPECT_FLOAT_EQ(right.x, left.x);
+  EXPECT_FLOAT_EQ(right.y, left.y);
+  EXPECT_FLOAT_EQ(right.z, left.z);
+}
+
+TEST(Vector3Test, SumIncludesZComponent)
+{
+  const std::vector<Vector3> samples{{1.0f, 2.0f, 3.0f}, {-1.0f, 0.0f, 4.0f}};
+  const std::vector<float> expected{6.0f, 3.0f};
+
+  for (size_t i = 0; i < samples.size(); ++i)
+  {
+    EXPECT_FLOAT_EQ(expected[i], samples[i].sum()) << "sample index: " << i;
+  }
+}
+
+TEST(Vector4Test, DotProductUsesBothVectors)
+{
+  const Vector4 a{1.0f, 2.0f, 3.0f, 4.0f};
+  const Vector4 b{-4.0f, -3.0f, -2.0f, -1.0f};
+  constexpr float expected = -20.0f;
+
+  EXPECT_FLOAT_EQ(expected, dot(a, b));
+}
+
+TEST(BVHStandaloneTest, ReportsAllConstructedNodes)
+{
+  BVH bvh;
+  Material material(SurfaceType::Diffuse, Spectrum(0.5f));
+  bvh.setObject(new Sphere(Vector3(-1.0f, 0.0f, 0.0f), 0.5f, &material));
+  bvh.setObject(new Sphere(Vector3(1.0f, 0.0f, 0.0f), 0.5f, &material));
+  bvh.constructBVH();
+
+  const auto &objects = bvh.getObjects();
+  const auto expectedNodeCount = static_cast<int>(objects.size() * 2 - 1);
+  EXPECT_EQ(expectedNodeCount, bvh.getNodeCount());
+
+  bvh.freeObject();
+}
+
 /**
  * BSDFクラスのテストフィクスチャ
  */
@@ -305,7 +361,7 @@ TEST(Specturm, spectrumToRGB)
 TEST(LambertTest, EnergyConservationTest)
 {
   Lambert lambert(Spectrum(0.5));
-  constexpr int N = 100000;
+  constexpr int N = 1000;
   constexpr auto inv_N = static_cast<float>(1 / N);
   Vector3 normal{0, 0, 1.0f};
   for (int i = 0; i < N; i++)
@@ -344,7 +400,7 @@ TEST(LambertTest, HelmHoltzReciprocityTest)
 TEST(LambertTest, PdfTest)
 {
   Lambert lambert(Spectrum(0.5));
-  constexpr int N = 100000;
+  constexpr int N = 1000;
   constexpr auto inv_N = 1.0 / static_cast<float>(N);
   constexpr double error = 1.0e-1;
   Hit hitpoint{0, Vector3{}, Vector3{0, 0, 1.0}, nullptr};

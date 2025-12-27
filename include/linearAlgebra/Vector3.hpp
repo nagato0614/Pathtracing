@@ -40,7 +40,7 @@ class Vector3
       return "(" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")";
     }
 
-    inline float sum() const { return x + y + x; }
+    inline float sum() const { return x + y + z; }
 
     inline float max() const { return (x > y) ? ((x > z) ? x : z) : ((y > z) ? y : z); }
 
@@ -78,7 +78,7 @@ inline Vector3 operator*(const Vector3 &a, const Vector3 &b)
 
 inline Vector3 operator*(const Vector3 &a, float b) { return Vector3(a.x * b, a.y * b, a.z * b); }
 
-inline Vector3 operator*(float a, const Vector3 &b) { return Vector3(a * b.x, a * b.x, a * b.x); }
+inline Vector3 operator*(float a, const Vector3 &b) { return Vector3(a * b.x, a * b.y, a * b.z); }
 
 inline Vector3 operator/(const Vector3 &a, const Vector3 &b)
 {

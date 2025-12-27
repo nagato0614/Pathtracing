@@ -42,7 +42,7 @@ void BVH::constructBVH()
     exit(CANNOT_CONSTRUCT_BVH);
   }
   nodeCount = 0;
-  constructBVH_internal(objects, 0, 0);
+  constructBVH_internal(objects, 0, nodeCount);
 }
 
 void BVH::constructBVH_internal(const std::vector<Object *> &objects, int splitAxis, int nodeIndex)
@@ -53,6 +53,7 @@ void BVH::constructBVH_internal(const std::vector<Object *> &objects, int splitA
     nodes[nodeIndex].object = objects.front();
     nodes[nodeIndex].left = -1;
     nodes[nodeIndex].right = -1;
+    nodeCount++;
     return;
   }
   else if (objects.empty())
@@ -63,6 +64,7 @@ void BVH::constructBVH_internal(const std::vector<Object *> &objects, int splitA
 
   auto *node = &nodes[nodeIndex];
   node->object = nullptr;
+  nodeCount++;
 
   // 大きなAABBの構築
   Aabb aabb;
@@ -97,10 +99,9 @@ void BVH::constructBVH_internal(const std::vector<Object *> &objects, int splitA
   }
 
   // 子を作成
-  node->left = makeNewNode();
-  node->right = makeNewNode();
-
+  node->left = nodeCount;
   constructBVH_internal(left, (splitAxis + 1) % 3, node->left);
+  node->right = nodeCount;
   constructBVH_internal(right, (splitAxis + 1) % 3, node->right);
 }
 
@@ -200,12 +201,12 @@ size_t BVH::getMemorySize() { return static_cast<size_t>(sizeof(BVHNode) * nodeC
 
 int BVH::makeNewNode()
 {
-  if (nodeCount + 1 >= BVH_NODE)
+  if (nodeCount >= BVH_NODE)
   {
     fprintf(stderr, "[ERROR] BVHノードが足りません");
     exit(EMPTY_NODE);
   }
-  return ++nodeCount;
+  return nodeCount;
 }
 
 BVH::BVH() {}
