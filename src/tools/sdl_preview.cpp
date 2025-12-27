@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
   auto fov = scenes[currentSceneIdx].fov;
 
   // カメラ回転制御用
-  float orbitRadius = (eye - target).norm();
+  float orbitRadius = std::sqrt((eye - target).norm());
   float orbitTheta =
     std::acos(std::clamp((eye.y - target.y) / orbitRadius, -1.0f, 1.0f)); // ピッチ (0 to PI)
   float orbitPhi = std::atan2(eye.z - target.z, eye.x - target.x); // ヨー (-PI to PI)
@@ -345,7 +345,7 @@ int main(int argc, char *argv[])
           localFov = scenes[p.sceneIdx].fov;
 
           // カメラ回転制御用のパラメータをリセット
-          float localOrbitRadius = (localEye - localTarget).norm();
+          float localOrbitRadius = std::sqrt((localEye - localTarget).norm());
           float localOrbitTheta =
             std::acos(std::clamp((localEye.y - localTarget.y) / localOrbitRadius, -1.0f, 1.0f));
           float localOrbitPhi = std::atan2(localEye.z - localTarget.z, localEye.x - localTarget.x);
@@ -389,8 +389,21 @@ int main(int argc, char *argv[])
         last_pass_finish_time = std::chrono::high_resolution_clock::now();
 
         quitRender = false;
-        appState = AppState::Running;
-        renderThread = std::thread(renderFunc);
+        // 処理中に新たなリセット要求が来ていなければ Running に戻す
+        // (currentState はこのブロックの開始時の値: ResetRequested or SceneChangeRequested)
+        AppState expected = currentState;
+        if (appState.compare_exchange_strong(expected, AppState::Running))
+        {
+          // 状態更新に成功した場合のみ、新しいレンダリングスレッドを開始
+          renderThread = std::thread(renderFunc);
+        }
+        else
+        {
+          // 処理中に新たな要求が来ていた場合は、このループの最後で Running に戻さず、
+          // 次のループの先頭で再度リセット処理（currentStateのチェック）が行われるようにする。
+          // ただし、renderThreadが開始されていない状態になるので、
+          // 次のループで確実に処理される必要がある。
+        }
       }
 
       if (newDataAvailable && appState == AppState::Running)
@@ -421,16 +434,16 @@ int main(int argc, char *argv[])
   double last_pass_time_display = 0;
 
   // マウス操作状態の管理
-  bool isMouseDown = false;
-  float lastMouseX = 0;
-  float lastMouseY = 0;
+  // bool isMouseDown = false;
+  // float lastMouseX = 0;
+  // float lastMouseY = 0;
 
   while (appState != AppState::Quitting)
   {
     auto frame_start = std::chrono::high_resolution_clock::now();
 
     // 管理スレッドがシーン切り替えなどでパラメータを更新した可能性があるため同期
-    if (appState == AppState::Running)
+    // 起動直後の不整合を防ぐため、Running以外の状態でも同期を行う
     {
       std::lock_guard<std::mutex> lock(paramsMutex);
       currentSceneIdx = sharedParams.sceneIdx;
@@ -473,19 +486,23 @@ int main(int argc, char *argv[])
       }
       else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
       {
+        /*
         if (event.button.button == SDL_BUTTON_LEFT)
         {
           isMouseDown = true;
           lastMouseX = event.button.x;
           lastMouseY = event.button.y;
         }
+        */
       }
       else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
       {
+        /*
         if (event.button.button == SDL_BUTTON_LEFT)
         {
           isMouseDown = false;
         }
+        */
         float x = event.button.x;
         float y = event.button.y;
         if (x >= (float) displayWidth - 120 && x <= (float) displayWidth - 10 && y >= 10 &&
@@ -505,8 +522,116 @@ int main(int argc, char *argv[])
           }
         }
       }
+      else if (event.type == SDL_EVENT_KEY_DOWN)
+      {
+        bool cameraMoved = false;
+        float moveSpeed = 0.5f;
+        float rotateSpeed = 0.05f;
+
+        // カメラの向きに基づいた前方向と右方向の計算
+        Vector3 forward = normalize(target - eye);
+        Vector3 right = normalize(cross(forward, up));
+        // Vector3 actualUp = cross(right, forward);
+
+        switch (event.key.key)
+        {
+        case SDLK_W: // 前進
+          eye = eye + forward * moveSpeed;
+          target = target + forward * moveSpeed;
+          cameraMoved = true;
+          break;
+        case SDLK_S: // 後退
+          eye = eye - forward * moveSpeed;
+          target = target - forward * moveSpeed;
+          cameraMoved = true;
+          break;
+        case SDLK_A: // 左移動
+          eye = eye - right * moveSpeed;
+          target = target - right * moveSpeed;
+          cameraMoved = true;
+          break;
+        case SDLK_D: // 右移動
+          eye = eye + right * moveSpeed;
+          target = target + right * moveSpeed;
+          cameraMoved = true;
+          break;
+        case SDLK_Q: // 左回転 (ヨー)
+          orbitPhi -= rotateSpeed;
+          cameraMoved = true;
+          break;
+        case SDLK_E: // 右回転 (ヨー)
+          orbitPhi += rotateSpeed;
+          cameraMoved = true;
+          break;
+        case SDLK_R: // 上回転 (ピッチ)
+          orbitTheta -= rotateSpeed;
+          orbitTheta = std::clamp(orbitTheta, 0.01f, (float) M_PI - 0.01f);
+          cameraMoved = true;
+          break;
+        case SDLK_F: // 下回転 (ピッチ)
+          orbitTheta += rotateSpeed;
+          orbitTheta = std::clamp(orbitTheta, 0.01f, (float) M_PI - 0.01f);
+          cameraMoved = true;
+          break;
+        case SDLK_SPACE: // 視点リセット
+          eye = scenes[currentSceneIdx].eye;
+          target = scenes[currentSceneIdx].target;
+          fov = scenes[currentSceneIdx].fov;
+          // 球座標パラメータの再計算
+          {
+            Vector3 offset = eye - target;
+            orbitRadius = std::sqrt(offset.norm());
+            orbitTheta = std::acos(std::clamp(offset.y / orbitRadius, -1.0f, 1.0f));
+            orbitPhi = std::atan2(offset.z, offset.x);
+          }
+          cameraMoved = true;
+          break;
+        default:
+          break;
+        }
+
+        if (cameraMoved)
+        {
+          // QE, RFキーによる角度更新の場合、eye座標を再計算
+          // WASDキーによる移動やスペースによるリセットの場合は、すでにeyeとtargetが更新されている
+          switch (event.key.key)
+          {
+          case SDLK_Q:
+          case SDLK_E:
+          case SDLK_R:
+          case SDLK_F:
+            eye.x = target.x + orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi);
+            eye.y = target.y + orbitRadius * std::cos(orbitTheta);
+            eye.z = target.z + orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi);
+            break;
+          default:
+            // WASDやスペースでのリセット後は、新しい位置から球座標を逆算して整合性を取る
+            // (スペースキーの場合は既に上で計算済みだが、安全のためここでも行う)
+            Vector3 offset = eye - target;
+            orbitRadius = std::sqrt(offset.norm());
+            orbitTheta = std::acos(std::clamp(offset.y / orbitRadius, -1.0f, 1.0f));
+            orbitPhi = std::atan2(offset.z, offset.x);
+            break;
+          }
+
+          {
+            std::lock_guard<std::mutex> lock(paramsMutex);
+            sharedParams.eye = eye;
+            sharedParams.target = target;
+            sharedParams.orbitRadius = orbitRadius;
+            sharedParams.orbitTheta = orbitTheta;
+            sharedParams.orbitPhi = orbitPhi;
+          }
+          if (appState != AppState::Quitting)
+          {
+            appState = AppState::ResetRequested;
+          }
+        }
+      }
       else if (event.type == SDL_EVENT_MOUSE_MOTION)
       {
+        // キーボード操作への移行に伴い、マウスドラッグによる回転は無効化
+        /*
         if (isMouseDown)
         {
           float dx = event.motion.x - lastMouseX;
@@ -525,6 +650,7 @@ int main(int argc, char *argv[])
           {
             std::lock_guard<std::mutex> lock(paramsMutex);
             sharedParams.eye = eye;
+            sharedParams.orbitRadius = orbitRadius;
             sharedParams.orbitTheta = orbitTheta;
             sharedParams.orbitPhi = orbitPhi;
           }
@@ -533,12 +659,13 @@ int main(int argc, char *argv[])
             appState = AppState::ResetRequested;
           }
         }
+        */
       }
       else if (event.type == SDL_EVENT_MOUSE_WHEEL)
       {
         float scrollAmount = event.wheel.y;
         // SDL3ではyがfloatで、慣性スクロールなどで非常に小さい値が来ることがある
-        if (std::abs(scrollAmount) > 0.01f)
+        if (std::abs(scrollAmount) > 0.001f)
         {
           orbitRadius -= scrollAmount * 0.5f;
           orbitRadius = std::max(0.1f, orbitRadius);
@@ -551,6 +678,8 @@ int main(int argc, char *argv[])
             std::lock_guard<std::mutex> lock(paramsMutex);
             sharedParams.eye = eye;
             sharedParams.orbitRadius = orbitRadius;
+            sharedParams.orbitTheta = orbitTheta;
+            sharedParams.orbitPhi = orbitPhi;
           }
           if (appState != AppState::Quitting)
           {
@@ -604,7 +733,7 @@ int main(int argc, char *argv[])
     }
 
     // ステータス表示エリアの描画
-    SDL_FRect statusRect = {(float) displayWidth - 250, (float) displayHeight - 95, 240.0f, 85.0f};
+    SDL_FRect statusRect = {(float) displayWidth - 250, (float) displayHeight - 125, 240.0f, 115.0f};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderFillRect(renderer, &statusRect);
@@ -613,6 +742,8 @@ int main(int argc, char *argv[])
     auto current_time = std::chrono::high_resolution_clock::now();
     std::chrono::high_resolution_clock::time_point s_time;
     int polygon_count_display = 0;
+    Vector3 eye_display;
+    Vector3 target_display;
     {
       std::lock_guard<std::mutex> lock(timeMutex);
       s_time = shared_start_time;
@@ -620,6 +751,8 @@ int main(int argc, char *argv[])
     {
       std::lock_guard<std::mutex> lock(paramsMutex);
       polygon_count_display = sharedParams.polygonCount;
+      eye_display = sharedParams.eye;
+      target_display = sharedParams.target;
     }
     std::chrono::duration<double> elapsed = current_time - s_time;
     int pass = current_pass;
@@ -630,18 +763,28 @@ int main(int argc, char *argv[])
     std::string line3 = std::to_string(last_pass_time_display) + " s/pass";
     std::string line4 = std::to_string(displayWidth) + "x" + std::to_string(displayHeight);
     std::string line5 = "Polygons: " + std::to_string(polygon_count_display);
+    std::string line6 = "Eye: (" + std::to_string(eye_display.x).substr(0, 5) + ", " +
+                        std::to_string(eye_display.y).substr(0, 5) + ", " +
+                        std::to_string(eye_display.z).substr(0, 5) + ")";
+    std::string line7 = "Target: (" + std::to_string(target_display.x).substr(0, 5) + ", " +
+                        std::to_string(target_display.y).substr(0, 5) + ", " +
+                        std::to_string(target_display.z).substr(0, 5) + ")";
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 90, line1.data());
+      renderer, (float) displayWidth - 240, (float) displayHeight - 120, line1.data());
     SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 75, line2.data());
+      renderer, (float) displayWidth - 240, (float) displayHeight - 105, line2.data());
     SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 60, line3.data());
+      renderer, (float) displayWidth - 240, (float) displayHeight - 90, line3.data());
     SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 45, line4.data());
+      renderer, (float) displayWidth - 240, (float) displayHeight - 75, line4.data());
     SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 30, line5.data());
+      renderer, (float) displayWidth - 240, (float) displayHeight - 60, line5.data());
+    SDLTest_DrawString(
+      renderer, (float) displayWidth - 240, (float) displayHeight - 45, line6.data());
+    SDLTest_DrawString(
+      renderer, (float) displayWidth - 240, (float) displayHeight - 30, line7.data());
 
     SDL_RenderPresent(renderer);
 
