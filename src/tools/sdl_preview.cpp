@@ -1,13 +1,17 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test_font.h>
+#include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cmath>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
+
 #include "camera/PinholeCamera.hpp"
 #include "core/Scene.hpp"
 #include "film/Film.hpp"
@@ -24,780 +28,843 @@
 
 using namespace nagato;
 
+namespace
+{
+constexpr float kPi = 3.14159265358979323846f;
+
 struct SceneConfig
 {
-    std::string name;
-    Vector3 eye;
-    Vector3 target;
-    float fov;
-    bool hasSky;
-    std::string skyPath;
-    std::function<void(BVH *, std::vector<Material *> &)> setup;
+  std::string name;
+  Vector3 eye;
+  Vector3 target;
+  float fov;
+  bool hasSky;
+  std::string skyPath;
+  std::function<void(BVH &, std::vector<Material *> &)> setup;
 };
 
-void setupScene0(BVH *bvh, std::vector<Material *> &materials)
+void setupScene0(BVH &bvh, std::vector<Material *> &materials)
 {
-  auto white = new Diffuse(Spectrum(0.8));
-  auto red = new Diffuse(Spectrum::rgb2Spectrum({0.8, 0.2, 0.2}));
-  auto blue = new Diffuse(Spectrum::rgb2Spectrum({0.2, 0.2, 0.8}));
-  auto light = new DiffuseLight(Spectrum(1.0), 20.0);
-  auto glass = new Glass(Spectrum(0.99), 1.5);
+  auto white = new Diffuse(Spectrum(0.8f));
+  auto red = new Diffuse(Spectrum::rgb2Spectrum({0.8f, 0.2f, 0.2f}));
+  auto blue = new Diffuse(Spectrum::rgb2Spectrum({0.2f, 0.2f, 0.8f}));
+  auto light = new DiffuseLight(Spectrum(1.0f), 20.0f);
+  auto glass = new Glass(Spectrum(0.99f), 1.5f);
   materials.push_back(white);
   materials.push_back(red);
   materials.push_back(blue);
   materials.push_back(light);
   materials.push_back(glass);
 
-  bvh->setObject(new Sphere(Vector3(0, -100.5, -1), 100, white));
-  bvh->setObject(new Sphere(Vector3(0, 102.5, -1), 100, white));
-  bvh->setObject(new Sphere(Vector3(-101, 1, -1), 100, red));
-  bvh->setObject(new Sphere(Vector3(101, 1, -1), 100, blue));
-  bvh->setObject(new Sphere(Vector3(0, 1, -103), 100, white));
-  bvh->setObject(new Sphere(Vector3(0, 10, -1), 7.5, light));
-  bvh->setObject(new Sphere(Vector3(-0.5, -0.2, -1), 0.3, glass));
-  bvh->setObject(new Sphere(Vector3(0.5, -0.2, -1.5), 0.3, white));
+  bvh.setObject(new Sphere(Vector3(0, -100.5f, -1), 100, white));
+  bvh.setObject(new Sphere(Vector3(0, 102.5f, -1), 100, white));
+  bvh.setObject(new Sphere(Vector3(-101, 1, -1), 100, red));
+  bvh.setObject(new Sphere(Vector3(101, 1, -1), 100, blue));
+  bvh.setObject(new Sphere(Vector3(0, 1, -103), 100, white));
+  bvh.setObject(new Sphere(Vector3(0, 10, -1), 7.5f, light));
+  bvh.setObject(new Sphere(Vector3(-0.5f, -0.2f, -1), 0.3f, glass));
+  bvh.setObject(new Sphere(Vector3(0.5f, -0.2f, -1.5f), 0.3f, white));
 }
 
-void setupScene1(BVH *bvh, std::vector<Material *> &materials)
+void setupScene1(BVH &bvh, std::vector<Material *> &materials)
 {
-  auto white = new Diffuse(Spectrum(0.8));
-  auto glass = new Glass(Spectrum(0.99), 1.5);
+  auto white = new Diffuse(Spectrum(0.8f));
+  auto glass = new Glass(Spectrum(0.99f), 1.5f);
   materials.push_back(white);
   materials.push_back(glass);
 
-  bvh->loadObject("../models/floor.obj", "../models/floor.mtl", white);
-  bvh->loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", glass);
+  bvh.loadObject("../models/floor.obj", "../models/floor.mtl", white);
+  bvh.loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", glass);
 }
 
-void setupScene2(BVH *bvh, std::vector<Material *> &materials)
+void setupScene2(BVH &bvh, std::vector<Material *> &materials)
 {
-  auto white = new Diffuse(Spectrum(0.8));
-  auto purple = new Diffuse(Spectrum::rgb2Spectrum({0.8, 0.2, 0.8}));
-  auto glass = new Glass(Spectrum(0.99), 1.5);
+  auto white = new Diffuse(Spectrum(0.8f));
+  auto purple = new Diffuse(Spectrum::rgb2Spectrum({0.8f, 0.2f, 0.8f}));
+  auto glass = new Glass(Spectrum(0.99f), 1.5f);
   materials.push_back(white);
   materials.push_back(purple);
   materials.push_back(glass);
 
-  bvh->setObject(new Sphere{Vector3(-2, 2, -1), 1.1, purple});
-  bvh->setObject(new Sphere{Vector3(2, 2, -1), 1.5, glass});
-  bvh->loadObject("../models/floor.obj", "../models/floor.mtl", white);
+  bvh.setObject(new Sphere(Vector3(-2, 2, -1), 1.1f, purple));
+  bvh.setObject(new Sphere(Vector3(2, 2, -1), 1.5f, glass));
+  bvh.loadObject("../models/floor.obj", "../models/floor.mtl", white);
 }
 
-void setupScene3(BVH *bvh, std::vector<Material *> &materials)
+void setupScene3(BVH &bvh, std::vector<Material *> &materials)
 {
   auto d65_spd = loadSPDFile("../property/cie_si_d65.csv");
   auto red = new Diffuse(Spectrum("../property/macbeth_15_red.csv"));
   auto blue = new Diffuse(Spectrum("../property/macbeth_13_blue.csv"));
   auto white = new Diffuse(Spectrum("../property/macbeth_22_neutral_5.csv"));
   auto d65 = new DiffuseLight(d65_spd, 10);
-  auto glass = new Glass(Spectrum(0.99), 1.5);
+  auto glass = new Glass(Spectrum(0.99f), 1.5f);
   materials.push_back(red);
   materials.push_back(blue);
   materials.push_back(white);
   materials.push_back(d65);
   materials.push_back(glass);
 
-  bvh->loadObject("../models/left.obj", "../models/left.mtl", red);
-  bvh->loadObject("../models/right.obj", "../models/right.mtl", blue);
-  bvh->loadObject(
+  bvh.loadObject("../models/left.obj", "../models/left.mtl", red);
+  bvh.loadObject("../models/right.obj", "../models/right.mtl", blue);
+  bvh.loadObject(
     "../models/back_ceil_floor_plane.obj", "../models/back_ceil_floor_plane.mtl", white);
-  bvh->loadObject("../models/light_plane.obj", "../models/light_plane.mtl", d65);
-  bvh->loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", glass);
+  bvh.loadObject("../models/light_plane.obj", "../models/light_plane.mtl", d65);
+  bvh.loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", glass);
+}
+
+std::vector<SceneConfig> createScenes()
+{
+  return {{"Simple", Vector3(0, 0, 2), Vector3(0, 0, 0), 45.0f * kPi / 180.0f,
+           false, "", setupScene0},
+          {"Bunny IBL",
+           Vector3(0, 5, 14),
+           Vector3(0, 0, 0),
+           55.0f * kPi / 180.0f,
+           true,
+           "../texture/playa.exr",
+           setupScene1},
+          {"Spheres IBL",
+           Vector3(0, 5, 14),
+           Vector3(0, 0, 0),
+           55.0f * kPi / 180.0f,
+           true,
+           "../texture/playa.exr",
+           setupScene2},
+          {"Cornell Bunny",
+           Vector3(0, 5, 14),
+           Vector3(0, 0, 0),
+           55.0f * kPi / 180.0f,
+           false,
+           "",
+           setupScene3}};
+}
+} // namespace
+
+class PreviewApp
+{
+  public:
+    int run();
+
+  private:
+    enum class AppState
+    {
+      Running,
+      ResetRequested,
+      SceneChangeRequested,
+      Quitting
+    };
+
+    struct RenderParams
+    {
+        int width = 0;
+        int height = 0;
+        Vector3 eye = Vector3(0);
+        Vector3 target = Vector3(0);
+        Vector3 up = Vector3(0, 1, 0);
+        float fov = 0;
+        int sceneIdx = 0;
+        int polygonCount = 0;
+        float orbitRadius = 0;
+        float orbitTheta = 0;
+        float orbitPhi = 0;
+    };
+
+    bool initSDL();
+    void mainLoop();
+    void managerLoop();
+    void renderLoop();
+    void cleanup();
+    void startManagerThread();
+    void stopManagerThread();
+    void clearMaterials();
+    void loadScene(int idx);
+    void rebuildResources(const RenderParams &params, bool sceneChanged);
+
+    void handleEvent(const SDL_Event &event);
+    void handleWindowResized(int width, int height);
+    void handleSceneSelection(float x, float y);
+    void handleKeyDown(const SDL_KeyboardEvent &key);
+    void updateTextureIfNeeded();
+    void applyLatestPixels();
+    void renderFrame(const RenderParams &snapshot);
+    void drawSceneButtons(int displayWidth, int displayHeight, int currentSceneIdx);
+    void drawStatusPanel(const RenderParams &snapshot, int displayWidth, int displayHeight);
+
+    void requestReset();
+    void requestSceneChange(int sceneIdx);
+
+    void commitCameraUpdate(
+      const Vector3 &eye, const Vector3 &target, float orbitRadius, float orbitTheta, float orbitPhi);
+
+    int width_ = 500;
+    int height_ = 500;
+    int displayWidth_ = width_;
+    int displayHeight_ = height_;
+    const int samples_ = 10000;
+    const Vector3 up_ = Vector3(0, 1, 0);
+
+    SDL_Window *window_ = nullptr;
+    SDL_Renderer *renderer_ = nullptr;
+    SDL_Texture *texture_ = nullptr;
+
+    std::vector<uint8_t> pixels_;
+    std::vector<uint8_t> sharedPixels_;
+
+    std::unique_ptr<BVH> bvh_ = std::make_unique<BVH>();
+    std::vector<Material *> materials_;
+    std::unique_ptr<ImageBasedLighting> sky_;
+    std::unique_ptr<PinholeCamera> camera_;
+    std::unique_ptr<Film> film_;
+    std::unique_ptr<Pathtracing> pathtracer_;
+
+    std::vector<SceneConfig> scenes_ = createScenes();
+
+    std::atomic<AppState> appState_{AppState::SceneChangeRequested};
+    std::atomic<bool> quitRender_{false};
+    std::atomic<int> currentPass_{0};
+    std::atomic<bool> newDataAvailable_{false};
+    std::atomic<bool> textureUpdateNeeded_{false};
+    double lastPassDuration_ = 0.0;
+    double totalRenderTime_ = 0.0;
+
+    RenderParams params_;
+    std::mutex paramsMutex_;
+    std::mutex filmMutex_;
+    std::mutex statsMutex_;
+
+    std::thread managerThread_;
+};
+
+bool PreviewApp::initSDL()
+{
+  if (!SDL_Init(SDL_INIT_VIDEO))
+  {
+    std::cerr << "SDL_Init failed: " << SDL_GetError() << std::endl;
+    return false;
+  }
+
+  window_ = SDL_CreateWindow("Pathtracing Preview", width_, height_, SDL_WINDOW_RESIZABLE);
+  if (!window_)
+  {
+    std::cerr << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
+    SDL_Quit();
+    return false;
+  }
+
+  renderer_ = SDL_CreateRenderer(window_, nullptr);
+  if (!renderer_)
+  {
+    std::cerr << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
+    SDL_DestroyWindow(window_);
+    window_ = nullptr;
+    SDL_Quit();
+    return false;
+  }
+
+  texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width_, height_);
+  if (!texture_)
+  {
+    std::cerr << "SDL_CreateTexture failed: " << SDL_GetError() << std::endl;
+    SDL_DestroyRenderer(renderer_);
+    SDL_DestroyWindow(window_);
+    renderer_ = nullptr;
+    window_ = nullptr;
+    SDL_Quit();
+    return false;
+  }
+
+  displayWidth_ = width_;
+  displayHeight_ = height_;
+  pixels_.resize(static_cast<size_t>(width_) * height_ * 3);
+  sharedPixels_ = pixels_;
+
+  return true;
+}
+
+void PreviewApp::clearMaterials()
+{
+  for (auto *mat : materials_)
+  {
+    delete mat;
+  }
+  materials_.clear();
+}
+
+void PreviewApp::loadScene(int idx)
+{
+  bvh_->freeObject();
+  clearMaterials();
+  sky_.reset();
+
+  const auto &config = scenes_[idx];
+  config.setup(*bvh_, materials_);
+
+  if (config.hasSky)
+  {
+    sky_ = std::make_unique<ImageBasedLighting>(config.skyPath);
+    bvh_->setSky(sky_.get());
+  }
+
+  bvh_->constructBVH();
+}
+
+void PreviewApp::rebuildResources(const RenderParams &params, bool sceneChanged)
+{
+  Vector3 eye = params.eye;
+  Vector3 target = params.target;
+  float fov = params.fov;
+  int width = params.width;
+  int height = params.height;
+
+  if (sceneChanged)
+  {
+    const auto &scene = scenes_[params.sceneIdx];
+    eye = scene.eye;
+    target = scene.target;
+    fov = scene.fov;
+
+    float orbitRadius = std::sqrt((eye - target).norm());
+    float orbitTheta = 0.0f;
+    float orbitPhi = 0.0f;
+    if (orbitRadius > 0.0f)
+    {
+      orbitTheta = std::acos(std::clamp((eye.y - target.y) / orbitRadius, -1.0f, 1.0f));
+      orbitPhi = std::atan2(eye.z - target.z, eye.x - target.x);
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(paramsMutex_);
+      params_.eye = eye;
+      params_.target = target;
+      params_.fov = fov;
+      params_.orbitRadius = orbitRadius;
+      params_.orbitTheta = orbitTheta;
+      params_.orbitPhi = orbitPhi;
+      params_.polygonCount = bvh_->getObjectCount();
+    }
+  }
+
+  camera_ = std::make_unique<PinholeCamera>(eye, target, up_, fov, width, height);
+  film_ = std::make_unique<Film>(width, height);
+  pathtracer_ = std::make_unique<Pathtracing>(bvh_.get(), film_.get(), camera_.get(), samples_);
+
+  width_ = width;
+  height_ = height;
+
+  {
+    std::lock_guard<std::mutex> lock(filmMutex_);
+    sharedPixels_.assign(static_cast<size_t>(width_) * height_ * 3, 0);
+    textureUpdateNeeded_.store(true);
+  }
+
+  currentPass_.store(0);
+  newDataAvailable_.store(false);
+  {
+    std::lock_guard<std::mutex> lock(statsMutex_);
+    lastPassDuration_ = 0.0;
+    totalRenderTime_ = 0.0;
+  }
+}
+
+void PreviewApp::startManagerThread()
+{
+  managerThread_ = std::thread(&PreviewApp::managerLoop, this);
+}
+
+void PreviewApp::stopManagerThread()
+{
+  appState_.store(AppState::Quitting);
+  quitRender_.store(true);
+  if (managerThread_.joinable())
+  {
+    managerThread_.join();
+  }
+}
+
+void PreviewApp::managerLoop()
+{
+  std::thread renderThread;
+  auto lastPassFinish = std::chrono::high_resolution_clock::now();
+
+  while (appState_.load() != AppState::Quitting)
+  {
+    AppState state = appState_.load();
+    if (state == AppState::ResetRequested || state == AppState::SceneChangeRequested)
+    {
+      bool sceneChanged = (state == AppState::SceneChangeRequested);
+
+      quitRender_.store(true);
+      if (renderThread.joinable())
+      {
+        renderThread.join();
+      }
+
+      RenderParams snapshot;
+      {
+        std::lock_guard<std::mutex> lock(paramsMutex_);
+        snapshot = params_;
+      }
+
+      if (sceneChanged)
+      {
+        loadScene(snapshot.sceneIdx);
+      }
+
+      rebuildResources(snapshot, sceneChanged);
+
+      quitRender_.store(false);
+
+      AppState expected = state;
+      if (appState_.compare_exchange_strong(expected, AppState::Running))
+      {
+        renderThread = std::thread(&PreviewApp::renderLoop, this);
+      }
+
+      lastPassFinish = std::chrono::high_resolution_clock::now();
+    }
+
+    if (newDataAvailable_.load() && appState_.load() == AppState::Running)
+    {
+      auto now = std::chrono::high_resolution_clock::now();
+      double passTime = std::chrono::duration<double>(now - lastPassFinish).count();
+      {
+        std::lock_guard<std::mutex> lock(statsMutex_);
+        lastPassDuration_ = passTime;
+        totalRenderTime_ += passTime;
+      }
+      lastPassFinish = now;
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+
+  quitRender_.store(true);
+  if (renderThread.joinable())
+  {
+    renderThread.join();
+  }
+}
+
+void PreviewApp::renderLoop()
+{
+  while (!quitRender_.load())
+  {
+    int passIndex = currentPass_.load();
+    if (passIndex < samples_)
+    {
+      pathtracer_->render(passIndex);
+      int passCount = currentPass_.fetch_add(1) + 1;
+
+      Film tempFilm(width_, height_);
+      for (int i = 0; i < width_ * height_; ++i)
+      {
+        tempFilm[i] = (*film_)[i] / static_cast<float>(passCount);
+      }
+      auto rgb = tempFilm.toRGB();
+
+      std::lock_guard<std::mutex> lock(filmMutex_);
+      if (sharedPixels_.size() == static_cast<size_t>(width_) * height_ * 3)
+      {
+        for (int i = 0; i < width_ * height_; ++i)
+        {
+          sharedPixels_[i * 3 + 0] = rgb[i].r255();
+          sharedPixels_[i * 3 + 1] = rgb[i].g255();
+          sharedPixels_[i * 3 + 2] = rgb[i].b255();
+        }
+        newDataAvailable_.store(true);
+      }
+
+      if (quitRender_.load())
+      {
+        break;
+      }
+    }
+    else
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+  }
+}
+
+void PreviewApp::handleWindowResized(int width, int height)
+{
+  SDL_Rect displayBounds;
+  if (SDL_GetDisplayBounds(SDL_GetDisplayForWindow(window_), &displayBounds))
+  {
+    width = std::min(width, displayBounds.w);
+    height = std::min(height, displayBounds.h);
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(paramsMutex_);
+    params_.width = width;
+    params_.height = height;
+  }
+
+  requestReset();
+}
+
+void PreviewApp::handleSceneSelection(float x, float y)
+{
+  if (x < static_cast<float>(displayWidth_) - 120 || x > static_cast<float>(displayWidth_) - 10)
+    return;
+
+  int sceneIdx = static_cast<int>((y - 10.0f) / 40.0f);
+  if (sceneIdx < 0 || sceneIdx >= static_cast<int>(scenes_.size()))
+    return;
+
+  int currentScene;
+  {
+    std::lock_guard<std::mutex> lock(paramsMutex_);
+    currentScene = params_.sceneIdx;
+  }
+
+  if (sceneIdx != currentScene)
+  {
+    requestSceneChange(sceneIdx);
+  }
+}
+
+void PreviewApp::commitCameraUpdate(
+  const Vector3 &eye, const Vector3 &target, float orbitRadius, float orbitTheta, float orbitPhi)
+{
+  {
+    std::lock_guard<std::mutex> lock(paramsMutex_);
+    params_.eye = eye;
+    params_.target = target;
+    params_.orbitRadius = orbitRadius;
+    params_.orbitTheta = orbitTheta;
+    params_.orbitPhi = orbitPhi;
+  }
+
+  requestReset();
+}
+
+void PreviewApp::handleKeyDown(const SDL_KeyboardEvent &key)
+{
+  RenderParams snapshot;
+  {
+    std::lock_guard<std::mutex> lock(paramsMutex_);
+    snapshot = params_;
+  }
+
+  bool cameraMoved = false;
+  Vector3 eye = snapshot.eye;
+  Vector3 target = snapshot.target;
+  float orbitRadius = snapshot.orbitRadius;
+  float orbitTheta = snapshot.orbitTheta;
+  float orbitPhi = snapshot.orbitPhi;
+
+  const float moveSpeed = 0.5f;
+  const float rotateSpeed = 0.05f;
+
+  Vector3 forward = normalize(target - eye);
+  Vector3 right = normalize(cross(forward, snapshot.up));
+
+  switch (key.key)
+  {
+    case SDLK_W:
+      eye = eye + forward * moveSpeed;
+      target = target + forward * moveSpeed;
+      cameraMoved = true;
+      break;
+    case SDLK_S:
+      eye = eye - forward * moveSpeed;
+      target = target - forward * moveSpeed;
+      cameraMoved = true;
+      break;
+    case SDLK_A:
+      eye = eye - right * moveSpeed;
+      target = target - right * moveSpeed;
+      cameraMoved = true;
+      break;
+    case SDLK_D:
+      eye = eye + right * moveSpeed;
+      target = target + right * moveSpeed;
+      cameraMoved = true;
+      break;
+    case SDLK_Q:
+      orbitPhi -= rotateSpeed;
+      cameraMoved = true;
+      break;
+    case SDLK_E:
+      orbitPhi += rotateSpeed;
+      cameraMoved = true;
+      break;
+    case SDLK_R:
+      orbitTheta = std::max(0.1f, orbitTheta - rotateSpeed);
+      cameraMoved = true;
+      break;
+    case SDLK_F:
+      orbitTheta = std::min(kPi - 0.1f, orbitTheta + rotateSpeed);
+      cameraMoved = true;
+      break;
+    default:
+      break;
+  }
+
+  if (!cameraMoved)
+    return;
+
+  orbitRadius = std::max(0.1f, orbitRadius);
+
+  Vector3 orbitOffset(
+    orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi),
+    orbitRadius * std::cos(orbitTheta),
+    orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi));
+  eye = target + orbitOffset;
+
+  commitCameraUpdate(eye, target, orbitRadius, orbitTheta, orbitPhi);
+}
+
+void PreviewApp::handleEvent(const SDL_Event &event)
+{
+  switch (event.type)
+  {
+    case SDL_EVENT_QUIT:
+      appState_.store(AppState::Quitting);
+      break;
+    case SDL_EVENT_WINDOW_RESIZED:
+      handleWindowResized(event.window.data1, event.window.data2);
+      break;
+    case SDL_EVENT_MOUSE_BUTTON_UP:
+      handleSceneSelection(static_cast<float>(event.button.x), static_cast<float>(event.button.y));
+      break;
+    case SDL_EVENT_KEY_DOWN:
+      handleKeyDown(event.key);
+      break;
+    default:
+      break;
+  }
+}
+
+void PreviewApp::updateTextureIfNeeded()
+{
+  if (!textureUpdateNeeded_.load())
+    return;
+
+  std::lock_guard<std::mutex> lock(filmMutex_);
+  if (texture_)
+  {
+    SDL_DestroyTexture(texture_);
+  }
+  texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width_, height_);
+  displayWidth_ = width_;
+  displayHeight_ = height_;
+  pixels_.assign(static_cast<size_t>(displayWidth_) * displayHeight_ * 3, 0);
+  textureUpdateNeeded_.store(false);
+}
+
+void PreviewApp::applyLatestPixels()
+{
+  if (!newDataAvailable_.load())
+    return;
+
+  std::lock_guard<std::mutex> lock(filmMutex_);
+  if (sharedPixels_.size() == pixels_.size())
+  {
+    pixels_ = sharedPixels_;
+    newDataAvailable_.store(false);
+  }
+
+  if (texture_)
+  {
+    SDL_UpdateTexture(texture_, nullptr, pixels_.data(), displayWidth_ * 3);
+  }
+}
+
+void PreviewApp::drawSceneButtons(int displayWidth, int displayHeight, int currentSceneIdx)
+{
+  (void) displayHeight;
+  for (int i = 0; i < static_cast<int>(scenes_.size()); ++i)
+  {
+    SDL_FRect rect = {static_cast<float>(displayWidth) - 120.0f, 10.0f + i * 40.0f, 110.0f, 30.0f};
+    if (i == currentSceneIdx)
+      SDL_SetRenderDrawColor(renderer_, 100, 255, 100, 255);
+    else
+      SDL_SetRenderDrawColor(renderer_, 200, 200, 200, 255);
+    SDL_RenderFillRect(renderer_, &rect);
+    SDLTest_DrawString(renderer_, rect.x + 5.0f, rect.y + 10.0f, scenes_[i].name.c_str());
+  }
+}
+
+void PreviewApp::drawStatusPanel(const RenderParams &snapshot, int displayWidth, int displayHeight)
+{
+  SDL_FRect statusRect = {
+    static_cast<float>(displayWidth) - 250.0f,
+    static_cast<float>(displayHeight) - 125.0f,
+    240.0f,
+    115.0f};
+  SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 128);
+  SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+  SDL_RenderFillRect(renderer_, &statusRect);
+
+  int pass = currentPass_.load();
+  double totalRender = 0.0;
+  double avgPass = 0.0;
+  double sps = 0.0;
+  {
+    std::lock_guard<std::mutex> lock(statsMutex_);
+    totalRender = totalRenderTime_;
+    avgPass = (pass > 0) ? (totalRender / static_cast<double>(pass)) : 0.0;
+    sps = (totalRender > 0.0) ? (static_cast<double>(pass) / totalRender) : 0.0;
+  }
+
+  std::string line1 = "Pass: " + std::to_string(pass);
+  std::string line2 = std::to_string(sps).substr(0, 6) + " SPS (Avg)";
+  std::string line3 = std::to_string(avgPass).substr(0, 6) + " s/pass (Avg)";
+  std::string line4 = std::to_string(displayWidth_) + "x" + std::to_string(displayHeight_);
+  std::string line5 = "Polygons: " + std::to_string(snapshot.polygonCount);
+  std::string line6 = "Eye: (" + std::to_string(snapshot.eye.x).substr(0, 5) + ", " +
+                      std::to_string(snapshot.eye.y).substr(0, 5) + ", " +
+                      std::to_string(snapshot.eye.z).substr(0, 5) + ")";
+  std::string line7 = "Target: (" + std::to_string(snapshot.target.x).substr(0, 5) + ", " +
+                      std::to_string(snapshot.target.y).substr(0, 5) + ", " +
+                      std::to_string(snapshot.target.z).substr(0, 5) + ")";
+
+  SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
+  SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 10.0f, line1.c_str());
+  SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 25.0f, line2.c_str());
+  SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 40.0f, line3.c_str());
+  SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 55.0f, line4.c_str());
+  SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 70.0f, line5.c_str());
+  SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 85.0f, line6.c_str());
+  SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 100.0f, line7.c_str());
+
+  SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_NONE);
+}
+
+void PreviewApp::renderFrame(const RenderParams &snapshot)
+{
+  SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+  SDL_RenderClear(renderer_);
+
+  SDL_RenderTexture(renderer_, texture_, nullptr, nullptr);
+
+  drawSceneButtons(displayWidth_, displayHeight_, snapshot.sceneIdx);
+  drawStatusPanel(snapshot, displayWidth_, displayHeight_);
+
+  SDL_RenderPresent(renderer_);
+}
+
+void PreviewApp::requestReset()
+{
+  AppState current = appState_.load();
+  while (current != AppState::Quitting)
+  {
+    if (current == AppState::SceneChangeRequested)
+      return;
+    if (appState_.compare_exchange_weak(current, AppState::ResetRequested))
+      return;
+  }
+}
+
+void PreviewApp::requestSceneChange(int sceneIdx)
+{
+  {
+    std::lock_guard<std::mutex> lock(paramsMutex_);
+    params_.sceneIdx = sceneIdx;
+  }
+
+  AppState current = appState_.load();
+  while (current != AppState::Quitting)
+  {
+    if (appState_.compare_exchange_weak(current, AppState::SceneChangeRequested))
+      return;
+  }
+}
+
+void PreviewApp::mainLoop()
+{
+  SDL_Event event;
+
+  while (appState_.load() != AppState::Quitting)
+  {
+    auto frameStart = std::chrono::high_resolution_clock::now();
+
+    while (SDL_PollEvent(&event))
+    {
+      handleEvent(event);
+    }
+
+    updateTextureIfNeeded();
+    applyLatestPixels();
+
+    RenderParams snapshot;
+    {
+      std::lock_guard<std::mutex> lock(paramsMutex_);
+      snapshot = params_;
+    }
+
+    renderFrame(snapshot);
+
+    auto frameEnd = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> frameDuration = frameEnd - frameStart;
+    if (frameDuration.count() < 16.666)
+    {
+      Uint32 delay = static_cast<Uint32>(16.666 - frameDuration.count());
+      SDL_Delay(delay);
+    }
+  }
+}
+
+void PreviewApp::cleanup()
+{
+  stopManagerThread();
+
+  clearMaterials();
+  bvh_->freeObject();
+
+  if (texture_)
+    SDL_DestroyTexture(texture_);
+  if (renderer_)
+    SDL_DestroyRenderer(renderer_);
+  if (window_)
+    SDL_DestroyWindow(window_);
+
+  SDL_Quit();
+}
+
+int PreviewApp::run()
+{
+  if (!initSDL())
+    return 1;
+
+  Spectrum::initSpectrum();
+
+  params_.width = width_;
+  params_.height = height_;
+  params_.up = up_;
+  params_.sceneIdx = 0;
+  params_.eye = scenes_.front().eye;
+  params_.target = scenes_.front().target;
+  params_.fov = scenes_.front().fov;
+  params_.orbitRadius = std::sqrt((params_.eye - params_.target).norm());
+  if (params_.orbitRadius > 0.0f)
+  {
+    params_.orbitTheta = std::acos(
+      std::clamp((params_.eye.y - params_.target.y) / params_.orbitRadius, -1.0f, 1.0f));
+    params_.orbitPhi = std::atan2(params_.eye.z - params_.target.z, params_.eye.x - params_.target.x);
+  }
+  else
+  {
+    params_.orbitTheta = 0.0f;
+    params_.orbitPhi = 0.0f;
+  }
+
+  startManagerThread();
+  mainLoop();
+  cleanup();
+
+  return 0;
 }
 
 int main(int argc, char *argv[])
 {
-  int width = 500;
-  int height = 500;
-  const int samples = 10000;
-
-  if (!SDL_Init(SDL_INIT_VIDEO))
-  {
-    std::cerr << "SDL_Init failed: " << SDL_GetError() << std::endl;
-    return 1;
-  }
-
-  SDL_Window *window = SDL_CreateWindow("Pathtracing Preview", width, height, SDL_WINDOW_RESIZABLE);
-  if (!window)
-  {
-    std::cerr << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
-    SDL_Quit();
-    return 1;
-  }
-
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, nullptr);
-  if (!renderer)
-  {
-    std::cerr << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-    return 1;
-  }
-
-  Spectrum::initSpectrum();
-
-  std::vector<SceneConfig> scenes = {
-    {"Simple", Vector3(0, 0, 2), Vector3(0, 0, 0), 45 * M_PI / 180, false, "", setupScene0},
-    {"Bunny IBL",
-     Vector3(0, 5, 14),
-     Vector3(0, 0, 0),
-     55 * M_PI / 180,
-     true,
-     "../texture/playa.exr",
-     setupScene1},
-    {"Spheres IBL",
-     Vector3(0, 5, 14),
-     Vector3(0, 0, 0),
-     55 * M_PI / 180,
-     true,
-     "../texture/playa.exr",
-     setupScene2},
-    {"Cornell Bunny",
-     Vector3(0, 5, 14),
-     Vector3(0, 0, 0),
-     55 * M_PI / 180,
-     false,
-     "",
-     setupScene3}};
-
-  int currentSceneIdx = 0;
-  auto bvh = std::make_unique<BVH>();
-  std::vector<Material *> currentMaterials;
-  std::unique_ptr<ImageBasedLighting> currentSky;
-
-  // レンダリングループを制御するためのフラグと同期機構
-  std::atomic<bool> quitRender{false};
-  std::atomic<int> current_pass{0};
-  std::atomic<bool> newDataAvailable{false};
-  std::mutex filmMutex;
-
-  // シーンのロード処理（オブジェクトの解放と再構築）
-  auto loadScene = [&](int idx)
-  {
-    bvh->freeObject();
-    for (auto m : currentMaterials)
-      delete m;
-    currentMaterials.clear();
-    currentSky.reset();
-
-    scenes[idx].setup(bvh.get(), currentMaterials);
-    if (scenes[idx].hasSky)
-    {
-      currentSky = std::make_unique<ImageBasedLighting>(scenes[idx].skyPath);
-      bvh->setSky(currentSky.get());
-    }
-    bvh->constructBVH();
-  };
-
-  loadScene(currentSceneIdx);
-
-  auto eye = scenes[currentSceneIdx].eye;
-  auto target = scenes[currentSceneIdx].target;
-  auto up = Vector3(0, 1, 0);
-  auto fov = scenes[currentSceneIdx].fov;
-
-  // カメラ回転制御用
-  float orbitRadius = std::sqrt((eye - target).norm());
-  float orbitTheta =
-    std::acos(std::clamp((eye.y - target.y) / orbitRadius, -1.0f, 1.0f)); // ピッチ (0 to PI)
-  float orbitPhi = std::atan2(eye.z - target.z, eye.x - target.x); // ヨー (-PI to PI)
-
-  std::unique_ptr<PinholeCamera> camera =
-    std::make_unique<PinholeCamera>(eye, target, up, fov, width, height);
-  std::unique_ptr<Film> film = std::make_unique<Film>(width, height);
-  std::unique_ptr<Pathtracing> pathtracing =
-    std::make_unique<Pathtracing>(bvh.get(), film.get(), camera.get(), samples);
-
-  std::vector<uint8_t> pixels(width * height * 3);
-  std::vector<uint8_t> shared_pixels(width * height * 3);
-
-  enum class AppState
-  {
-    Running,
-    ResetRequested,
-    SceneChangeRequested,
-    Quitting
-  };
-
-  std::atomic<AppState> appState{AppState::SceneChangeRequested};
-  std::atomic<bool> textureUpdateNeeded{false};
-
-  // カメラ位置や設定を管理スレッドへ渡すための共有変数
-  struct RenderParams
-  {
-      int width, height;
-      Vector3 eye, target, up;
-      float fov;
-      int sceneIdx;
-      int polygonCount;
-      float orbitRadius, orbitTheta, orbitPhi;
-  };
-  RenderParams sharedParams = {width,
-                               height,
-                               eye,
-                               target,
-                               up,
-                               fov,
-                               currentSceneIdx,
-                               bvh->getObjectCount(),
-                               orbitRadius,
-                               orbitTheta,
-                               orbitPhi};
-  std::mutex paramsMutex;
-
-  // 統計情報の同期用
-  std::atomic<double> shared_last_pass_time{0};
-  std::atomic<double> shared_total_render_time{0};
-  std::mutex statsMutex;
-
-  // レンダリング用スレッドの関数定義
-  auto renderFunc = [&]()
-  {
-    while (!quitRender)
-    {
-      if (current_pass < samples)
-      {
-        // パストレーシングの計算を実行
-        pathtracing->render(current_pass);
-        current_pass++;
-
-        // メインスレッドの負荷を軽減するため、レンダリングスレッド側で
-        // Filmからピクセルデータ（RGB）への変換を行う
-        int pass = current_pass;
-        Film temp_film(width, height);
-        for (int i = 0; i < width * height; ++i)
-        {
-          temp_film[i] = (*film)[i] / (float) pass;
-        }
-        auto rgb_data = temp_film.toRGB();
-
-        {
-          // 表示用共有バッファへコピー（排他制御）
-          std::lock_guard<std::mutex> lock(filmMutex);
-          if (shared_pixels.size() == (size_t) width * height * 3)
-          {
-            for (int i = 0; i < width * height; ++i)
-            {
-              shared_pixels[i * 3 + 0] = rgb_data[i].r255();
-              shared_pixels[i * 3 + 1] = rgb_data[i].g255();
-              shared_pixels[i * 3 + 2] = rgb_data[i].b255();
-            }
-            newDataAvailable = true;
-          }
-        }
-
-        // 1パス終了した時点で停止要求があればループを抜ける
-        if (quitRender)
-          break;
-      }
-      else
-      {
-        // すべてのサンプルが終了した場合は待機
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      }
-    }
-  };
-
-  // 管理スレッド: レンダリングスレッドのライフサイクルを管理する
-  auto managerFunc = [&]()
-  {
-    std::thread renderThread;
-    auto last_pass_finish_time = std::chrono::high_resolution_clock::now();
-
-    while (appState != AppState::Quitting)
-    {
-      AppState currentState = appState.load();
-
-      if (currentState == AppState::ResetRequested ||
-          currentState == AppState::SceneChangeRequested)
-      {
-        bool isSceneChange = (currentState == AppState::SceneChangeRequested);
-
-        // 実行中のスレッドがあれば停止を待機
-        quitRender = true;
-        if (renderThread.joinable())
-        {
-          renderThread.join();
-        }
-
-        // パラメータの取得
-        RenderParams p;
-        {
-          std::lock_guard<std::mutex> lock(paramsMutex);
-          p = sharedParams;
-        }
-
-        // 管理スレッド内部の作業用変数を更新
-        int localWidth = p.width;
-        int localHeight = p.height;
-        Vector3 localEye = p.eye;
-        Vector3 localTarget = p.target;
-        float localFov = p.fov;
-
-        if (isSceneChange)
-        {
-          loadScene(p.sceneIdx);
-
-          // 新しいシーンの初期カメラ設定を反映
-          localEye = scenes[p.sceneIdx].eye;
-          localTarget = scenes[p.sceneIdx].target;
-          localFov = scenes[p.sceneIdx].fov;
-
-          // カメラ回転制御用のパラメータをリセット
-          float localOrbitRadius = std::sqrt((localEye - localTarget).norm());
-          float localOrbitTheta =
-            std::acos(std::clamp((localEye.y - localTarget.y) / localOrbitRadius, -1.0f, 1.0f));
-          float localOrbitPhi = std::atan2(localEye.z - localTarget.z, localEye.x - localTarget.x);
-
-          // メインスレッドと共有するために sharedParams を更新
-          {
-            std::lock_guard<std::mutex> lock(paramsMutex);
-            sharedParams.polygonCount = bvh->getObjectCount();
-            sharedParams.eye = localEye;
-            sharedParams.target = localTarget;
-            sharedParams.fov = localFov;
-            sharedParams.orbitRadius = localOrbitRadius;
-            sharedParams.orbitTheta = localOrbitTheta;
-            sharedParams.orbitPhi = localOrbitPhi;
-            sharedParams.sceneIdx = p.sceneIdx;
-          }
-        }
-
-        // リソースの再構築
-        camera = std::make_unique<PinholeCamera>(
-          localEye, localTarget, up, localFov, localWidth, localHeight);
-        film = std::make_unique<Film>(localWidth, localHeight);
-        pathtracing = std::make_unique<Pathtracing>(bvh.get(), film.get(), camera.get(), samples);
-
-        {
-          std::lock_guard<std::mutex> lock(filmMutex);
-          shared_pixels.resize((size_t) localWidth * localHeight * 3);
-          textureUpdateNeeded = true;
-        }
-
-        // メインスレッド側で使用する解像度変数を更新
-        width = localWidth;
-        height = localHeight;
-
-        current_pass = 0;
-        newDataAvailable = false;
-        shared_last_pass_time = 0;
-        shared_total_render_time = 0;
-        last_pass_finish_time = std::chrono::high_resolution_clock::now();
-
-        quitRender = false;
-        // 処理中に新たなリセット要求が来ていなければ Running に戻す
-        // (currentState はこのブロックの開始時の値: ResetRequested or SceneChangeRequested)
-        AppState expected = currentState;
-        if (appState.compare_exchange_strong(expected, AppState::Running))
-        {
-          // 状態更新に成功した場合のみ、新しいレンダリングスレッドを開始
-          renderThread = std::thread(renderFunc);
-        }
-        else
-        {
-          // 処理中に新たな要求が来ていた場合は、このループの最後で Running に戻さず、
-          // 次のループの先頭で再度リセット処理（currentStateのチェック）が行われるようにする。
-          // ただし、renderThreadが開始されていない状態になるので、
-          // 次のループで確実に処理される必要がある。
-        }
-      }
-
-      if (newDataAvailable && appState == AppState::Running)
-      {
-        auto now = std::chrono::high_resolution_clock::now();
-        double pass_time = std::chrono::duration<double>(now - last_pass_finish_time).count();
-        shared_last_pass_time = pass_time;
-        shared_total_render_time = shared_total_render_time + pass_time;
-        last_pass_finish_time = now;
-      }
-
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-
-    quitRender = true;
-    if (renderThread.joinable())
-    {
-      renderThread.join();
-    }
-  };
-
-  std::thread managerThread(managerFunc);
-
-  SDL_Texture *texture =
-    SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width, height);
-  int displayWidth = width;
-  int displayHeight = height;
-
-  SDL_Event event;
-
-  while (appState != AppState::Quitting)
-  {
-    auto frame_start = std::chrono::high_resolution_clock::now();
-
-    // 管理スレッドがシーン切り替えなどでパラメータを更新した可能性があるため同期
-    // 起動直後の不整合を防ぐため、Running以外の状態でも同期を行う
-    {
-      std::lock_guard<std::mutex> lock(paramsMutex);
-      currentSceneIdx = sharedParams.sceneIdx;
-      eye = sharedParams.eye;
-      target = sharedParams.target;
-      fov = sharedParams.fov;
-      orbitRadius = sharedParams.orbitRadius;
-      orbitTheta = sharedParams.orbitTheta;
-      orbitPhi = sharedParams.orbitPhi;
-    }
-
-    // SDLイベントのポーリング（UI操作の処理）
-    while (SDL_PollEvent(&event))
-    {
-      if (event.type == SDL_EVENT_QUIT)
-      {
-        appState = AppState::Quitting;
-      }
-      else if (event.type == SDL_EVENT_WINDOW_RESIZED)
-      {
-        SDL_Rect displayBounds;
-        int windowWidth = event.window.data1;
-        int windowHeight = event.window.data2;
-
-        if (SDL_GetDisplayBounds(SDL_GetDisplayForWindow(window), &displayBounds))
-        {
-          windowWidth = std::min(windowWidth, displayBounds.w);
-          windowHeight = std::min(windowHeight, displayBounds.h);
-        }
-
-        {
-          std::lock_guard<std::mutex> lock(paramsMutex);
-          sharedParams.width = windowWidth;
-          sharedParams.height = windowHeight;
-        }
-        if (appState != AppState::Quitting)
-        {
-          appState = AppState::ResetRequested;
-        }
-      }
-      else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-      {
-        /*
-        if (event.button.button == SDL_BUTTON_LEFT)
-        {
-          isMouseDown = true;
-          lastMouseX = event.button.x;
-          lastMouseY = event.button.y;
-        }
-        */
-      }
-      else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
-      {
-        /*
-        if (event.button.button == SDL_BUTTON_LEFT)
-        {
-          isMouseDown = false;
-        }
-        */
-        float x = event.button.x;
-        float y = event.button.y;
-        if (x >= (float) displayWidth - 120 && x <= (float) displayWidth - 10 && y >= 10 &&
-            y <= 10 + (int) scenes.size() * 40)
-        {
-          int clickedIdx = (y - 10) / 40;
-          if (clickedIdx >= 0 && clickedIdx < (int) scenes.size() && clickedIdx != currentSceneIdx)
-          {
-            {
-              std::lock_guard<std::mutex> lock(paramsMutex);
-              sharedParams.sceneIdx = clickedIdx;
-            }
-            if (appState != AppState::Quitting)
-            {
-              appState = AppState::SceneChangeRequested;
-            }
-          }
-        }
-      }
-      else if (event.type == SDL_EVENT_KEY_DOWN)
-      {
-        bool cameraMoved = false;
-        float moveSpeed = 0.5f;
-        float rotateSpeed = 0.05f;
-
-        // カメラの向きに基づいた前方向と右方向の計算
-        Vector3 forward = normalize(target - eye);
-        Vector3 right = normalize(cross(forward, up));
-        // Vector3 actualUp = cross(right, forward);
-
-        switch (event.key.key)
-        {
-        case SDLK_W: // 前進
-          eye = eye + forward * moveSpeed;
-          target = target + forward * moveSpeed;
-          cameraMoved = true;
-          break;
-        case SDLK_S: // 後退
-          eye = eye - forward * moveSpeed;
-          target = target - forward * moveSpeed;
-          cameraMoved = true;
-          break;
-        case SDLK_A: // 左移動
-          eye = eye - right * moveSpeed;
-          target = target - right * moveSpeed;
-          cameraMoved = true;
-          break;
-        case SDLK_D: // 右移動
-          eye = eye + right * moveSpeed;
-          target = target + right * moveSpeed;
-          cameraMoved = true;
-          break;
-        case SDLK_Q: // 左回転 (ヨー)
-          orbitPhi -= rotateSpeed;
-          cameraMoved = true;
-          break;
-        case SDLK_E: // 右回転 (ヨー)
-          orbitPhi += rotateSpeed;
-          cameraMoved = true;
-          break;
-        case SDLK_R: // 上回転 (ピッチ)
-          orbitTheta -= rotateSpeed;
-          orbitTheta = std::clamp(orbitTheta, 0.01f, (float) M_PI - 0.01f);
-          cameraMoved = true;
-          break;
-        case SDLK_F: // 下回転 (ピッチ)
-          orbitTheta += rotateSpeed;
-          orbitTheta = std::clamp(orbitTheta, 0.01f, (float) M_PI - 0.01f);
-          cameraMoved = true;
-          break;
-        case SDLK_SPACE: // 視点リセット
-          eye = scenes[currentSceneIdx].eye;
-          target = scenes[currentSceneIdx].target;
-          fov = scenes[currentSceneIdx].fov;
-          // 球座標パラメータの再計算
-          {
-            Vector3 offset = eye - target;
-            orbitRadius = std::sqrt(offset.norm());
-            orbitTheta = std::acos(std::clamp(offset.y / orbitRadius, -1.0f, 1.0f));
-            orbitPhi = std::atan2(offset.z, offset.x);
-          }
-          cameraMoved = true;
-          break;
-        default:
-          break;
-        }
-
-        if (cameraMoved)
-        {
-          // QE, RFキーによる角度更新の場合、eye座標を再計算
-          // WASDキーによる移動やスペースによるリセットの場合は、すでにeyeとtargetが更新されている
-          switch (event.key.key)
-          {
-          case SDLK_Q:
-          case SDLK_E:
-          case SDLK_R:
-          case SDLK_F:
-            eye.x = target.x + orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi);
-            eye.y = target.y + orbitRadius * std::cos(orbitTheta);
-            eye.z = target.z + orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi);
-            break;
-          default:
-            // WASDやスペースでのリセット後は、新しい位置から球座標を逆算して整合性を取る
-            // (スペースキーの場合は既に上で計算済みだが、安全のためここでも行う)
-            Vector3 offset = eye - target;
-            orbitRadius = std::sqrt(offset.norm());
-            orbitTheta = std::acos(std::clamp(offset.y / orbitRadius, -1.0f, 1.0f));
-            orbitPhi = std::atan2(offset.z, offset.x);
-            break;
-          }
-
-          {
-            std::lock_guard<std::mutex> lock(paramsMutex);
-            sharedParams.eye = eye;
-            sharedParams.target = target;
-            sharedParams.orbitRadius = orbitRadius;
-            sharedParams.orbitTheta = orbitTheta;
-            sharedParams.orbitPhi = orbitPhi;
-          }
-          if (appState != AppState::Quitting)
-          {
-            appState = AppState::ResetRequested;
-          }
-        }
-      }
-      else if (event.type == SDL_EVENT_MOUSE_MOTION)
-      {
-        // キーボード操作への移行に伴い、マウスドラッグによる回転は無効化
-        /*
-        if (isMouseDown)
-        {
-          float dx = event.motion.x - lastMouseX;
-          float dy = event.motion.y - lastMouseY;
-          lastMouseX = event.motion.x;
-          lastMouseY = event.motion.y;
-
-          orbitPhi -= dx * 0.01f;
-          orbitTheta -= dy * 0.01f;
-          orbitTheta = std::clamp(orbitTheta, 0.01f, (float) M_PI - 0.01f);
-
-          eye.x = target.x + orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi);
-          eye.y = target.y + orbitRadius * std::cos(orbitTheta);
-          eye.z = target.z + orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi);
-
-          {
-            std::lock_guard<std::mutex> lock(paramsMutex);
-            sharedParams.eye = eye;
-            sharedParams.orbitRadius = orbitRadius;
-            sharedParams.orbitTheta = orbitTheta;
-            sharedParams.orbitPhi = orbitPhi;
-          }
-          if (appState != AppState::Quitting)
-          {
-            appState = AppState::ResetRequested;
-          }
-        }
-        */
-      }
-      else if (event.type == SDL_EVENT_MOUSE_WHEEL)
-      {
-        float scrollAmount = event.wheel.y;
-        // SDL3ではyがfloatで、慣性スクロールなどで非常に小さい値が来ることがある
-        if (std::abs(scrollAmount) > 0.001f)
-        {
-          orbitRadius -= scrollAmount * 0.5f;
-          orbitRadius = std::max(0.1f, orbitRadius);
-
-          eye.x = target.x + orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi);
-          eye.y = target.y + orbitRadius * std::cos(orbitTheta);
-          eye.z = target.z + orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi);
-
-          {
-            std::lock_guard<std::mutex> lock(paramsMutex);
-            sharedParams.eye = eye;
-            sharedParams.orbitRadius = orbitRadius;
-            sharedParams.orbitTheta = orbitTheta;
-            sharedParams.orbitPhi = orbitPhi;
-          }
-          if (appState != AppState::Quitting)
-          {
-            appState = AppState::ResetRequested;
-          }
-        }
-      }
-    }
-
-    if (textureUpdateNeeded)
-    {
-      std::lock_guard<std::mutex> lock(filmMutex);
-      if (texture)
-        SDL_DestroyTexture(texture);
-      texture = SDL_CreateTexture(
-        renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width, height);
-      displayWidth = width;
-      displayHeight = height;
-      pixels.resize((size_t) displayWidth * displayHeight * 3);
-      textureUpdateNeeded = false;
-    }
-
-    // 新しいレンダリング結果があれば反映
-    if (newDataAvailable)
-    {
-      {
-        std::lock_guard<std::mutex> lock(filmMutex);
-        if (pixels.size() == shared_pixels.size())
-        {
-          pixels = shared_pixels;
-          newDataAvailable = false;
-        }
-      }
-      SDL_UpdateTexture(texture, nullptr, pixels.data(), displayWidth * 3);
-    }
-
-    // 画面描画処理
-    SDL_RenderClear(renderer);
-    SDL_RenderTexture(renderer, texture, nullptr, nullptr);
-
-    // シーン切り替えボタンの描画
-    for (int i = 0; i < (int) scenes.size(); ++i)
-    {
-      SDL_FRect rect = {(float) displayWidth - 120, 10.0f + i * 40.0f, 110.0f, 30.0f};
-      if (i == currentSceneIdx)
-        SDL_SetRenderDrawColor(renderer, 100, 255, 100, 255);
-      else
-        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
-      SDL_RenderFillRect(renderer, &rect);
-    }
-
-    // ステータス表示エリアの描画
-    SDL_FRect statusRect = {(float) displayWidth - 250, (float) displayHeight - 125, 240.0f, 115.0f};
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_RenderFillRect(renderer, &statusRect);
-
-    // ステータス情報の描画
-    int polygon_count_display = 0;
-    Vector3 eye_display;
-    Vector3 target_display;
-    double total_render_time = 0;
-    {
-      std::lock_guard<std::mutex> lock(paramsMutex);
-      polygon_count_display = sharedParams.polygonCount;
-      eye_display = sharedParams.eye;
-      target_display = sharedParams.target;
-    }
-    total_render_time = shared_total_render_time.load();
-
-    int pass = current_pass;
-    double avg_pass_time = (pass > 0) ? (total_render_time / pass) : 0.0;
-    double sps = (total_render_time > 0) ? ((double) pass / total_render_time) : 0.0;
-
-    std::string line1 = "Pass: " + std::to_string(pass);
-    std::string line2 = std::to_string(sps).substr(0, 6) + " SPS (Avg)";
-    std::string line3 = std::to_string(avg_pass_time).substr(0, 6) + " s/pass (Avg)";
-    std::string line4 = std::to_string(displayWidth) + "x" + std::to_string(displayHeight);
-    std::string line5 = "Polygons: " + std::to_string(polygon_count_display);
-    std::string line6 = "Eye: (" + std::to_string(eye_display.x).substr(0, 5) + ", " +
-                        std::to_string(eye_display.y).substr(0, 5) + ", " +
-                        std::to_string(eye_display.z).substr(0, 5) + ")";
-    std::string line7 = "Target: (" + std::to_string(target_display.x).substr(0, 5) + ", " +
-                        std::to_string(target_display.y).substr(0, 5) + ", " +
-                        std::to_string(target_display.z).substr(0, 5) + ")";
-
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 120, line1.data());
-    SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 105, line2.data());
-    SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 90, line3.data());
-    SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 75, line4.data());
-    SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 60, line5.data());
-    SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 45, line6.data());
-    SDLTest_DrawString(
-      renderer, (float) displayWidth - 240, (float) displayHeight - 30, line7.data());
-
-    SDL_RenderPresent(renderer);
-
-    // 約60fpsを維持するための待機処理
-    auto frame_end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> frame_duration = frame_end - frame_start;
-    if (frame_duration.count() < 16.666)
-    {
-      SDL_Delay(16.666 - frame_duration.count());
-    }
-  }
-
-  appState = AppState::Quitting;
-  if (managerThread.joinable())
-  {
-    managerThread.join();
-  }
-
-  bvh->freeObject();
-  for (auto m : currentMaterials)
-    delete m;
-  SDL_DestroyTexture(texture);
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
-  SDL_Quit();
-  return 0;
+  (void) argc;
+  (void) argv;
+
+  PreviewApp app;
+  return app.run();
 }
