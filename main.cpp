@@ -155,7 +155,7 @@ int main() {
     }
 
     // ピンホールカメラ
-    PinholeCamera pinholeCamera{eye, up, fov, width, height};
+    PinholeCamera pinholeCamera{eye, center, up, fov, width, height};
 
     // 波長データを保存
     Film film(width, height);
