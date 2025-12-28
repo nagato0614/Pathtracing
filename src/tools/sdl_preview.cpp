@@ -194,10 +194,12 @@ class PreviewApp
     void renderFrame(const RenderParams &snapshot);
     void drawSceneButtons(int displayWidth, int displayHeight, int currentSceneIdx);
     void drawStatusPanel(const RenderParams &snapshot, int displayWidth, int displayHeight);
+    void drawSaveButton();
 
     void requestReset();
     void requestSceneChange(int sceneIdx);
     void requestIntegratorChange(IntegratorType type);
+    void saveCurrentFrame();
 
     void commitCameraUpdate(const Vector3 &eye,
                             const Vector3 &target,
@@ -219,6 +221,7 @@ class PreviewApp
 
     std::vector<uint8_t> pixels_;
     std::vector<uint8_t> sharedPixels_;
+    SDL_FRect saveButtonRect_{0.0f, 0.0f, 0.0f, 0.0f};
 
     std::unique_ptr<BVH> bvh_ = std::make_unique<BVH>();
     std::vector<Material *> materials_;
@@ -540,6 +543,16 @@ void PreviewApp::handleWindowResized(int width, int height)
 
 void PreviewApp::handleSceneSelection(float x, float y)
 {
+  const float left = saveButtonRect_.x;
+  const float right = saveButtonRect_.x + saveButtonRect_.w;
+  const float top = saveButtonRect_.y;
+  const float bottom = saveButtonRect_.y + saveButtonRect_.h;
+  if (x >= left && x <= right && y >= top && y <= bottom)
+  {
+    saveCurrentFrame();
+    return;
+  }
+
   if (x < static_cast<float>(displayWidth_) - 120 || x > static_cast<float>(displayWidth_) - 10)
     return;
 
@@ -779,6 +792,19 @@ void PreviewApp::drawStatusPanel(const RenderParams &snapshot, int displayWidth,
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_NONE);
 }
 
+void PreviewApp::drawSaveButton()
+{
+  saveButtonRect_.w = 120.0f;
+  saveButtonRect_.h = 35.0f;
+  saveButtonRect_.x = 10.0f;
+  saveButtonRect_.y = static_cast<float>(displayHeight_) - saveButtonRect_.h - 10.0f;
+
+  SDL_SetRenderDrawColor(renderer_, 80, 160, 255, 255);
+  SDL_RenderFillRect(renderer_, &saveButtonRect_);
+  SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+  SDLTest_DrawString(renderer_, saveButtonRect_.x + 20.0f, saveButtonRect_.y + 10.0f, "Save");
+}
+
 void PreviewApp::renderFrame(const RenderParams &snapshot)
 {
   SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
@@ -788,6 +814,7 @@ void PreviewApp::renderFrame(const RenderParams &snapshot)
 
   drawSceneButtons(displayWidth_, displayHeight_, snapshot.sceneIdx);
   drawStatusPanel(snapshot, displayWidth_, displayHeight_);
+  drawSaveButton();
 
   SDL_RenderPresent(renderer_);
 }
@@ -831,6 +858,26 @@ void PreviewApp::requestIntegratorChange(IntegratorType type)
   }
 
   requestReset();
+}
+
+void PreviewApp::saveCurrentFrame()
+{
+  std::lock_guard<std::mutex> lock(filmMutex_);
+  if (!film_)
+  {
+    return;
+  }
+
+  const int passCount = std::max(1, currentPass_.load());
+  Film tempFilm(film_->getWidth(), film_->getHeight());
+  const size_t pixelCount = film_->getPixelSize();
+  for (size_t i = 0; i < pixelCount; ++i)
+  {
+    tempFilm[i] = (*film_)[i] / static_cast<float>(passCount);
+  }
+
+  tempFilm.outputImage("output.png");
+  std::cout << "Saved current frame to output.png" << std::endl;
 }
 
 const char *PreviewApp::toString(IntegratorType type)
