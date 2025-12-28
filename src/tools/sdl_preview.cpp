@@ -23,6 +23,7 @@
 #include "material/Mirror.hpp"
 #include "object/Sphere.hpp"
 #include "render/BidirectionalPathtracing.hpp"
+#include "render/NormalRenderer.hpp"
 #include "render/Pathtracing.hpp"
 #include "sky/ImageBasedLighting.hpp"
 #include "structure/BVH.hpp"
@@ -109,7 +110,7 @@ void setupScene3(BVH &bvh, std::vector<Material *> &materials)
   bvh.loadObject(
     "../models/back_ceil_floor_plane.obj", "../models/back_ceil_floor_plane.mtl", white);
   bvh.loadObject("../models/light_plane.obj", "../models/light_plane.mtl", d65);
-  bvh.loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", glass, 2.f);
+  bvh.loadObject("../models/teapod.obj", "../models/teapod.mtl", glass, 2.f);
 }
 
 std::vector<SceneConfig> createScenes()
@@ -124,8 +125,8 @@ std::vector<SceneConfig> createScenes()
      "../texture/uffizi-large.exr",
      setupScene1},
     {"Spheres IBL",
-     Vector3(0, 5, 14),
-     Vector3(0, 0, 0),
+     Vector3(-10, 2, 0),
+     Vector3(0, 2, 0),
      55.0f * kPi / 180.0f,
      true,
      "../texture/uffizi-large.exr",
@@ -157,7 +158,8 @@ class PreviewApp
     enum class IntegratorType
     {
       PathTracing,
-      Bidirectional
+      Bidirectional,
+      Normal
     };
 
     struct RenderParams
@@ -369,6 +371,9 @@ void PreviewApp::rebuildResources(const RenderParams &params, bool sceneChanged)
       integrator_ = std::make_unique<BidirectionalPathtracing>(
         bvh_.get(), film_.get(), camera_.get(), samples_);
       break;
+    case IntegratorType::Normal:
+      integrator_ = std::make_unique<NormalRenderer>(bvh_.get(), film_.get(), camera_.get());
+      break;
   }
 
   width_ = width;
@@ -483,6 +488,11 @@ void PreviewApp::renderLoop()
       integrator_->render(passIndex);
       int passCount = currentPass_.fetch_add(1) + 1;
 
+      if (dynamic_cast<NormalRenderer *>(integrator_.get()) != nullptr)
+      {
+        currentPass_.store(samples_);
+      }
+
       Film tempFilm(width_, height_);
       for (int i = 0; i < width_ * height_; ++i)
       {
@@ -591,14 +601,15 @@ void PreviewApp::handleKeyDown(const SDL_KeyboardEvent &key)
 
   switch (key.key)
   {
-    case SDLK_B:
-    {
-      auto nextType = (snapshot.integrator == IntegratorType::PathTracing)
-        ? IntegratorType::Bidirectional
-        : IntegratorType::PathTracing;
-      requestIntegratorChange(nextType);
+    case SDLK_V:
+      requestIntegratorChange(IntegratorType::PathTracing);
       return;
-    }
+    case SDLK_B:
+      requestIntegratorChange(IntegratorType::Bidirectional);
+      return;
+    case SDLK_N:
+      requestIntegratorChange(IntegratorType::Normal);
+      return;
     case SDLK_W:
       eye = eye + forward * moveSpeed;
       target = target + forward * moveSpeed;
@@ -756,7 +767,8 @@ void PreviewApp::drawStatusPanel(const RenderParams &snapshot, int displayWidth,
   std::string line7 = "Target: (" + std::to_string(snapshot.target.x).substr(0, 5) + ", " +
     std::to_string(snapshot.target.y).substr(0, 5) + ", " +
     std::to_string(snapshot.target.z).substr(0, 5) + ")";
-  std::string line8 = std::string("Integrator: ") + toString(snapshot.integrator) + " (B key)";
+  std::string line8 =
+    std::string("Integrator: ") + toString(snapshot.integrator) + " [V:PT B:BDPT N:Normal]";
 
   SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
   SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 10.0f, line1.c_str());
@@ -833,6 +845,8 @@ const char *PreviewApp::toString(IntegratorType type)
       return "Path Tracing";
     case IntegratorType::Bidirectional:
       return "Bidirectional PT";
+    case IntegratorType::Normal:
+      return "Normal";
   }
   return "Unknown";
 }

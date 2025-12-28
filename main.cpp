@@ -20,6 +20,7 @@
 #include "camera/PinholeCamera.hpp"
 #include "core/Timer.hpp"
 #include "render/RenderBase.hpp"
+#include "render/NormalRenderer.hpp"
 #include "render/Pathtracing.hpp"
 #include "render/BidirectionalPathtracing.hpp"
 #include "sky/UniformSky.hpp"
@@ -161,6 +162,7 @@ int main() {
     // 波長データを保存
     Film filmPath(width, height);
     Film filmBdpt(width, height);
+    Film filmNormal(width, height);
 
     std::vector<Vector3> nom(width * height);
     std::vector<Vector3> depth_buffer(width * height);
@@ -188,6 +190,14 @@ int main() {
     timerBDPT.stop();
     std::cout << "\n-- Bidirectional Path Tracing Rendering Time --" << std::endl;
     std::cout << timerBDPT.getTime<>() << "[sec]" << std::endl;
+
+    NormalRenderer normalRenderer(&bvh, &filmNormal, &pinholeCamera);
+    Timer timerNormal;
+    timerNormal.start();
+    normalRenderer.render("normal.png");
+    timerNormal.stop();
+    std::cout << "\n-- Normal Rendering Time --" << std::endl;
+    std::cout << timerNormal.getTime<>() << "[sec]" << std::endl;
 
     // デバッグビルド時の処理
 #ifdef MY_DEBUG

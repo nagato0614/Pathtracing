@@ -23,6 +23,10 @@ class RenderBase
 
     const Film &getFilm() const;
 
+    Scene *getScene() const { return scene; }
+
+    Camera *getCamera() const { return camera; }
+
   protected:
     Scene *scene;
     Film *film;
