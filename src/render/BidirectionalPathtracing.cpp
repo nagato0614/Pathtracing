@@ -78,6 +78,7 @@ void BidirectionalPathtracing::render(int current_pass)
 {
   const auto width = film->getWidth();
   const auto height = film->getHeight();
+  const auto lightPath = generateLightSubpath();
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1)
@@ -85,7 +86,7 @@ void BidirectionalPathtracing::render(int current_pass)
   {
     const size_t x = pixel % width;
     const size_t y = height - pixel / width;
-    const auto L = Li(x, y);
+    const auto L = Li(x, y, lightPath);
     (*film)[pixel] = (*film)[pixel] + L;
   }
 #else
@@ -97,12 +98,12 @@ void BidirectionalPathtracing::render(int current_pass)
   for (int yIdx = 0; yIdx < height; ++yIdx)
   {
     futures.emplace_back(pool.enqueue_task(
-      [this, yIdx, width, height]()
+      [this, yIdx, width, height, &lightPath]()
       {
         const size_t y = height - yIdx;
         for (size_t x = 0; x < width; ++x)
         {
-          const auto L = Li(x, y);
+          const auto L = Li(x, y, lightPath);
           const size_t index = yIdx * width + x;
           (*film)[index] = (*film)[index] + L;
         }
@@ -116,14 +117,13 @@ void BidirectionalPathtracing::render(int current_pass)
 #endif
 }
 
-Spectrum BidirectionalPathtracing::Li(size_t x, size_t y)
+Spectrum BidirectionalPathtracing::Li(size_t x, size_t y, const std::vector<PathVertex> &lightPath)
 {
   // カメラ側で直接計算できる寄与成分（NEEや環境光）
   Spectrum directContribution(0.0f);
   Spectrum emissionContribution(0.0f);
 
   auto cameraPath = generateCameraSubpath(x, y, directContribution, emissionContribution);
-  auto lightPath = generateLightSubpath();
 
   Spectrum connectionContribution(0.0f);
   if (!cameraPath.empty() && !lightPath.empty())

@@ -39,7 +39,7 @@ class BidirectionalPathtracing : public RenderBase
         bool isDelta = false;          // 鏡・ガラスなどデルタ分布かどうか
     };
 
-    Spectrum Li(size_t x, size_t y);
+    Spectrum Li(size_t x, size_t y, const std::vector<PathVertex> &lightPath);
 
     std::vector<PathVertex> generateCameraSubpath(
       size_t x,

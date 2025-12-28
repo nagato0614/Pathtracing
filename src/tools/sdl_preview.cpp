@@ -81,6 +81,9 @@ void setupScene1(BVH &bvh, std::vector<Material *> &materials)
 
 void setupScene2(BVH &bvh, [[maybe_unused]] std::vector<Material *> &materials)
 {
+  auto mirror = new Mirror(Spectrum(0.99f));
+  materials.push_back(mirror);
+  bvh.loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", mirror);
   bvh.loadObject("../models/sponza/sponza.obj", "../models/sponza/sponza.mtl", nullptr);
 }
 
