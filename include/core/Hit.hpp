@@ -5,6 +5,8 @@
 #ifndef PATHTRACING_HIT_HPP
 #define PATHTRACING_HIT_HPP
 
+#include <optional>
+#include "linearAlgebra/Vector2.hpp"
 #include "object/Object.hpp"
 
 namespace nagato
@@ -16,7 +18,7 @@ class Hit
   public:
     Hit();
 
-    Hit(float d, Vector3 p, Vector3 n, Object *sphere);
+    Hit(float d, Vector3 p, Vector3 n, Object *sphere, std::optional<Vector2> tex = std::nullopt);
 
     const float getDistance() const;
 
@@ -26,11 +28,16 @@ class Hit
 
     const Object &getObject() const;
 
+    bool hasTexcoord() const;
+
+    const Vector2 &getTexcoord() const;
+
   private:
     float distance;
     Vector3 point;
     Vector3 normal;
     Object *object;
+    std::optional<Vector2> texcoord;
 };
 } // namespace nagato
 

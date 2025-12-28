@@ -5,6 +5,8 @@
 #ifndef PATHTRACING_TRIANGLE_HPP
 #define PATHTRACING_TRIANGLE_HPP
 
+#include <vector>
+#include "linearAlgebra/Vector2.hpp"
 #include "object/Object.hpp"
 
 namespace nagato
@@ -12,7 +14,7 @@ namespace nagato
 class Triangle : public Object
 {
   public:
-    Triangle(Material *m, std::vector<Vector3> p);
+    Triangle(Material *m, std::vector<Vector3> p, std::vector<Vector2> t, bool hasTexcoord);
 
     std::optional<Hit> intersect(Ray &ray, float tmin, float tmax) override;
 
@@ -28,6 +30,8 @@ class Triangle : public Object
 
   private:
     std::vector<Vector3> points;
+    std::vector<Vector2> texcoords;
+    bool hasTexcoord;
 };
 } // namespace nagato
 

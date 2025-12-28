@@ -5,6 +5,7 @@
 #ifndef PATHTRACING_SCENE_HPP
 #define PATHTRACING_SCENE_HPP
 
+#include <memory>
 #include <optional>
 #include <vector>
 #include "object/Object.hpp"
@@ -55,6 +56,8 @@ class Scene
     Sky *sky = nullptr;
 
     int objectCount = 0;
+
+    std::vector<std::unique_ptr<Material>> ownedMaterials;
 };
 } // namespace nagato
 

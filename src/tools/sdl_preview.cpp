@@ -79,16 +79,9 @@ void setupScene1(BVH &bvh, std::vector<Material *> &materials)
   bvh.loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", glass);
 }
 
-void setupScene2(BVH &bvh, std::vector<Material *> &materials)
+void setupScene2(BVH &bvh, [[maybe_unused]] std::vector<Material *> &materials)
 {
-  auto white = new Diffuse(Spectrum(0.8f));
-  auto purple = new Diffuse(Spectrum::rgb2Spectrum({0.8f, 0.2f, 0.8f}));
-  auto glass = new Glass(Spectrum(0.99f), 1.5f);
-  materials.push_back(white);
-  materials.push_back(purple);
-  materials.push_back(glass);
-
-  bvh.loadObject("../models/sponza.obj", "../models/sponza.mtl", white);
+  bvh.loadObject("../models/sponza/sponza.obj", "../models/sponza/sponza.mtl", nullptr);
 }
 
 void setupScene3(BVH &bvh, std::vector<Material *> &materials)

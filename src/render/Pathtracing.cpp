@@ -116,14 +116,16 @@ Spectrum Pathtracing::Li(size_t x, size_t y)
       break;
     }
 
+    const auto &material = intersect->getObject().getMaterial();
+
     // ヒットした面が表の場合光源の寄与を得る
     if (dot(-ray.getDirection(), intersect->getNormal()) > 0.0)
     {
-      L = L + weight * intersect->getObject().getMaterial().getEmitter();
+      L = L + weight * material.getEmitter();
     }
 
     // next event estimation
-    auto type = intersect->getObject().getMaterial().type();
+    auto type = material.type();
     if (type != SurfaceType::Emitter && type == SurfaceType::Diffuse)
     {
       L = L + weight * scene->directLight(ray, intersect.value());
@@ -133,8 +135,9 @@ Spectrum Pathtracing::Li(size_t x, size_t y)
     ray.setOrigin(intersect->getPoint());
     Vector3 dir;
     float pdf = 1.0;
-    auto &bsdf = intersect->getObject().getMaterial().getBSDF();
+    auto &bsdf = material.getBSDF();
     auto color = bsdf.makeNewDirection(&wavelength, &dir, ray, intersect.value(), &pdf);
+    color = color * material.getTextureColor(&intersect.value());
 
     // スループットウェイトの更新
     weight = weight * ((color * std::abs(dot(-ray.getDirection(), dir))) / pdf);

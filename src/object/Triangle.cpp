@@ -8,7 +8,14 @@
 
 namespace nagato
 {
-Triangle::Triangle(Material *m, std::vector<Vector3> p) : Object(m), points(std::move(p)) {}
+Triangle::Triangle(Material *m, std::vector<Vector3> p, std::vector<Vector2> t, bool hasTex) :
+    Object(m), points(std::move(p)), texcoords(std::move(t)), hasTexcoord(hasTex)
+{
+  if (texcoords.size() != points.size())
+  {
+    hasTexcoord = false;
+  }
+}
 
 std::optional<Hit> Triangle::intersect(Ray &ray, float tmin, float tmax)
 {
@@ -38,7 +45,16 @@ std::optional<Hit> Triangle::intersect(Ray &ray, float tmin, float tmax)
         const auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
         if (0.0f <= t && t <= tmax)
         {
-          return Hit{t, hitpoint, normal, this};
+          std::optional<Vector2> uv;
+          if (hasTexcoord)
+          {
+            const auto invDet = 1.0f / det;
+            const auto baryU = u * invDet;
+            const auto baryV = v * invDet;
+            const auto baryW = 1.0f - baryU - baryV;
+            uv = texcoords[0] * baryW + texcoords[1] * baryU + texcoords[2] * baryV;
+          }
+          return Hit{t, hitpoint, normal, this, uv};
         }
       }
     }
@@ -100,6 +116,7 @@ Hit Triangle::pointSampling(Hit surfaceInfo)
 
   float u = 1 - std::sqrt(xi1);
   float v = xi2 * std::sqrt(xi1);
+  float w = 1.0f - u - v;
 
   // サンプリングされた座標
   auto sampledPoint = points[0] * u + points[1] * v + points[2] * (1 - u - v);
@@ -110,7 +127,13 @@ Hit Triangle::pointSampling(Hit surfaceInfo)
   // サンプリング地点の法線ベクトル
   auto normal = normalize(cross(points[1] - points[0], points[2] - points[1]));
 
-  return Hit{distance, sampledPoint, normal, this};
+  std::optional<Vector2> uv;
+  if (hasTexcoord)
+  {
+    uv = texcoords[0] * w + texcoords[1] * u + texcoords[2] * v;
+  }
+
+  return Hit{distance, sampledPoint, normal, this, uv};
 }
 
 Hit Triangle::sampleSurfacePoint() const
@@ -124,8 +147,13 @@ Hit Triangle::sampleSurfacePoint() const
 
   auto sampledPoint = points[0] * u + points[1] * v + points[2] * (1.0f - u - v);
   auto normal = normalize(cross(points[1] - points[0], points[2] - points[0]));
+  std::optional<Vector2> uv;
+  if (hasTexcoord)
+  {
+    uv = texcoords[0] * (1.0f - u - v) + texcoords[1] * u + texcoords[2] * v;
+  }
 
-  return Hit{0.0f, sampledPoint, normal, const_cast<Triangle *>(this)};
+  return Hit{0.0f, sampledPoint, normal, const_cast<Triangle *>(this), uv};
 }
 
 std::string Triangle::toString() const { return "[Triangle]material : " + material->typeName(); }

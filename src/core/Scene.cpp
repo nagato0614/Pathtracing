@@ -4,10 +4,15 @@
 
 #include "core/Scene.hpp"
 #include <fstream>
+#include <filesystem>
+#include <sstream>
+#include <unordered_map>
+#include "color/ColorRGB.hpp"
 #include "object/Triangle.hpp"
 #include "core/Hit.hpp"
 #include "core/Ray.hpp"
 #include "core/tiny_obj_loader.h"
+#include "material/Diffuse.hpp"
 
 namespace nagato
 {
@@ -74,6 +79,43 @@ void Scene::loadObject(
     std::cerr << "error : " << err << std::endl;
   }
 
+  const bool needsAutoMaterial = (m == nullptr);
+  std::unordered_map<int, Material *> materialTable;
+  Material *autoFallbackMaterial = nullptr;
+  if (needsAutoMaterial && !materials.empty())
+  {
+    const std::filesystem::path materialDir = std::filesystem::path(mtlfilename).parent_path();
+    materialTable.reserve(materials.size());
+    for (size_t i = 0; i < materials.size(); ++i)
+    {
+      const auto &mat = materials[i];
+      ColorRGB kd(mat.diffuse[0], mat.diffuse[1], mat.diffuse[2]);
+      auto spectrum = Spectrum::rgb2Spectrum(kd);
+      auto newMaterial = std::make_unique<Diffuse>(spectrum);
+
+      if (!mat.diffuse_texname.empty())
+      {
+        std::filesystem::path texturePath = materialDir / mat.diffuse_texname;
+        newMaterial->setDiffuseTexture(texturePath.lexically_normal().string());
+      }
+
+      materialTable.emplace(static_cast<int>(i), newMaterial.get());
+      ownedMaterials.push_back(std::move(newMaterial));
+    }
+
+    if (!materialTable.empty())
+    {
+      autoFallbackMaterial = materialTable.begin()->second;
+    }
+  }
+
+  if (needsAutoMaterial && autoFallbackMaterial == nullptr)
+  {
+    auto fallback = std::make_unique<Diffuse>(Spectrum(0.8f));
+    autoFallbackMaterial = fallback.get();
+    ownedMaterials.push_back(std::move(fallback));
+  }
+
   for (auto &shape : shapes)
   {
     size_t index_offset = 0;
@@ -84,6 +126,22 @@ void Scene::loadObject(
       size_t fnum = shape.mesh.num_face_vertices[f];
 
       std::vector<Vector3> p;
+      std::vector<Vector2> uv;
+      bool faceHasTexcoord = true;
+
+      Material *materialForFace = needsAutoMaterial ? autoFallbackMaterial : m;
+      if (needsAutoMaterial && f < shape.mesh.material_ids.size())
+      {
+        const int materialId = shape.mesh.material_ids[f];
+        if (materialId >= 0)
+        {
+          auto it = materialTable.find(materialId);
+          if (it != materialTable.end())
+          {
+            materialForFace = it->second;
+          }
+        }
+      }
 
       // 各面の頂点に対する処理
       for (size_t v = 0; v < fnum; v++)
@@ -96,10 +154,30 @@ void Scene::loadObject(
                      attrib.vertices[3 * vertexIndex + 2]);
         args = args * scale;
         p.emplace_back(args);
+
+        Vector2 texcoord(0.0f);
+        if (idx.texcoord_index >= 0 && !attrib.texcoords.empty())
+        {
+          const size_t texIndex = static_cast<size_t>(idx.texcoord_index) * 2;
+          if (texIndex + 1 < attrib.texcoords.size())
+          {
+            texcoord.x = attrib.texcoords[texIndex];
+            texcoord.y = attrib.texcoords[texIndex + 1];
+          }
+          else
+          {
+            faceHasTexcoord = false;
+          }
+        }
+        else
+        {
+          faceHasTexcoord = false;
+        }
+        uv.emplace_back(texcoord);
       }
       index_offset += fnum;
 
-      setObject(new Triangle(m, p));
+      setObject(new Triangle(materialForFace, p, uv, faceHasTexcoord));
     }
   }
 }
@@ -114,6 +192,7 @@ void Scene::freeObject()
   lights.clear();
   sky = nullptr;
   objectCount = 0;
+  ownedMaterials.clear();
 }
 
 Scene::Scene() { objects.clear(); }
@@ -177,8 +256,7 @@ Spectrum Scene::directLight(Ray &ray, Hit info)
 
   const auto &material = info.getObject().getMaterial();
   const auto Li = light->getMaterial().getEmitter();
-  const auto fr = material.getBSDF().f_r(-ray.getDirection(), testRay.getDirection());
-  const auto rho = material.getColor();
+  const auto rho = material.evaluateColor(&info);
   const auto areaPdf = 1.0f / light->area();
 
   const auto Ld = (Li * geometry_term * rho) / areaPdf;

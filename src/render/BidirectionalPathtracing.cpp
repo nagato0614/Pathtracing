@@ -187,6 +187,7 @@ std::vector<BidirectionalPathtracing::PathVertex> BidirectionalPathtracing::gene
     int wavelength = -1;
     auto &bsdf = vertex.material->getBSDF();
     auto bsdfValue = bsdf.makeNewDirection(&wavelength, &newDir, ray, intersect.value(), &pdf);
+    bsdfValue = bsdfValue * vertex.material->getTextureColor(&intersect.value());
     const float cosTerm = std::abs(dot(newDir, intersect->getNormal()));
 
     if (pdf <= 0.0f || cosTerm <= 0.0f)
@@ -306,6 +307,7 @@ std::vector<BidirectionalPathtracing::PathVertex> BidirectionalPathtracing::gene
     int wavelength = -1;
     auto &bsdf = vertex.material->getBSDF();
     auto bsdfValue = bsdf.makeNewDirection(&wavelength, &newDir, ray, intersect.value(), &pdfBsdf);
+    bsdfValue = bsdfValue * vertex.material->getTextureColor(&intersect.value());
     const float cosTerm = std::abs(dot(newDir, intersect->getNormal()));
     if (pdfBsdf <= 0.0f || cosTerm <= 0.0f)
     {
@@ -396,11 +398,13 @@ Spectrum BidirectionalPathtracing::connectVertices(
 
   // カメラ側の BSDF と光側の BSDF（または放射輝度）を取得
   Spectrum cameraBsdf = cameraVertex.material->getBSDF().f_r(cameraVertex.wo, dir);
+  cameraBsdf = cameraBsdf * cameraVertex.material->getTextureColor(&cameraVertex.hit);
   Spectrum lightBsdf(1.0f);
 
   if (!lightVertex.isEmitter)
   {
     lightBsdf = lightVertex.material->getBSDF().f_r(lightVertex.wo, -dir);
+    lightBsdf = lightBsdf * lightVertex.material->getTextureColor(&lightVertex.hit);
   }
   else
   {
