@@ -91,7 +91,7 @@ class Spectrum
   public:
     static void initSpectrum()
     {
-      auto lerp = [](float t, float a, float b) { return (1 - t) * a + t * b; };
+      [[maybe_unused]] auto lerp = [](float t, float a, float b) { return (1 - t) * a + t * b; };
 
       rgb2specWhite = makeSpectrum(LAMBDA, WHITE, LAMBDA_SIZE);
       rgb2specCyan = makeSpectrum(LAMBDA, CYAN, LAMBDA_SIZE);

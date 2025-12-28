@@ -15,9 +15,9 @@ namespace nagato
 std::optional<Hit> Scene::intersect(Ray &ray, float tmin, float tmax)
 {
   std::optional<Hit> minh;
-  for (auto &sphere : objects)
+  for (auto &obj : objects)
   {
-    auto h = sphere->intersect(ray, tmin, tmax);
+    auto h = obj->intersect(ray, tmin, tmax);
     if (!h)
     {
       continue;

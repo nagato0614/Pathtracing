@@ -22,8 +22,8 @@
 #include "material/Material.hpp"
 #include "material/Mirror.hpp"
 #include "object/Sphere.hpp"
-#include "render/Pathtracing.hpp"
 #include "render/BidirectionalPathtracing.hpp"
+#include "render/Pathtracing.hpp"
 #include "sky/ImageBasedLighting.hpp"
 #include "structure/BVH.hpp"
 
@@ -35,13 +35,13 @@ constexpr float kPi = 3.14159265358979323846f;
 
 struct SceneConfig
 {
-  std::string name;
-  Vector3 eye;
-  Vector3 target;
-  float fov;
-  bool hasSky;
-  std::string skyPath;
-  std::function<void(BVH &, std::vector<Material *> &)> setup;
+    std::string name;
+    Vector3 eye;
+    Vector3 target;
+    float fov;
+    bool hasSky;
+    std::string skyPath;
+    std::function<void(BVH &, std::vector<Material *> &)> setup;
 };
 
 void setupScene0(BVH &bvh, std::vector<Material *> &materials)
@@ -87,9 +87,7 @@ void setupScene2(BVH &bvh, std::vector<Material *> &materials)
   materials.push_back(purple);
   materials.push_back(glass);
 
-  bvh.setObject(new Sphere(Vector3(-2, 2, -1), 1.1f, purple));
-  bvh.setObject(new Sphere(Vector3(2, 2, -1), 1.5f, glass));
-  bvh.loadObject("../models/floor.obj", "../models/floor.mtl", white);
+  bvh.loadObject("../models/sponza.obj", "../models/sponza.mtl", white);
 }
 
 void setupScene3(BVH &bvh, std::vector<Material *> &materials)
@@ -116,29 +114,29 @@ void setupScene3(BVH &bvh, std::vector<Material *> &materials)
 
 std::vector<SceneConfig> createScenes()
 {
-  return {{"Simple", Vector3(0, 0, 2), Vector3(0, 0, 0), 45.0f * kPi / 180.0f,
-           false, "", setupScene0},
-          {"Bunny IBL",
-           Vector3(0, 5, 14),
-           Vector3(0, 0, 0),
-           55.0f * kPi / 180.0f,
-           true,
-           "../texture/playa.exr",
-           setupScene1},
-          {"Spheres IBL",
-           Vector3(0, 5, 14),
-           Vector3(0, 0, 0),
-           55.0f * kPi / 180.0f,
-           true,
-           "../texture/uffizi-large.exr",
-           setupScene2},
-          {"Cornell Bunny",
-           Vector3(0, 5, 14),
-           Vector3(0, 0, 0),
-           55.0f * kPi / 180.0f,
-           false,
-           "",
-           setupScene3}};
+  return {
+    {"Simple", Vector3(0, 0, 2), Vector3(0, 0, 0), 45.0f * kPi / 180.0f, false, "", setupScene0},
+    {"Bunny IBL",
+     Vector3(0, 5, 14),
+     Vector3(0, 0, 0),
+     55.0f * kPi / 180.0f,
+     true,
+     "../texture/uffizi-large.exr",
+     setupScene1},
+    {"Spheres IBL",
+     Vector3(0, 5, 14),
+     Vector3(0, 0, 0),
+     55.0f * kPi / 180.0f,
+     true,
+     "../texture/uffizi-large.exr",
+     setupScene2},
+    {"Cornell Bunny",
+     Vector3(0, 5, 14),
+     Vector3(0, 0, 0),
+     55.0f * kPi / 180.0f,
+     false,
+     "",
+     setupScene3}};
 }
 } // namespace
 
@@ -203,8 +201,11 @@ class PreviewApp
     void requestSceneChange(int sceneIdx);
     void requestIntegratorChange(IntegratorType type);
 
-    void commitCameraUpdate(
-      const Vector3 &eye, const Vector3 &target, float orbitRadius, float orbitTheta, float orbitPhi);
+    void commitCameraUpdate(const Vector3 &eye,
+                            const Vector3 &target,
+                            float orbitRadius,
+                            float orbitTheta,
+                            float orbitPhi);
     static const char *toString(IntegratorType type);
 
     int width_ = 500;
@@ -244,7 +245,7 @@ class PreviewApp
     std::mutex statsMutex_;
 
     std::thread managerThread_;
-}; 
+};
 
 bool PreviewApp::initSDL()
 {
@@ -272,7 +273,8 @@ bool PreviewApp::initSDL()
     return false;
   }
 
-  texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width_, height_);
+  texture_ = SDL_CreateTexture(
+    renderer_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width_, height_);
   if (!texture_)
   {
     std::cerr << "SDL_CreateTexture failed: " << SDL_GetError() << std::endl;
@@ -592,8 +594,8 @@ void PreviewApp::handleKeyDown(const SDL_KeyboardEvent &key)
     case SDLK_B:
     {
       auto nextType = (snapshot.integrator == IntegratorType::PathTracing)
-                        ? IntegratorType::Bidirectional
-                        : IntegratorType::PathTracing;
+        ? IntegratorType::Bidirectional
+        : IntegratorType::PathTracing;
       requestIntegratorChange(nextType);
       return;
     }
@@ -642,10 +644,9 @@ void PreviewApp::handleKeyDown(const SDL_KeyboardEvent &key)
 
   orbitRadius = std::max(0.1f, orbitRadius);
 
-  Vector3 orbitOffset(
-    orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi),
-    orbitRadius * std::cos(orbitTheta),
-    orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi));
+  Vector3 orbitOffset(orbitRadius * std::sin(orbitTheta) * std::cos(orbitPhi),
+                      orbitRadius * std::cos(orbitTheta),
+                      orbitRadius * std::sin(orbitTheta) * std::sin(orbitPhi));
   eye = target + orbitOffset;
 
   commitCameraUpdate(eye, target, orbitRadius, orbitTheta, orbitPhi);
@@ -682,7 +683,8 @@ void PreviewApp::updateTextureIfNeeded()
   {
     SDL_DestroyTexture(texture_);
   }
-  texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width_, height_);
+  texture_ = SDL_CreateTexture(
+    renderer_, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width_, height_);
   displayWidth_ = width_;
   displayHeight_ = height_;
   pixels_.assign(static_cast<size_t>(displayWidth_) * displayHeight_ * 3, 0);
@@ -724,11 +726,10 @@ void PreviewApp::drawSceneButtons(int displayWidth, int displayHeight, int curre
 
 void PreviewApp::drawStatusPanel(const RenderParams &snapshot, int displayWidth, int displayHeight)
 {
-  SDL_FRect statusRect = {
-    static_cast<float>(displayWidth) - 250.0f,
-    static_cast<float>(displayHeight) - 140.0f,
-    240.0f,
-    135.0f};
+  SDL_FRect statusRect = {static_cast<float>(displayWidth) - 250.0f,
+                          static_cast<float>(displayHeight) - 140.0f,
+                          240.0f,
+                          135.0f};
   SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 128);
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
   SDL_RenderFillRect(renderer_, &statusRect);
@@ -750,11 +751,11 @@ void PreviewApp::drawStatusPanel(const RenderParams &snapshot, int displayWidth,
   std::string line4 = std::to_string(displayWidth_) + "x" + std::to_string(displayHeight_);
   std::string line5 = "Polygons: " + std::to_string(snapshot.polygonCount);
   std::string line6 = "Eye: (" + std::to_string(snapshot.eye.x).substr(0, 5) + ", " +
-                      std::to_string(snapshot.eye.y).substr(0, 5) + ", " +
-                      std::to_string(snapshot.eye.z).substr(0, 5) + ")";
+    std::to_string(snapshot.eye.y).substr(0, 5) + ", " +
+    std::to_string(snapshot.eye.z).substr(0, 5) + ")";
   std::string line7 = "Target: (" + std::to_string(snapshot.target.x).substr(0, 5) + ", " +
-                      std::to_string(snapshot.target.y).substr(0, 5) + ", " +
-                      std::to_string(snapshot.target.z).substr(0, 5) + ")";
+    std::to_string(snapshot.target.y).substr(0, 5) + ", " +
+    std::to_string(snapshot.target.z).substr(0, 5) + ")";
   std::string line8 = std::string("Integrator: ") + toString(snapshot.integrator) + " (B key)";
 
   SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
@@ -905,9 +906,10 @@ int PreviewApp::run()
   params_.orbitRadius = std::sqrt((params_.eye - params_.target).norm());
   if (params_.orbitRadius > 0.0f)
   {
-    params_.orbitTheta = std::acos(
-      std::clamp((params_.eye.y - params_.target.y) / params_.orbitRadius, -1.0f, 1.0f));
-    params_.orbitPhi = std::atan2(params_.eye.z - params_.target.z, params_.eye.x - params_.target.x);
+    params_.orbitTheta =
+      std::acos(std::clamp((params_.eye.y - params_.target.y) / params_.orbitRadius, -1.0f, 1.0f));
+    params_.orbitPhi =
+      std::atan2(params_.eye.z - params_.target.z, params_.eye.x - params_.target.x);
   }
   else
   {

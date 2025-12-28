@@ -173,7 +173,7 @@ int main() {
     std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
-    Pathtracing pathTracer(&bvh, &filmPath, &pinholeCamera, 1000);
+    Pathtracing pathTracer(&bvh, &filmPath, &pinholeCamera, samples);
     Timer timerPT;
     timerPT.start();
     pathTracer.render("pathtracing.png");

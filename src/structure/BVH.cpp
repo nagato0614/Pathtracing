@@ -5,6 +5,7 @@
 #include "structure/BVH.hpp"
 #include <algorithm>
 #include <queue>
+#include <limits>
 
 namespace nagato
 {
@@ -140,17 +141,46 @@ std::optional<Hit> BVH::intersect(Ray &ray, float min, float max)
   float closestDistance = max;
 
   std::vector<int> stack;
-  stack.reserve(nodeCount);
+  stack.reserve(64);
   stack.push_back(0);
-
-  auto pushNode = [&stack](int index)
-  {
-    if (index != -1)
-      stack.push_back(index);
-  };
 
   const Vector3 &origin = ray.getOrigin();
   const Vector3 &direction = ray.getDirection();
+
+  auto intersectBox = [&](const Aabb &box, float tMax, float &tNear) -> bool {
+    float tminLocal = min;
+    float tmaxLocal = tMax;
+
+    for (int axis = 0; axis < 3; ++axis)
+    {
+      const float dirComponent = (&direction.x)[axis];
+      const float oriComponent = (&origin.x)[axis];
+      const float boxMin = (&box.min.x)[axis];
+      const float boxMax = (&box.max.x)[axis];
+
+      if (std::abs(dirComponent) < 1e-8f)
+      {
+        if (oriComponent < boxMin || oriComponent > boxMax)
+          return false;
+        continue;
+      }
+
+      float invDir = 1.0f / dirComponent;
+      float t1 = (boxMin - oriComponent) * invDir;
+      float t2 = (boxMax - oriComponent) * invDir;
+      if (t1 > t2)
+        std::swap(t1, t2);
+
+      tminLocal = std::max(tminLocal, t1);
+      tmaxLocal = std::min(tmaxLocal, t2);
+
+      if (tminLocal > tmaxLocal)
+        return false;
+    }
+
+    tNear = tminLocal;
+    return tmaxLocal >= min;
+  };
 
   while (!stack.empty())
   {
@@ -158,7 +188,8 @@ std::optional<Hit> BVH::intersect(Ray &ray, float min, float max)
     stack.pop_back();
 
     auto *node = &nodes[nodeIndex];
-    if (!node->bbox.intersect(ray))
+    float boxHitT = std::numeric_limits<float>::max();
+    if (!intersectBox(node->bbox, closestDistance, boxHitT))
     {
       continue;
     }
@@ -179,26 +210,45 @@ std::optional<Hit> BVH::intersect(Ray &ray, float min, float max)
 
     if (left != -1 && right != -1)
     {
-      auto leftCenter = nodes[left].bbox.getCenter();
-      auto rightCenter = nodes[right].bbox.getCenter();
-      float leftDistance = dot(leftCenter - origin, direction);
-      float rightDistance = dot(rightCenter - origin, direction);
+      float leftT, rightT;
+      bool leftHit = intersectBox(nodes[left].bbox, closestDistance, leftT);
+      bool rightHit = intersectBox(nodes[right].bbox, closestDistance, rightT);
 
-      if (leftDistance > rightDistance)
+      if (leftHit && rightHit)
       {
-        pushNode(left);
-        pushNode(right);
+        if (leftT > rightT)
+        {
+          stack.push_back(left);
+          stack.push_back(right);
+        }
+        else
+        {
+          stack.push_back(right);
+          stack.push_back(left);
+        }
       }
       else
       {
-        pushNode(right);
-        pushNode(left);
+        if (leftHit)
+          stack.push_back(left);
+        if (rightHit)
+          stack.push_back(right);
       }
     }
     else
     {
-      pushNode(left);
-      pushNode(right);
+      if (left != -1)
+      {
+        float leftT;
+        if (intersectBox(nodes[left].bbox, closestDistance, leftT))
+          stack.push_back(left);
+      }
+      if (right != -1)
+      {
+        float rightT;
+        if (intersectBox(nodes[right].bbox, closestDistance, rightT))
+          stack.push_back(right);
+      }
     }
   }
 
