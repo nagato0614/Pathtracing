@@ -5,6 +5,7 @@
 #include "core/Scene.hpp"
 #include <fstream>
 #include <filesystem>
+#include <limits>
 #include <sstream>
 #include <unordered_map>
 #include "color/ColorRGB.hpp"
@@ -16,6 +17,10 @@
 
 namespace nagato
 {
+namespace
+{
+constexpr float kShadowRayEpsilonScene = 1e-4f;
+}
 
 std::optional<Hit> Scene::intersect(Ray &ray, float tmin, float tmax)
 {
@@ -214,54 +219,84 @@ const std::vector<Object *> &Scene::getLights() const { return lights; }
 
 Spectrum Scene::directLight(Ray &ray, Hit info)
 {
-  // 光源がない場合はエラーで終了
-  if (lights.empty())
+  const auto areaLightCount = lights.size();
+  const bool sampleSky = hasSky();
+
+  if (areaLightCount == 0 && !sampleSky)
   {
     return Spectrum(0);
   }
 
-  // 接続を行う光源の選択
-  int lightNum = lights.size();
-  auto lightPdf = 1.0f / lightNum; // 一つの光源がサンプリングされる確率
-  int selectedLight = Random::Instance().nextInt(0, lightNum - 1);
-  Object *light = lights[selectedLight];
+  const int totalSources = static_cast<int>(areaLightCount) + (sampleSky ? 1 : 0);
+  const float selectionPdf = 1.0f / static_cast<float>(totalSources);
+  const int selectedIndex = Random::Instance().nextInt(0, totalSources - 1);
 
-  auto sampledPoint = light->pointSampling(info);
-  Ray testRay;
-  testRay.setOrigin(info.getPoint());
-  testRay.setDirection(normalize(sampledPoint.getPoint() - info.getPoint()));
+  const auto &material = info.getObject().getMaterial();
 
-  // 光源と接続点が遮られていないかテスト
-  const auto intersect = this->intersect(testRay, 0.0f, 1e+100);
-  if (!intersect)
+  if (selectedIndex < static_cast<int>(areaLightCount))
+  {
+    Object *light = lights[selectedIndex];
+
+    auto sampledPoint = light->pointSampling(info);
+    Ray testRay;
+    testRay.setOrigin(info.getPoint());
+    testRay.setDirection(normalize(sampledPoint.getPoint() - info.getPoint()));
+
+    const auto intersect = this->intersect(testRay, 0.0f, 1e+100);
+    if (!intersect)
+    {
+      return Spectrum(0.0f);
+    }
+    else
+    {
+      if (&intersect->getObject() != light)
+        return Spectrum(0.0f);
+
+      if (dot(-testRay.getDirection(), intersect->getNormal()) < 0.0)
+        return Spectrum(0.0f);
+    }
+
+    const auto distance = (sampledPoint.getPoint() - info.getPoint()).norm();
+    const auto cos_r = std::abs(dot(sampledPoint.getNormal(), -testRay.getDirection()));
+    const auto cos_i = std::abs(dot(info.getNormal(), testRay.getDirection()));
+    const auto geometry_term = (cos_r * cos_i) / distance;
+
+    const auto Li = light->getMaterial().getEmitter();
+    const auto rho = material.evaluateColor(&info);
+    const auto areaPdf = 1.0f / light->area();
+
+    const auto Ld = (Li * geometry_term * rho) / areaPdf;
+
+    return Ld / selectionPdf;
+  }
+
+  if (!sampleSky)
   {
     return Spectrum(0.0f);
   }
-  else
-  {
-    // ヒット下光源がサンプルした光源と違う場合接続を行わない
-    if (&intersect->getObject() != light)
-      return Spectrum(0.0f);
 
-    // 裏にあたった場合は計算を行わない.
-    if (dot(-testRay.getDirection(), intersect->getNormal()) < 0.0)
-      return Spectrum(0.0f);
+  auto skySample = sky->sample(info.getPoint());
+  if (skySample.pdf <= 0.0f)
+  {
+    return Spectrum(0.0f);
   }
 
-  // 幾何項の計算
-  const auto distance = (sampledPoint.getPoint() - info.getPoint()).norm();
-  const auto cos_r = std::abs(dot(sampledPoint.getNormal(), -testRay.getDirection()));
-  const auto cos_i = std::abs(dot(info.getNormal(), testRay.getDirection()));
-  const auto geometry_term = (cos_r * cos_i) / distance;
+  Ray shadowRay = skySample.ray;
+  shadowRay.setOrigin(shadowRay.getOrigin() + shadowRay.getDirection() * kShadowRayEpsilonScene);
+  const auto occlusion = this->intersect(shadowRay, 0.0f, std::numeric_limits<float>::max());
+  if (occlusion)
+  {
+    return Spectrum(0.0f);
+  }
 
-  const auto &material = info.getObject().getMaterial();
-  const auto Li = light->getMaterial().getEmitter();
+  const float cos_i = std::max(0.0f, dot(info.getNormal(), shadowRay.getDirection()));
+  if (cos_i <= 0.0f)
+  {
+    return Spectrum(0.0f);
+  }
+
   const auto rho = material.evaluateColor(&info);
-  const auto areaPdf = 1.0f / light->area();
-
-  const auto Ld = (Li * geometry_term * rho) / areaPdf;
-
-  return Ld / lightPdf;
+  return (skySample.radiance * rho * cos_i) / (skySample.pdf * selectionPdf);
 }
 
 void Scene::setSky(Sky *sky) { this->sky = sky; }

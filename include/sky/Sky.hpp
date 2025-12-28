@@ -10,11 +10,22 @@
 
 namespace nagato
 {
+struct SkySample
+{
+    Ray ray;
+    Spectrum radiance;
+    float pdf = 0.0f;
+};
+
 class Sky
 {
   public:
     virtual ~Sky() = default;
     virtual Spectrum getRadiance(const Ray &ray) const = 0;
+    virtual SkySample sample(const Vector3 &origin) const = 0;
+
+  protected:
+    static Vector3 sampleUniformSphere();
 };
 } // namespace nagato
 

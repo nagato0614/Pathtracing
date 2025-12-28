@@ -24,6 +24,7 @@ namespace
 {
 // サブパス同士を結ぶ際に使うオフセット量。0に近いとセルフシャドウが発生するので注意する。
 constexpr float kEpsilon = 1e-3f;
+constexpr float kSkyDistance = 1e4f;
 }
 
 // ----------------------------------------------------------------------------
@@ -223,15 +224,42 @@ std::vector<BidirectionalPathtracing::PathVertex> BidirectionalPathtracing::gene
 
 std::vector<BidirectionalPathtracing::PathVertex> BidirectionalPathtracing::generateLightSubpath()
 {
-  // ランダムに面光源を選択し、その表面から発散するパスを構築する。
-  std::vector<PathVertex> path;
-  path.reserve(lightDepth);
-
   const auto &lights = scene->getLights();
-  if (lights.empty())
+  const bool hasSky = scene->hasSky();
+  const bool hasArea = !lights.empty();
+
+  if (!hasArea && !hasSky)
+  {
+    return {};
+  }
+
+  float skySelectProb = hasSky ? (hasArea ? 0.5f : 1.0f) : 0.0f;
+  float areaSelectProb = hasArea ? (1.0f - skySelectProb) : 0.0f;
+
+  if (Random::Instance().next() < skySelectProb)
+  {
+    return generateSkySubpath(skySelectProb);
+  }
+
+  if (!hasArea)
+  {
+    return {};
+  }
+
+  return generateAreaLightSubpath(areaSelectProb);
+}
+
+std::vector<BidirectionalPathtracing::PathVertex> BidirectionalPathtracing::generateAreaLightSubpath(
+  float selectProbability)
+{
+  std::vector<PathVertex> path;
+  if (selectProbability <= 0.0f)
   {
     return path;
   }
+
+  path.reserve(lightDepth);
+  const auto &lights = scene->getLights();
 
   float totalArea = 0.0f;
   for (const auto *light : lights)
@@ -257,13 +285,11 @@ std::vector<BidirectionalPathtracing::PathVertex> BidirectionalPathtracing::gene
     }
   }
 
-  // 面光源の選択確率と、選択した光源の表面上 PDF（均等サンプリング）
-  const float selectPdf = selectedLight->area() / totalArea;
+  const float selectPdf = (selectedLight->area() / totalArea) * selectProbability;
   const float areaPdf = 1.0f / selectedLight->area();
 
   auto sampled = selectedLight->sampleSurfacePoint();
   auto normal = normalize(sampled.getNormal());
-
   auto dir = sampleCosineHemisphere(normal);
   const float cosTheta = std::max(0.0f, dot(normal, dir));
   if (cosTheta <= 0.0f)
@@ -278,9 +304,7 @@ std::vector<BidirectionalPathtracing::PathVertex> BidirectionalPathtracing::gene
     return path;
   }
 
-  // 初期スループットは光源の放射輝度に PDF の逆数を掛けたもの
   Spectrum throughput = selectedLight->getMaterial().getEmitter() * (cosTheta / pdf);
-
   Ray ray(sampled.getPoint() + normal * kEpsilon, dir);
 
   for (int depth = 0; depth < lightDepth; ++depth)
@@ -324,7 +348,85 @@ std::vector<BidirectionalPathtracing::PathVertex> BidirectionalPathtracing::gene
 
     if (depth >= 3)
     {
-      // 光源側のパスについてもロシアンルーレットを適用
+      const float rr = std::min(maxComponent, 0.9f);
+      if (Random::Instance().next() > rr)
+      {
+        break;
+      }
+      throughput = throughput / rr;
+    }
+
+    ray.setDirection(normalize(newDir));
+    ray.setOrigin(ray.getOrigin() + ray.getDirection() * kEpsilon);
+  }
+
+  return path;
+}
+
+std::vector<BidirectionalPathtracing::PathVertex> BidirectionalPathtracing::generateSkySubpath(
+  float selectProbability)
+{
+  std::vector<PathVertex> path;
+  if (!scene->hasSky() || selectProbability <= 0.0f)
+  {
+    return path;
+  }
+
+  path.reserve(lightDepth);
+  auto dir = sampleUniformSphere();
+  Vector3 origin = -dir * kSkyDistance;
+  Ray ray(origin, dir);
+
+  const float dirPdf = 1.0f / (4.0f * static_cast<float>(M_PI));
+  const float pdf = selectProbability * dirPdf;
+  if (pdf <= 0.0f)
+  {
+    return path;
+  }
+
+  Spectrum throughput = scene->getSky().getRadiance(Ray(Vector3(0.0f), dir)) / pdf;
+
+  for (int depth = 0; depth < lightDepth; ++depth)
+  {
+    const auto intersect = scene->intersect(ray, 0.0f, std::numeric_limits<float>::max());
+    if (!intersect)
+    {
+      break;
+    }
+
+    PathVertex vertex;
+    vertex.hit = intersect.value();
+    vertex.material = &intersect->getObject().getMaterial();
+    vertex.throughput = throughput;
+    vertex.wo = -ray.getDirection();
+    vertex.isEmitter = vertex.material->type() == SurfaceType::Emitter;
+    vertex.isDelta = isDeltaSurface(vertex.material);
+    path.push_back(vertex);
+
+    ray.setOrigin(vertex.hit.getPoint());
+
+    Vector3 newDir;
+    float pdfBsdf = 1.0f;
+    int wavelength = -1;
+    auto &bsdf = vertex.material->getBSDF();
+    auto bsdfValue = bsdf.makeNewDirection(&wavelength, &newDir, ray, intersect.value(), &pdfBsdf);
+    bsdfValue = bsdfValue * vertex.material->getTextureColor(&intersect.value());
+    const float cosTerm = std::abs(dot(newDir, intersect->getNormal()));
+    if (pdfBsdf <= 0.0f || cosTerm <= 0.0f)
+    {
+      break;
+    }
+
+    throughput = throughput * (bsdfValue * (cosTerm / pdfBsdf));
+
+    const float maxComponent = throughput.findMaxSpectrum();
+    if (maxComponent == 0.0f)
+    {
+      break;
+    }
+
+    if (depth >= 3)
+    {
       const float rr = std::min(maxComponent, 0.9f);
       if (Random::Instance().next() > rr)
       {
@@ -458,5 +560,18 @@ Vector3 BidirectionalPathtracing::sampleCosineHemisphere(const Vector3 &normal)
   buildOrthonormalBasis(normal, tangent, bitangent);
 
   return normalize(tangent * x + bitangent * y + normal * z);
+}
+
+Vector3 BidirectionalPathtracing::sampleUniformSphere()
+{
+  auto &rng = Random::Instance();
+  const float u = rng.next();
+  const float v = rng.next();
+  const float z = 1.0f - 2.0f * u;
+  const float r = std::sqrt(std::max(0.0f, 1.0f - z * z));
+  const float phi = 2.0f * static_cast<float>(M_PI) * v;
+  const float x = r * std::cos(phi);
+  const float y = r * std::sin(phi);
+  return Vector3(x, y, z);
 }
 } // namespace nagato

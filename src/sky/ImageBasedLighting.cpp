@@ -6,6 +6,8 @@
 
 #include <ImfArray.h>
 #include <ImfRgbaFile.h>
+#include <cmath>
+#include "core/Random.hpp"
 #include "sky/ImageBasedLighting.hpp"
 
 namespace nagato
@@ -44,5 +46,15 @@ void ImageBasedLighting::open(const std::string &filename)
   {
     image.get()[i] = Spectrum::rgb2Spectrum({pixels[i].r, pixels[i].g, pixels[i].b});
   }
+}
+
+SkySample ImageBasedLighting::sample(const Vector3 &origin) const
+{
+  const Vector3 direction = sampleUniformSphere();
+  SkySample sample;
+  sample.ray = Ray(origin, direction);
+  sample.radiance = getRadiance(sample.ray);
+  sample.pdf = 1.0f / (4.0f * static_cast<float>(M_PI));
+  return sample;
 }
 } // namespace nagato

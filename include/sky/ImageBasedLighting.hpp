@@ -15,6 +15,7 @@ class ImageBasedLighting : public Sky
     explicit ImageBasedLighting(const std::string &filename);
 
     Spectrum getRadiance(const Ray &ray) const override;
+    SkySample sample(const Vector3 &origin) const override;
 
   private:
     void open(const std::string &filename);

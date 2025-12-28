@@ -15,6 +15,7 @@ class UniformSky : public Sky
     explicit UniformSky(const Spectrum &s);
 
     Spectrum getRadiance(const Ray &ray) const override;
+    SkySample sample(const Vector3 &origin) const override;
 
   private:
     Spectrum skyColor;

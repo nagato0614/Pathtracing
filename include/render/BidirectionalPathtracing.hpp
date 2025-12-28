@@ -48,6 +48,8 @@ class BidirectionalPathtracing : public RenderBase
       Spectrum &emissionContribution);
 
     std::vector<PathVertex> generateLightSubpath();
+    std::vector<PathVertex> generateAreaLightSubpath(float selectProbability);
+    std::vector<PathVertex> generateSkySubpath(float selectProbability);
 
     Spectrum connectPaths(
       const std::vector<PathVertex> &cameraPath,
@@ -58,6 +60,7 @@ class BidirectionalPathtracing : public RenderBase
     static bool isDeltaSurface(const Material *material);
 
     static Vector3 sampleCosineHemisphere(const Vector3 &normal);
+    static Vector3 sampleUniformSphere();
 
     static void buildOrthonormalBasis(const Vector3 &n, Vector3 &t, Vector3 &b);
 
