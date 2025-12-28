@@ -34,6 +34,8 @@ class Scene
 
     int getObjectCount() const;
 
+    const std::vector<Object *> &getLights() const;
+
     Spectrum directLight(Ray &ray, Hit info);
 
     /**

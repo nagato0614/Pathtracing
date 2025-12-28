@@ -5,6 +5,7 @@
 #ifndef PATHTRACING_PATHTRACING_HPP
 #define PATHTRACING_PATHTRACING_HPP
 
+#include <string>
 #include "render/RenderBase.hpp"
 
 namespace nagato
@@ -17,11 +18,13 @@ class Pathtracing : public RenderBase
 
     void render() override;
 
+    void render(const std::string &outputFilename);
+
     /**
      * @brief 1パス分（1サンプリング分）のレンダリングを行う
      * @param current_pass 現在のパス数（0オリジン）
      */
-    void render(int current_pass);
+    void render(int current_pass) override;
 
   private:
     Spectrum Li(size_t x, size_t y);

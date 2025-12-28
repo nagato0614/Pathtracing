@@ -21,6 +21,7 @@
 #include "core/Timer.hpp"
 #include "render/RenderBase.hpp"
 #include "render/Pathtracing.hpp"
+#include "render/BidirectionalPathtracing.hpp"
 #include "sky/UniformSky.hpp"
 #include "sky/SimpleSky.hpp"
 #include "sky/ImageBasedLighting.hpp"
@@ -60,7 +61,7 @@ int main() {
     const int height = 1000;
 
     // Samples per pixel
-    const int samples = 100;
+    const int samples = 10;
 
     // Camera parameters
     const Vector3 eye(0, 5, 14);
@@ -121,7 +122,7 @@ int main() {
     bvh.loadObject("../models/light_plane.obj",
                    "../models/light_plane.mtl", &d65);
     bvh.loadObject("../models/low_poly_bunny.obj",
-                   "../models/low_poly_bunny.mtl", &fresnel);
+                   "../models/low_poly_bunny.mtl", &fresnel, 2.f);
 
     // コーネルボックス　球   ==================================================
 
@@ -158,7 +159,8 @@ int main() {
     PinholeCamera pinholeCamera{eye, center, up, fov, width, height};
 
     // 波長データを保存
-    Film film(width, height);
+    Film filmPath(width, height);
+    Film filmBdpt(width, height);
 
     std::vector<Vector3> nom(width * height);
     std::vector<Vector3> depth_buffer(width * height);
@@ -171,14 +173,21 @@ int main() {
     std::cout << "BVH_memory : " << bvh.getMemorySize() << std::endl;
     std::cout << "-- RENDERING START --" << std::endl;
 
-    Pathtracing pathtracing(&bvh, &film, &pinholeCamera, samples);
+    Pathtracing pathTracer(&bvh, &filmPath, &pinholeCamera, 1000);
+    Timer timerPT;
+    timerPT.start();
+    pathTracer.render("pathtracing.png");
+    timerPT.stop();
+    std::cout << "\n-- Path Tracing Rendering Time --" << std::endl;
+    std::cout << timerPT.getTime<>() << "[sec]" << std::endl;
 
-    Timer timer;
-    timer.start();
-    pathtracing.render();
-    timer.stop();
-    std::cout << "\n-- Rendering Time --" << std::endl;
-    std::cout << timer.getTime<>() << "[sec]" << std::endl;
+    BidirectionalPathtracing bdpt(&bvh, &filmBdpt, &pinholeCamera, samples);
+    Timer timerBDPT;
+    timerBDPT.start();
+    bdpt.render("bidirectional_pathtracing.png");
+    timerBDPT.stop();
+    std::cout << "\n-- Bidirectional Path Tracing Rendering Time --" << std::endl;
+    std::cout << timerBDPT.getTime<>() << "[sec]" << std::endl;
 
     // デバッグビルド時の処理
 #ifdef MY_DEBUG

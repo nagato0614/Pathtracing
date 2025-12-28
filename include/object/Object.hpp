@@ -30,6 +30,8 @@ class Object
 
     virtual Hit pointSampling(Hit surfaceInfo) = 0;
 
+    virtual Hit sampleSurfacePoint() const = 0;
+
     virtual std::string toString() const;
 
     // オブジェクトの表面積を計算する

@@ -19,6 +19,8 @@ class RenderBase
 
     virtual void render() = 0;
 
+    virtual void render(int current_pass) = 0;
+
     const Film &getFilm() const;
 
   protected:

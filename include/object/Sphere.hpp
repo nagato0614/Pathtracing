@@ -26,6 +26,8 @@ class Sphere : public Object
 
     Hit pointSampling(Hit surfaceInfo) override;
 
+    Hit sampleSurfacePoint() const override;
+
     std::string toString() const override;
 
     float area() const override;

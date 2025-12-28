@@ -61,6 +61,24 @@ Hit Sphere::pointSampling(Hit surfaceInfo)
   return Hit{distance, sampledPoint, normal, this};
 }
 
+Hit Sphere::sampleSurfacePoint() const
+{
+  auto &rng = Random::Instance();
+  float u = rng.next();
+  float v = rng.next();
+  float theta = 2.0f * static_cast<float>(M_PI) * u;
+  float phi = std::acos(2.0f * v - 1.0f);
+
+  float sinPhi = std::sin(phi);
+  Vector3 normal(
+    sinPhi * std::cos(theta),
+    std::cos(phi),
+    sinPhi * std::sin(theta));
+
+  auto point = position + normal * radius;
+  return Hit{0.0f, point, normal, const_cast<Sphere *>(this)};
+}
+
 std::string Sphere::toString() const
 {
   return "[Shpere]material : " + material->typeName() + ", radius : " + std::to_string(radius) +

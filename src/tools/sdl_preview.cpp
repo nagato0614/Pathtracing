@@ -23,6 +23,7 @@
 #include "material/Mirror.hpp"
 #include "object/Sphere.hpp"
 #include "render/Pathtracing.hpp"
+#include "render/BidirectionalPathtracing.hpp"
 #include "sky/ImageBasedLighting.hpp"
 #include "structure/BVH.hpp"
 
@@ -155,6 +156,12 @@ class PreviewApp
       Quitting
     };
 
+    enum class IntegratorType
+    {
+      PathTracing,
+      Bidirectional
+    };
+
     struct RenderParams
     {
         int width = 0;
@@ -168,6 +175,7 @@ class PreviewApp
         float orbitRadius = 0;
         float orbitTheta = 0;
         float orbitPhi = 0;
+        IntegratorType integrator = IntegratorType::PathTracing;
     };
 
     bool initSDL();
@@ -193,9 +201,11 @@ class PreviewApp
 
     void requestReset();
     void requestSceneChange(int sceneIdx);
+    void requestIntegratorChange(IntegratorType type);
 
     void commitCameraUpdate(
       const Vector3 &eye, const Vector3 &target, float orbitRadius, float orbitTheta, float orbitPhi);
+    static const char *toString(IntegratorType type);
 
     int width_ = 500;
     int height_ = 500;
@@ -216,7 +226,7 @@ class PreviewApp
     std::unique_ptr<ImageBasedLighting> sky_;
     std::unique_ptr<PinholeCamera> camera_;
     std::unique_ptr<Film> film_;
-    std::unique_ptr<Pathtracing> pathtracer_;
+    std::unique_ptr<RenderBase> integrator_;
 
     std::vector<SceneConfig> scenes_ = createScenes();
 
@@ -234,7 +244,7 @@ class PreviewApp
     std::mutex statsMutex_;
 
     std::thread managerThread_;
-};
+}; 
 
 bool PreviewApp::initSDL()
 {
@@ -347,10 +357,25 @@ void PreviewApp::rebuildResources(const RenderParams &params, bool sceneChanged)
 
   camera_ = std::make_unique<PinholeCamera>(eye, target, up_, fov, width, height);
   film_ = std::make_unique<Film>(width, height);
-  pathtracer_ = std::make_unique<Pathtracing>(bvh_.get(), film_.get(), camera_.get(), samples_);
+
+  switch (params.integrator)
+  {
+    case IntegratorType::PathTracing:
+      integrator_ = std::make_unique<Pathtracing>(bvh_.get(), film_.get(), camera_.get(), samples_);
+      break;
+    case IntegratorType::Bidirectional:
+      integrator_ = std::make_unique<BidirectionalPathtracing>(
+        bvh_.get(), film_.get(), camera_.get(), samples_);
+      break;
+  }
 
   width_ = width;
   height_ = height;
+
+  {
+    std::lock_guard<std::mutex> lock(paramsMutex_);
+    params_.polygonCount = bvh_->getObjectCount();
+  }
 
   {
     std::lock_guard<std::mutex> lock(filmMutex_);
@@ -451,9 +476,9 @@ void PreviewApp::renderLoop()
   while (!quitRender_.load())
   {
     int passIndex = currentPass_.load();
-    if (passIndex < samples_)
+    if (passIndex < samples_ && integrator_)
     {
-      pathtracer_->render(passIndex);
+      integrator_->render(passIndex);
       int passCount = currentPass_.fetch_add(1) + 1;
 
       Film tempFilm(width_, height_);
@@ -564,6 +589,14 @@ void PreviewApp::handleKeyDown(const SDL_KeyboardEvent &key)
 
   switch (key.key)
   {
+    case SDLK_B:
+    {
+      auto nextType = (snapshot.integrator == IntegratorType::PathTracing)
+                        ? IntegratorType::Bidirectional
+                        : IntegratorType::PathTracing;
+      requestIntegratorChange(nextType);
+      return;
+    }
     case SDLK_W:
       eye = eye + forward * moveSpeed;
       target = target + forward * moveSpeed;
@@ -693,9 +726,9 @@ void PreviewApp::drawStatusPanel(const RenderParams &snapshot, int displayWidth,
 {
   SDL_FRect statusRect = {
     static_cast<float>(displayWidth) - 250.0f,
-    static_cast<float>(displayHeight) - 125.0f,
+    static_cast<float>(displayHeight) - 140.0f,
     240.0f,
-    115.0f};
+    135.0f};
   SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 128);
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
   SDL_RenderFillRect(renderer_, &statusRect);
@@ -722,6 +755,7 @@ void PreviewApp::drawStatusPanel(const RenderParams &snapshot, int displayWidth,
   std::string line7 = "Target: (" + std::to_string(snapshot.target.x).substr(0, 5) + ", " +
                       std::to_string(snapshot.target.y).substr(0, 5) + ", " +
                       std::to_string(snapshot.target.z).substr(0, 5) + ")";
+  std::string line8 = std::string("Integrator: ") + toString(snapshot.integrator) + " (B key)";
 
   SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
   SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 10.0f, line1.c_str());
@@ -731,6 +765,7 @@ void PreviewApp::drawStatusPanel(const RenderParams &snapshot, int displayWidth,
   SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 70.0f, line5.c_str());
   SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 85.0f, line6.c_str());
   SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 100.0f, line7.c_str());
+  SDLTest_DrawString(renderer_, statusRect.x + 10.0f, statusRect.y + 115.0f, line8.c_str());
 
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_NONE);
 }
@@ -773,6 +808,32 @@ void PreviewApp::requestSceneChange(int sceneIdx)
     if (appState_.compare_exchange_weak(current, AppState::SceneChangeRequested))
       return;
   }
+}
+
+void PreviewApp::requestIntegratorChange(IntegratorType type)
+{
+  {
+    std::lock_guard<std::mutex> lock(paramsMutex_);
+    if (params_.integrator == type)
+    {
+      return;
+    }
+    params_.integrator = type;
+  }
+
+  requestReset();
+}
+
+const char *PreviewApp::toString(IntegratorType type)
+{
+  switch (type)
+  {
+    case IntegratorType::PathTracing:
+      return "Path Tracing";
+    case IntegratorType::Bidirectional:
+      return "Bidirectional PT";
+  }
+  return "Unknown";
 }
 
 void PreviewApp::mainLoop()
@@ -840,6 +901,7 @@ int PreviewApp::run()
   params_.eye = scenes_.front().eye;
   params_.target = scenes_.front().target;
   params_.fov = scenes_.front().fov;
+  params_.integrator = IntegratorType::PathTracing;
   params_.orbitRadius = std::sqrt((params_.eye - params_.target).norm());
   if (params_.orbitRadius > 0.0f)
   {

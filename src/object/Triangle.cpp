@@ -113,6 +113,21 @@ Hit Triangle::pointSampling(Hit surfaceInfo)
   return Hit{distance, sampledPoint, normal, this};
 }
 
+Hit Triangle::sampleSurfacePoint() const
+{
+  float xi1 = Random::Instance().next();
+  float xi2 = Random::Instance().next();
+
+  float sqrtXi1 = std::sqrt(xi1);
+  float u = 1.0f - sqrtXi1;
+  float v = xi2 * sqrtXi1;
+
+  auto sampledPoint = points[0] * u + points[1] * v + points[2] * (1.0f - u - v);
+  auto normal = normalize(cross(points[1] - points[0], points[2] - points[0]));
+
+  return Hit{0.0f, sampledPoint, normal, const_cast<Triangle *>(this)};
+}
+
 std::string Triangle::toString() const { return "[Triangle]material : " + material->typeName(); }
 
 float Triangle::area() const

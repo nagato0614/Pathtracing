@@ -17,6 +17,11 @@ Pathtracing::Pathtracing(Scene *scene, Film *film, Camera *camera, int spp, int 
 
 void Pathtracing::render()
 {
+  render("output.png");
+}
+
+void Pathtracing::render(const std::string &outputFilename)
+{
   Progressbar prog{spp};
 
   for (int pass = 0; pass < spp; pass++)
@@ -29,7 +34,7 @@ void Pathtracing::render()
     {
       temp_film[i] = (*film)[i] / (float) (pass + 1);
     }
-    temp_film.outputImage("output.png");
+    temp_film.outputImage(outputFilename);
 
     prog.update();
     prog.printBar();
@@ -40,7 +45,7 @@ void Pathtracing::render()
   {
     (*film)[i] = (*film)[i] / (float) spp;
   }
-  film->outputImage("output.png");
+  film->outputImage(outputFilename);
 }
 
 void Pathtracing::render(int current_pass)

@@ -131,6 +131,8 @@ void Scene::setObject(Object *object)
 
 int Scene::getObjectCount() const { return objectCount; }
 
+const std::vector<Object *> &Scene::getLights() const { return lights; }
+
 Spectrum Scene::directLight(Ray &ray, Hit info)
 {
   // 光源がない場合はエラーで終了
