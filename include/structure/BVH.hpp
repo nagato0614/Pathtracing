@@ -58,9 +58,6 @@ class BVH : public Scene
     // BVH構築を再帰的に行う
     void constructBVH_internal(const std::vector<Object *> &objects, int splitAxis, int nodeIndex);
 
-    // BVHとレイの交差判定を再帰的に行う
-    std::optional<Hit> intersect_internal(Ray &ray, float min, float max, int nodeIndex);
-
     // 新しいノードを作成する
     int makeNewNode();
 

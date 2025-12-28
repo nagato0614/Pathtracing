@@ -110,6 +110,7 @@ void Scene::freeObject()
   }
   objects.clear();
   lights.clear();
+  sky = nullptr;
   objectCount = 0;
 }
 

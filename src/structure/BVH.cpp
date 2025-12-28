@@ -50,9 +50,11 @@ void BVH::constructBVH_internal(const std::vector<Object *> &objects, int splitA
   // オブジェクトが１つだけの場合それを葉する
   if (objects.size() == 1)
   {
-    nodes[nodeIndex].object = objects.front();
-    nodes[nodeIndex].left = -1;
-    nodes[nodeIndex].right = -1;
+    auto *leaf = &nodes[nodeIndex];
+    leaf->object = objects.front();
+    leaf->bbox = leaf->object->getAABB();
+    leaf->left = -1;
+    leaf->right = -1;
     nodeCount++;
     return;
   }
@@ -134,65 +136,73 @@ std::optional<Hit> BVH::intersect(Ray &ray, float min, float max)
     exit(-1);
   }
 
-  return intersect_internal(ray, min, max, 0);
-}
+  std::optional<Hit> closestHit = std::nullopt;
+  float closestDistance = max;
 
-std::optional<Hit> BVH::intersect_internal(Ray &ray, float min, float max, int nodeIndex)
-{
-  auto *node = &nodes[nodeIndex];
-  // rayとaabbとの交差判定
-  if (node->bbox.intersect(ray))
+  std::vector<int> stack;
+  stack.reserve(nodeCount);
+  stack.push_back(0);
+
+  auto pushNode = [&stack](int index)
   {
-    // 中間ノードか調べる
-    if (node->object == nullptr)
+    if (index != -1)
+      stack.push_back(index);
+  };
+
+  const Vector3 &origin = ray.getOrigin();
+  const Vector3 &direction = ray.getDirection();
+
+  while (!stack.empty())
+  {
+    int nodeIndex = stack.back();
+    stack.pop_back();
+
+    auto *node = &nodes[nodeIndex];
+    if (!node->bbox.intersect(ray))
     {
-      // 中間ノードなので更に探索
+      continue;
+    }
 
-      std::optional<Hit> leftHit = std::nullopt;
-      std::optional<Hit> rightHit = std::nullopt;
-
-      if (node->left != -1)
+    if (node->object != nullptr)
+    {
+      auto hit = node->object->intersect(ray, min, closestDistance);
+      if (hit && hit->getDistance() >= min && hit->getDistance() <= closestDistance)
       {
-        leftHit = intersect_internal(ray, min, max, node->left);
+        closestDistance = hit->getDistance();
+        closestHit = hit;
       }
+      continue;
+    }
 
-      // 左側でヒットがあった場合、その距離を新しい最大距離(max)として右側を探索する
-      // これにより、より遠いオブジェクトの探索をスキップできる可能性がある
-      float currentMax = max;
-      if (leftHit)
+    const int left = node->left;
+    const int right = node->right;
+
+    if (left != -1 && right != -1)
+    {
+      auto leftCenter = nodes[left].bbox.getCenter();
+      auto rightCenter = nodes[right].bbox.getCenter();
+      float leftDistance = dot(leftCenter - origin, direction);
+      float rightDistance = dot(rightCenter - origin, direction);
+
+      if (leftDistance > rightDistance)
       {
-        currentMax = leftHit->getDistance();
+        pushNode(left);
+        pushNode(right);
       }
-
-      if (node->right != -1)
-      {
-        rightHit = intersect_internal(ray, min, currentMax, node->right);
-      }
-
-      if (!leftHit && !rightHit)
-        return std::nullopt;
-      else if (!leftHit)
-        return rightHit;
-      else if (!rightHit)
-        return leftHit;
       else
-        return (leftHit->getDistance() < rightHit->getDistance()) ? leftHit : rightHit;
+      {
+        pushNode(right);
+        pushNode(left);
+      }
     }
     else
     {
-      auto hit = node->object->intersect(ray, min, max);
-      if (hit && hit->getDistance() >= min && hit->getDistance() <= max)
-      {
-        return hit;
-      }
-      return std::nullopt;
+      pushNode(left);
+      pushNode(right);
     }
   }
-  else
-  {
-    // ヒットしてない場合
-    return std::nullopt;
-  }
+
+  return closestHit;
 }
 
 int BVH::getNodeCount() { return nodeCount; }
