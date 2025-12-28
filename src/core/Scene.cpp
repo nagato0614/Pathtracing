@@ -28,7 +28,8 @@ std::optional<Hit> Scene::intersect(Ray &ray, float tmin, float tmax)
   return minh;
 }
 
-void Scene::loadObject(const std::string &objfilename, const std::string &mtlfilename, Material *m)
+void Scene::loadObject(
+  const std::string &objfilename, const std::string &mtlfilename, Material *m, float scale)
 {
   // オブジェクトファイルを読み込み
   std::ifstream cornellbox(objfilename);
@@ -93,6 +94,7 @@ void Scene::loadObject(const std::string &objfilename, const std::string &mtlfil
         Vector3 args(attrib.vertices[3 * vertexIndex],
                      attrib.vertices[3 * vertexIndex + 1],
                      attrib.vertices[3 * vertexIndex + 2]);
+        args = args * scale;
         p.emplace_back(args);
       }
       index_offset += fnum;

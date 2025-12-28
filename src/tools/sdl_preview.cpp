@@ -110,7 +110,7 @@ void setupScene3(BVH &bvh, std::vector<Material *> &materials)
   bvh.loadObject(
     "../models/back_ceil_floor_plane.obj", "../models/back_ceil_floor_plane.mtl", white);
   bvh.loadObject("../models/light_plane.obj", "../models/light_plane.mtl", d65);
-  bvh.loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", glass);
+  bvh.loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", glass, 2.f);
 }
 
 std::vector<SceneConfig> createScenes()
@@ -129,7 +129,7 @@ std::vector<SceneConfig> createScenes()
            Vector3(0, 0, 0),
            55.0f * kPi / 180.0f,
            true,
-           "../texture/playa.exr",
+           "../texture/uffizi-large.exr",
            setupScene2},
           {"Cornell Bunny",
            Vector3(0, 5, 14),

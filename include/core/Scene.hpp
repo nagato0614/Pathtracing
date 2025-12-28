@@ -24,7 +24,11 @@ class Scene
 
     void setObject(Object *object);
 
-    void loadObject(const std::string &objfilename, const std::string &mtlfilename, Material *m);
+    void loadObject(
+      const std::string &objfilename,
+      const std::string &mtlfilename,
+      Material *m,
+      float scale = 1.0f);
 
     void freeObject();
 
