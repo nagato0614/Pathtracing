@@ -1,12 +1,3 @@
-# Blender v2.79 (sub 0) OBJ File: ''
-# www.blender.org
-mtllib light_plane.mtl
-o lightplane_Plane.001
-v -1.000000 9.500000 -1.000000
-v 1.000000 9.500000 -1.000000
-v 1.000000 9.500000 1.000000
-v -1.000000 9.500000 1.000000
-vn 0.0000 -1.0000 0.0000
-usemtl None
-s 1
-f 1//1 2//1 3//1 4//1
+version https://git-lfs.github.com/spec/v1
+oid sha256:493b9e8fb622872331e17c174d89795b2a4b7d0c82dd7b929ca9cd06706928e1
+size 284

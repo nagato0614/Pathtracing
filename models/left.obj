@@ -1,12 +1,3 @@
-# Blender v2.79 (sub 0) OBJ File: ''
-# www.blender.org
-mtllib left.mtl
-o left_Plane
-v -5.000000 10.000000 5.000000
-v -5.000000 0.000000 5.000000
-v -5.000000 10.000000 -5.000000
-v -5.000000 0.000000 -5.000000
-vn 1.0000 0.0000 0.0000
-usemtl None
-s off
-f 1//1 2//1 4//1 3//1
+version https://git-lfs.github.com/spec/v1
+oid sha256:d9ccfa5089a8a8121f34d9c6cc92670f9011017a4abf0283cdc5a9c00a0562d2
+size 272
