@@ -43,11 +43,18 @@ void BVH::constructBVH()
     exit(CANNOT_CONSTRUCT_BVH);
   }
   nodeCount = 0;
+  nodes.clear();
+  nodes.resize(std::max<size_t>(1, objects.size() * 2 + 1));
   constructBVH_internal(objects, 0, nodeCount);
+  root = nodes.empty() ? nullptr : nodes.data();
 }
 
 void BVH::constructBVH_internal(const std::vector<Object *> &objects, int splitAxis, int nodeIndex)
 {
+  if (nodeIndex >= static_cast<int>(nodes.size()))
+  {
+    nodes.resize(nodeIndex + 1);
+  }
   // オブジェクトが１つだけの場合それを葉する
   if (objects.size() == 1)
   {
@@ -70,10 +77,10 @@ void BVH::constructBVH_internal(const std::vector<Object *> &objects, int splitA
   nodeCount++;
 
   // 大きなAABBの構築
-  Aabb aabb;
-  for (auto i : objects)
+  Aabb aabb = objects.front()->getAABB();
+  for (size_t idx = 1; idx < objects.size(); ++idx)
   {
-    aabb = mergeAABB(aabb, i->getAABB());
+    aabb = mergeAABB(aabb, objects[idx]->getAABB());
   }
   node->bbox = aabb;
 
@@ -102,8 +109,18 @@ void BVH::constructBVH_internal(const std::vector<Object *> &objects, int splitA
   }
 
   // 子を作成
+  if (nodeCount >= static_cast<int>(nodes.size()))
+  {
+    nodes.resize(nodeCount + 1);
+  }
+  node = &nodes[nodeIndex];
   node->left = nodeCount;
   constructBVH_internal(left, (splitAxis + 1) % 3, node->left);
+  if (nodeCount >= static_cast<int>(nodes.size()))
+  {
+    nodes.resize(nodeCount + 1);
+  }
+  node = &nodes[nodeIndex];
   node->right = nodeCount;
   constructBVH_internal(right, (splitAxis + 1) % 3, node->right);
 }
@@ -187,6 +204,11 @@ std::optional<Hit> BVH::intersect(Ray &ray, float min, float max)
     int nodeIndex = stack.back();
     stack.pop_back();
 
+     if (nodeIndex < 0 || nodeIndex >= nodeCount)
+     {
+       continue;
+     }
+
     auto *node = &nodes[nodeIndex];
     float boxHitT = std::numeric_limits<float>::max();
     if (!intersectBox(node->bbox, closestDistance, boxHitT))
@@ -211,8 +233,8 @@ std::optional<Hit> BVH::intersect(Ray &ray, float min, float max)
     if (left != -1 && right != -1)
     {
       float leftT, rightT;
-      bool leftHit = intersectBox(nodes[left].bbox, closestDistance, leftT);
-      bool rightHit = intersectBox(nodes[right].bbox, closestDistance, rightT);
+      bool leftHit = left >= 0 && left < nodeCount ? intersectBox(nodes[left].bbox, closestDistance, leftT) : false;
+      bool rightHit = right >= 0 && right < nodeCount ? intersectBox(nodes[right].bbox, closestDistance, rightT) : false;
 
       if (leftHit && rightHit)
       {
@@ -229,9 +251,9 @@ std::optional<Hit> BVH::intersect(Ray &ray, float min, float max)
       }
       else
       {
-        if (leftHit)
+        if (leftHit && left >= 0 && left < nodeCount)
           stack.push_back(left);
-        if (rightHit)
+        if (rightHit && right >= 0 && right < nodeCount)
           stack.push_back(right);
       }
     }
@@ -240,13 +262,13 @@ std::optional<Hit> BVH::intersect(Ray &ray, float min, float max)
       if (left != -1)
       {
         float leftT;
-        if (intersectBox(nodes[left].bbox, closestDistance, leftT))
+        if (left >= 0 && left < nodeCount && intersectBox(nodes[left].bbox, closestDistance, leftT))
           stack.push_back(left);
       }
       if (right != -1)
       {
         float rightT;
-        if (intersectBox(nodes[right].bbox, closestDistance, rightT))
+        if (right >= 0 && right < nodeCount && intersectBox(nodes[right].bbox, closestDistance, rightT))
           stack.push_back(right);
       }
     }
@@ -295,5 +317,5 @@ BVHNode *BVH::getRoot() const { return root; }
 
 const std::vector<Object *> &BVH::getObjects() const { return objects; }
 
-const BVHNode *BVH::getNodes() const { return nodes; }
+const BVHNode *BVH::getNodes() const { return nodes.data(); }
 } // namespace nagato

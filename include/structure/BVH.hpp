@@ -5,6 +5,7 @@
 #ifndef PATHTRACING_BVH_HPP
 #define PATHTRACING_BVH_HPP
 
+#include <vector>
 #include "core/Scene.hpp"
 #include "object/Triangle.hpp"
 #include "structure/Aabb.hpp"
@@ -67,7 +68,7 @@ class BVH : public Scene
 
     BVHNode *root = nullptr;
     int nodeCount = 0;
-    BVHNode nodes[BVH_NODE];
+    std::vector<BVHNode> nodes;
 };
 } // namespace nagato
 

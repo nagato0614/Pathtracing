@@ -14,6 +14,7 @@
 #include "core/Ray.hpp"
 #include "core/tiny_obj_loader.h"
 #include "material/Diffuse.hpp"
+#include "material/DiffuseLight.hpp"
 
 namespace nagato
 {
@@ -96,7 +97,20 @@ void Scene::loadObject(
       const auto &mat = materials[i];
       ColorRGB kd(mat.diffuse[0], mat.diffuse[1], mat.diffuse[2]);
       auto spectrum = Spectrum::rgb2Spectrum(kd);
-      auto newMaterial = std::make_unique<Diffuse>(spectrum);
+
+      ColorRGB ke(mat.emission[0], mat.emission[1], mat.emission[2]);
+      auto emissionSpectrum = Spectrum::rgb2Spectrum(ke);
+      auto emissionStrength = emissionSpectrum.findMaxSpectrum();
+
+      std::unique_ptr<Material> newMaterial;
+      if (emissionStrength > 0.0f)
+      {
+        newMaterial = std::make_unique<DiffuseLight>(emissionSpectrum, emissionStrength);
+      }
+      else
+      {
+        newMaterial = std::make_unique<Diffuse>(spectrum);
+      }
 
       if (!mat.diffuse_texname.empty())
       {

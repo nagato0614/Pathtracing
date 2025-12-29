@@ -70,13 +70,7 @@ void setupScene0(BVH &bvh, std::vector<Material *> &materials)
 
 void setupScene1(BVH &bvh, std::vector<Material *> &materials)
 {
-  auto white = new Diffuse(Spectrum(0.8f));
-  auto glass = new Glass(Spectrum(0.99f), 1.5f);
-  materials.push_back(white);
-  materials.push_back(glass);
-
-  bvh.loadObject("../models/floor.obj", "../models/floor.mtl", white);
-  bvh.loadObject("../models/low_poly_bunny.obj", "../models/low_poly_bunny.mtl", glass);
+  bvh.loadObject("../models/living_room.obj", "../models/living_room.mtl", nullptr, 5);
 }
 
 void setupScene2(BVH &bvh, [[maybe_unused]] std::vector<Material *> &materials)
@@ -113,11 +107,11 @@ std::vector<SceneConfig> createScenes()
 {
   return {
     {"Simple", Vector3(0, 0, 2), Vector3(0, 0, 0), 45.0f * kPi / 180.0f, false, "", setupScene0},
-    {"Bunny IBL",
-     Vector3(0, 5, 14),
-     Vector3(0, 0, 0),
+    {"living_room",
+     Vector3(0, 8, 44),
+     Vector3(0, 8, 0),
      55.0f * kPi / 180.0f,
-     true,
+     false,
      "../texture/uffizi-large.exr",
      setupScene1},
     {"Spheres IBL",
@@ -876,8 +870,29 @@ void PreviewApp::saveCurrentFrame()
     tempFilm[i] = (*film_)[i] / static_cast<float>(passCount);
   }
 
-  tempFilm.outputImage("output.png");
-  std::cout << "Saved current frame to output.png" << std::endl;
+  RenderParams snapshot;
+  {
+    std::lock_guard<std::mutex> lock(paramsMutex_);
+    snapshot = params_;
+  }
+
+  std::string prefix;
+  switch (snapshot.integrator)
+  {
+    case IntegratorType::PathTracing:
+      prefix = "pt_";
+      break;
+    case IntegratorType::Bidirectional:
+      prefix = "bdpt_";
+      break;
+    case IntegratorType::Normal:
+      prefix = "normal_";
+      break;
+  }
+
+  std::string filename = prefix + "output.png";
+  tempFilm.outputImage(filename);
+  std::cout << "Saved current frame to " << filename << std::endl;
 }
 
 const char *PreviewApp::toString(IntegratorType type)
